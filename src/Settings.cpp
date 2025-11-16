@@ -55,7 +55,7 @@ private:
 class DeprecatedOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	DeprecatedOptionHandler(const std::string& warn_message, const std::vector<std::string>& opts) : 
+	DeprecatedOptionHandler(const std::string& warn_message, const std::vector<std::string>& opts) :
 		mWarnMessage(warn_message),
 		mOptStrings(opts),
 		mOptRegex()
@@ -84,7 +84,7 @@ private:
 class FlagOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	FlagOptionHandler(bool& flag, const std::vector<std::string>& opts) : 
+	FlagOptionHandler(bool& flag, const std::vector<std::string>& opts) :
 		mFlag(flag),
 		mOptStrings(opts),
 		mOptRegex()
@@ -118,7 +118,7 @@ private:
 class SingleParamStringOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamStringOptionHandler(tc::Optional<std::string>& param, const std::vector<std::string>& opts) : 
+	SingleParamStringOptionHandler(tc::Optional<std::string>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -152,7 +152,7 @@ private:
 class SingleParamPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamPathOptionHandler(tc::Optional<tc::io::Path>& param, const std::vector<std::string>& opts) : 
+	SingleParamPathOptionHandler(tc::Optional<tc::io::Path>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -186,7 +186,7 @@ private:
 class SingleParamSizetOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamSizetOptionHandler(size_t& param, const std::vector<std::string>& opts) : 
+	SingleParamSizetOptionHandler(size_t& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -263,7 +263,7 @@ private:
 class SingleParamPathArrayOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamPathArrayOptionHandler(std::vector<tc::io::Path>& param, const std::vector<std::string>& opts) : 
+	SingleParamPathArrayOptionHandler(std::vector<tc::io::Path>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -297,7 +297,7 @@ private:
 class FileTypeOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	FileTypeOptionHandler(nstool::Settings::FileType& param, const std::vector<std::string>& opts) : 
+	FileTypeOptionHandler(nstool::Settings::FileType& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -397,6 +397,40 @@ private:
 	std::vector<std::string> mOptRegex;
 };
 
+class SingleFileExtractionHandler : public tc::cli::OptionParser::IOptionHandler
+{
+public:
+	SingleFileExtractionHandler(std::string& param, const std::vector<std::string>& opts) :
+		mParam(param),
+		mOptStrings(opts),
+        mOptRegex()
+	{}
+
+	const std::vector<std::string>& getOptionStrings() const
+	{
+		return mOptStrings;
+	}
+
+    const std::vector<std::string>& getOptionRegexPatterns() const
+	{
+		return mOptRegex;
+	}
+
+	void processOption(const std::string& option, const std::vector<std::string>& params)
+	{
+		if (params.size() != 1)
+		{
+			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires a parameter. Give the name and extension of the file you want to extract.", option));
+		}
+
+        mParam = params[0];
+	}
+private:
+	std::string& mParam;
+	std::vector<std::string> mOptStrings;
+    std::vector<std::string> mOptRegex;
+};
+
 class InstructionTypeOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
@@ -445,7 +479,7 @@ private:
 class ExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	ExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts) : 
+	ExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts) :
 		mJobs(jobs),
 		mOptStrings(opts),
 		mOptRegex()
@@ -470,7 +504,7 @@ public:
 		else if (params.size() == 2)
 		{
 			mJobs.push_back({tc::io::Path(params[0]), tc::io::Path(params[1])});
-		} 
+		}
 		else
 		{
 			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires parameters in the format \"[<internal path>] <extract path>\".", option));
@@ -485,7 +519,7 @@ private:
 class CustomExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	CustomExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts, const tc::io::Path& custom_path) : 
+	CustomExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts, const tc::io::Path& custom_path) :
 		mJobs(jobs),
 		mOptStrings(opts),
 		mOptRegex(),
@@ -519,7 +553,7 @@ public:
 		{
 			fmt::print("Consider using \"-x {:s} {:s}\" instead.\n", mCustomPath.to_string(), params[0]);
 		}
-			
+
 
 		mJobs.push_back({mCustomPath, tc::io::Path(params[0])});
 	}
@@ -604,7 +638,7 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 		usage_text();
 		throw tc::ArgumentException(mModuleLabel, "Not enough arguments.");
 	}
-	
+
 	// detect request for help
 	for (auto itr = ++(args.begin()); itr != args.end(); itr++)
 	{
@@ -636,6 +670,7 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 
 	// process input file type
 	opts.registerOptionHandler(std::shared_ptr<FileTypeOptionHandler>(new FileTypeOptionHandler(infile.filetype, { "-t", "--type" })));
+	opts.registerOptionHandler(std::shared_ptr<SingleFileExtractionHandler>(new SingleFileExtractionHandler(outfile.filename, { "--file" })));
 
 	// get user-provided keydata
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(mKeysetPath, {"-k", "--keyset"})));
@@ -671,12 +706,12 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 
 	// kip options
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(kip.extract_path, { "--kipdir" })));
-	
+
 	// aset options
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(aset.icon_extract_path, { "--icon" })));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(aset.nacp_extract_path, { "--nacp" })));
 
-	
+
 	// process option
 	opts.processOptions(args, 1, args.size() - 2);
 }
@@ -684,7 +719,7 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 void nstool::SettingsInitializer::determine_filetype()
 {
 	//fmt::print("infile path = \"{}\"\n", infile.path.get().to_string());
-	
+
 	auto file = tc::io::StreamSource(std::make_shared<tc::io::FileStream>(tc::io::FileStream(infile.path.get(), tc::io::FileMode::Open, tc::io::FileAccess::Read)));
 
 	auto raw_data = file.pullData(0, 0x5000);
@@ -808,11 +843,11 @@ void nstool::SettingsInitializer::usage_text() const
 	fmt::print("      --showlayout    Show layout metadata.\n");
 	fmt::print("      -v, --verbose   Verbose output.\n");
 	fmt::print("\n  PFS0/HFS0 (PartitionFs), RomFs, NSP (Nintendo Submission Package)\n");
-	fmt::print("    {:s} [--fstree] [-x [<virtual path>] <out path>] <file>\n", BIN_NAME);
+	fmt::print("    {:s} [--fstree] [-x <out path> --file <virtual file name>] <file>\n", BIN_NAME);
 	fmt::print("      --fstree        Print filesystem tree.\n");
 	fmt::print("      -x, --extract   Extract a file or directory to local filesystem.\n");
 	fmt::print("\n  XCI (GameCard Image)\n");
-	fmt::print("    {:s} [--fstree] [-x [<virtual path>] <out path>] <.xci file>\n", BIN_NAME);
+	fmt::print("    {:s} [--fstree] [-x <out path> --file <virtual file name>] <.xci file>\n", BIN_NAME);
 	fmt::print("      --fstree        Print filesystem tree.\n");
 	fmt::print("      -x, --extract   Extract a file or directory to local filesystem.\n");
 	fmt::print("      --update        Extract \"update\" partition to directory. (Alias for \"-x /update <out path>\")\n");
@@ -820,7 +855,7 @@ void nstool::SettingsInitializer::usage_text() const
 	fmt::print("      --normal        Extract \"normal\" partition to directory. (Alias for \"-x /normal <out path>\")\n");
 	fmt::print("      --secure        Extract \"secure\" partition to directory. (Alias for \"-x /secure <out path>\")\n");
 	fmt::print("\n  NCA (Nintendo Content Archive)\n");
-	fmt::print("    {:s} [--fstree] [-x [<virtual path>] <out path>] [--bodykey <key> --titlekey <key> -tik <tik path> --basenca <.nca file>] <.nca file>\n", BIN_NAME);
+	fmt::print("    {:s} [--fstree] [-x <out path> --file <virtual file name>] [--bodykey <key> --titlekey <key> -tik <tik path> --basenca <.nca file>] <.nca file>\n", BIN_NAME);
 	fmt::print("      --fstree        Print filesystem tree.\n");
 	fmt::print("      -x, --extract   Extract a file or directory to local filesystem.\n");
 	fmt::print("      --titlekey      Specify (encrypted) title key extracted from ticket.\n");
@@ -1000,7 +1035,7 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfil
 
 		try {
 			tc::io::FileStream test = tc::io::FileStream(tmp_path, tc::io::FileMode::Open, tc::io::FileAccess::Read);
-			
+
 			keyfile_path = tmp_path;
 		}
 		catch (tc::io::FileNotFoundException&) {
@@ -1010,7 +1045,7 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfil
 	else {
 		fmt::print("[WARNING] Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint);
 	}
-	
+
 }
 
 
@@ -1020,7 +1055,7 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 	{
 		return false;
 	}
-	
+
 	if (opt.keybag.nca_header_key.isNull())
 	{
 		fmt::print("[WARNING] Failed to load NCA Header Key.\n");

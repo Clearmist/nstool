@@ -49,6 +49,11 @@ void nstool::NcaProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& fi
 	mFile = file;
 }
 
+void nstool::NcaProcess::setOutputFile(const std::string& file)
+{
+	mOutputFile = file;
+}
+
 void nstool::NcaProcess::setBaseNcaPath(const tc::Optional<tc::io::Path>& nca_path)
 {
 	mBaseNcaPath = nca_path;
@@ -82,6 +87,7 @@ void nstool::NcaProcess::setFsRootLabel(const std::string& root_label)
 void nstool::NcaProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs)
 {
 	mFsProcess.setExtractJobs(extract_jobs);
+	mFsProcess.setExtractFile(mOutputFile);
 }
 
 const std::shared_ptr<tc::io::IFileSystem>& nstool::NcaProcess::getFileSystem() const
@@ -127,7 +133,7 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
 	// create zeros key
 	KeyBag::aes128_key_t zero_aesctr_key;
 	memset(zero_aesctr_key.data(), 0, zero_aesctr_key.size());
-	
+
 	// get key data from header
 	byte_t masterkey_rev = pie::hac::AesKeygen::getMasterKeyRevisionFromKeyGeneration(mHdr.getKeyGeneration());
 	byte_t keak_index = mHdr.getKeyAreaEncryptionKeyIndex();
@@ -215,7 +221,7 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
 			mContentKey.aes_ctr = mKeyCfg.fallback_content_key.get();
 		}
 	}
-	
+
 	if (mCliOutputMode.show_keydata)
 	{
 		if (mContentKey.aes_ctr.isSet())
@@ -276,7 +282,7 @@ void nstool::NcaProcess::generatePartitionConfiguration()
 			throw tc::Exception(mModuleName, fmt::format("NCA FS Header [{:d}] Version({:d}): UNSUPPORTED", partition.header_index, fs_header.version.unwrap()));
 		}
 
-		// setup AES-CTR 
+		// setup AES-CTR
 		pie::hac::ContentArchiveUtil::getNcaPartitionAesCtr(&fs_header, info.aes_ctr.data());
 
 		// save partition configinfo
@@ -290,14 +296,14 @@ void nstool::NcaProcess::generatePartitionConfiguration()
 		if (info.hash_type == pie::hac::nca::HashType_HierarchicalSha256)
 		{
 			info.hierarchicalsha256_hdr.fromBytes(fs_header.hash_info.data(), fs_header.hash_info.size());
-		}	
+		}
 		else if (info.hash_type == pie::hac::nca::HashType_HierarchicalIntegrity)
 		{
 			info.hierarchicalintegrity_hdr.fromBytes(fs_header.hash_info.data(), fs_header.hash_info.size());
 		}
 
 		// create reader
-		try 
+		try
 		{
 			// handle partition encryption and partition compaction (sparse layer)
 			if (fs_header.sparse_info.generation.unwrap() != 0)
@@ -430,7 +436,7 @@ void nstool::NcaProcess::validateNcaSignatures()
 	{
 		fmt::print("[WARNING] NCA Header Main Signature: FAIL (could not load header key)\n");
 	}
-	
+
 
 	// validate signature[1]
 	if (mHdr.getContentType() == pie::hac::nca::ContentType_Program)
@@ -493,7 +499,7 @@ void nstool::NcaProcess::displayHeader()
 	{
 		fmt::print("  RightsId:        {:s}\n", tc::cli::FormatUtil::formatBytesAsString(mHdr.getRightsId().data(), mHdr.getRightsId().size(), true, ""));
 	}
-	
+
 	if (mContentKey.kak_list.size() > 0 && mCliOutputMode.show_keydata)
 	{
 		fmt::print("  Key Area:\n");
@@ -504,9 +510,9 @@ void nstool::NcaProcess::displayHeader()
 		{
 			std::string enc_key = tc::cli::FormatUtil::formatBytesAsString(mContentKey.kak_list[i].enc.data(), mContentKey.kak_list[i].enc.size(), true, "");
 			std::string dec_key = mContentKey.kak_list[i].decrypted ? tc::cli::FormatUtil::formatBytesAsString(mContentKey.kak_list[i].dec.data(), mContentKey.kak_list[i].dec.size(), true, "") : "<unable to decrypt>";
-			
+
 			fmt::print("    | {:3d} | {:32s} | {:32s} |\n", mContentKey.kak_list[i].index, enc_key, dec_key);
-		
+
 		}
 		fmt::print("    <--------------------------------------------------------------------------->\n");
 	}

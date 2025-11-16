@@ -1,7 +1,9 @@
 # Nintendo Switch Tool (NSTool) ![DeviceTag](https://img.shields.io/badge/Device-SWITCH-e60012.svg)
+
 General purpose reading/extraction tool for Nintendo Switch file formats.
 
 ## Supported File Formats
+
 * PartitionFs (`PFS0`) (.pfs0)
 * Sha256PartitionFs (`HFS0`) (.hfs0)
 * RomFs (.romfs)
@@ -10,47 +12,58 @@ General purpose reading/extraction tool for Nintendo Switch file formats.
 * NX GameCard Image (.xci)
 * Meta (`META`) (.npdm)
 * Nintendo Application Control Property (.nacp)
-* Content Metadata (.cnmt) 
+* Content Metadata (.cnmt)
 * ES Certificate (.cert)
 * ES Ticket (v2 only) (.tik)
-* Nintendo Shared Object (`NSO0`) (.nso) 
+* Nintendo Shared Object (`NSO0`) (.nso)
 * Nintendo Relocatable Object (`NRO0`) (.nro)
 * Initial Program Bundle (`INI1`) (.ini)
 * Initial Program (`KIP1`) (.kip)
 
 # Usage
+
 ## General usage
+
 The default mode of NSTool is to show general information about a file.
 
 To display general information the usage is as follows:
-```
+
+```bash
 nstool some_file.bin
 ```
 
 However not all information is shown in this mode; file-layout, key data and properties set to default values are omitted.
 
 ## Alternative output modes
+
 To output file-layout information, use the `--showlayout` option:
-```
+
+```bash
 nstool --showlayout some_file.bin
 ```
 
 To output key data generation and selection, use the `--showkeys` option:
-```
+
+```bash
 nstool --showkeys some_file.bin
 ```
 
 To output all information, enable the verbose output mode with the `-v` or `--verbose` option:
-```
+
+```bash
 nstool -v some_file.bin
 ```
 
 ## Specify File Type
+
 NSTool will in most cases correctly identify the file type. However you can override this and manually specify the file type with the `-t` or `--type` option:
-```
+
+```bash
 nstool -t cnmt some_file.bin
 ```
+
 In that example `cnmt` was selected, NSTool would process the file as `Content Metadata`. See below for a list of supported file type codes:
+
 | Code        | Description |
 | ----------- | --------------- |
 | gc, xci     | NX GameCard Image |
@@ -71,14 +84,17 @@ In that example `cnmt` was selected, NSTool would process the file as `Content M
 | aset, asset | Homebrew NRO Asset Binary |
 
 ## Validate Input File
+
 Some file types have signatures/hashes/fields that can be validated by NSTool, but this mode isn't enabled by default.
 
 To validate files with NSTool, enable the verify mode with the `-y` or `--verify` option:
-```
+
+```bash
 nstool -y some_file.bin
 ```
 
 See the below table for file types that support optional validation:
+
 | File Type | Validation | Comments |
 | --------- | ---------- | -------- |
 | ES Certificate | Signature | If certificate is part of a certificate chain it will validate it as part of that chain. `Root` signed certificates are verified with user supplied `Root` public key. |
@@ -91,17 +107,21 @@ See the below table for file types that support optional validation:
 * As of NSTool v1.6.0 the public key(s) for `Root Certificate`, `XCI Header`, `ACID` and `NCA Header` are built-in, and will be used if the user does not supply the public key in a key file.
 
 ## DevKit Mode
+
 Files generated for `Production` use different (for the most part) encryption/signing keys than files generated for `Development`. NSTool will select `Production` encryption/signing keys by default.
 When handling files intended for developer consoles (e.g. systemupdaters, devtools, test builds, etc), you should enable developer mode with the `-d`, `--dev` option:
-```
+
+```bash
 nstool -d some_file.bin
 ```
 
 ## Extract Files
+
 Some file types have an internal file system. This can be displayed and extracted.
 
 To display the file system tree, use the file tree option `--fstree`:
-```
+
+```bash
 nstool --fstree some_file.bin
 ```
 
@@ -110,32 +130,29 @@ To extract the file system, use the extract option `-x`, `--extract`. Which has 
 1) Extract the entire file system.
 
 This extracts the contents of the entire file system to `./extract_dir/`. `extract_dir` will be created if it doesn't exist.
-```
-nstool -x ./extract_dir/ some_file.bin
+
+```bash
+nstool --extract ./extract_dir/ some_file.bin
 ```
 
 2) Extract a sub directory.
 
 This extracts the contents of `/a/sub/directory/` to `./extract_dir/`. `extract_dir` will be created if it doesn't exist.
-```
-nstool -x /a/sub/directory/ ./extract_dir/ some_file.bin
+
+```bash
+nstool --extract /a/sub/directory/ ./extract_dir/ some_file.bin
 ```
 
-3) Extract a specific file, preserving the original name.
+3) Extract a specific file while preserving the original name.
 
 This extracts `/path/to/a/file.bin` to `./extract_dir/file.bin`.
-```
-nstool -x /path/to/a/file.bin ./extract_dir/ some_file.bin
-```
 
-4) Extract a specific file with a custom name.
-
-This extracts `/path/to/a/file.bin` to `./extract_dir/different_name.bin`.
-```
-nstool -x /path/to/a/file.bin ./extract_dir/different_name.bin some_file.bin
+```bash
+nstool --extract ./extract_dir/ --file filename.bin some_file.bin
 ```
 
 ### Supported File Types
+
 * PartitionFs
 * Sha256PartitionFs
 * RomFs (including RomFs embedded in Homebrew NRO)
@@ -144,24 +161,29 @@ nstool -x /path/to/a/file.bin ./extract_dir/different_name.bin some_file.bin
 * XCI
 
 ## NCA Patches
+
 Nintendo distributes game patches/updates in the style of a diff to keep file sizes down. This means extracting game patches requires the base version of the game to be able to process patch data. Typically this is only done for the Program NCA.
 
 If `basegame_v0.nca` is the base Program NCA, and `gamepatch_v13219.nca` is the patch Program NCA, simply specify the base NCA using the base NCA option `--basenca` when processing the patch NCA.
 
-```
+```bash
 nstool --basenca ./basegame_v0.nca -x ./patchdata gamepatch_v13219.nca
 ```
+
 In the above example the patch NCA is being extracted to `./patchdata`
 
 ## Encrypted Files
-Some Nintendo Switch files are partially or completely encrypted. These require the user to supply the encryption keys to NSTool so that it can process them. 
+
+Some Nintendo Switch files are partially or completely encrypted. These require the user to supply the encryption keys to NSTool so that it can process them.
 
 See [SWITCH_KEYS.md](/SWITCH_KEYS.md) for more info.
 
 # External Keys
-NSTool doesn't embed any keys that are copyright protected. However keys can be imported via various keyset files. 
+
+NSTool doesn't embed any keys that are copyright protected. However keys can be imported via various keyset files.
 
 See [SWITCH_KEYS.md](/SWITCH_KEYS.md) for more info.
 
 # Building
+
 See [BUILDING.md](/BUILDING.md).

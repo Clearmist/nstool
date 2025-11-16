@@ -46,6 +46,11 @@ void nstool::GameCardProcess::setInputFile(const std::shared_ptr<tc::io::IStream
 	mFile = file;
 }
 
+void nstool::GameCardProcess::setOutputFile(const std::string& file)
+{
+	mOutputFile = file;
+}
+
 void nstool::GameCardProcess::setKeyCfg(const KeyBag& keycfg)
 {
 	mKeyCfg = keycfg;
@@ -69,6 +74,7 @@ void nstool::GameCardProcess::setShowFsTree(bool show_fs_tree)
 void nstool::GameCardProcess::setExtractJobs(const std::vector<nstool::ExtractJob> extract_jobs)
 {
 	mFsProcess.setExtractJobs(extract_jobs);
+	mFsProcess.setExtractFile(mOutputFile);
 }
 
 void nstool::GameCardProcess::importHeader()
@@ -81,7 +87,7 @@ void nstool::GameCardProcess::importHeader()
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
 	}
-	
+
 	// check stream is large enough for header
 	if (mFile->length() < tc::io::IOUtil::castSizeToInt64(sizeof(pie::hac::sSdkGcHeader)))
 	{
@@ -106,7 +112,7 @@ void nstool::GameCardProcess::importHeader()
 		mIsTrueSdkXci = false;
 		mGcHeaderOffset = 0;
 	}
-	else 
+	else
 	{
 		throw tc::Exception(mModuleName, "Corrupt GameCard Image: Unexpected magic bytes.");
 	}
@@ -115,10 +121,10 @@ void nstool::GameCardProcess::importHeader()
 
 	// generate hash of raw header
 	tc::crypto::GenerateSha2256Hash(mHdrHash.data(), (byte_t*)&hdr_ptr->header, sizeof(pie::hac::sGcHeader));
-	
+
 	// save the signature
 	memcpy(mHdrSignature.data(), hdr_ptr->signature.data(), mHdrSignature.size());
-	
+
 	// decrypt extended header
 	byte_t xci_header_key_index = hdr_ptr->header.key_flag & 0xf;
 	if (mKeyCfg.xci_header_key.find(xci_header_key_index) != mKeyCfg.xci_header_key.end())
@@ -126,7 +132,7 @@ void nstool::GameCardProcess::importHeader()
 		pie::hac::GameCardUtil::decryptXciHeader(&hdr_ptr->header, mKeyCfg.xci_header_key[xci_header_key_index].data());
 		mProccessExtendedHeader = true;
 	}
-	
+
 	// deserialise header
 	mHdr.fromBytes((byte_t*)&hdr_ptr->header, sizeof(pie::hac::sGcHeader));
 }
@@ -147,8 +153,8 @@ void nstool::GameCardProcess::displayHeader()
 	{
 		fmt::print("    {:s}\n", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr));
 	}
-	
-	
+
+
 	if (mCliOutputMode.show_extended_info)
 	{
 		fmt::print("  KekIndex:               {:s} ({:d})\n", pie::hac::GameCardUtil::getKekIndexAsString((pie::hac::gc::KekIndex)mHdr.getKekIndex()), mHdr.getKekIndex());
@@ -197,7 +203,7 @@ void nstool::GameCardProcess::displayHeader()
 		}
 	}
 
-	
+
 	if (mProccessExtendedHeader)
 	{
 		fmt::print("[GameCard/ExtendedHeader]\n");
@@ -252,7 +258,7 @@ void nstool::GameCardProcess::validateXciSignature()
 			fmt::print("[WARNING] GameCard Header Signature: FAIL\n");
 		}
 	}
-	else 
+	else
 	{
 		fmt::print("[WARNING] GameCard Header Signature: FAIL (Failed to load rsa public key.)\n");
 	}

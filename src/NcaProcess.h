@@ -18,6 +18,7 @@ public:
 
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
+	void setOutputFile(const std::string& file);
 	void setKeyCfg(const KeyBag& keycfg);
 	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
@@ -38,6 +39,7 @@ private:
 
 	// user options
 	std::shared_ptr<tc::io::IStream> mFile;
+	std::string mOutputFile;
 	KeyBag mKeyCfg;
 	CliOutputMode mCliOutputMode;
 	bool mVerify;
@@ -121,7 +123,7 @@ private:
 		// sparse metadata
 		SparseInfo sparse_info;
 	};
-	
+
 	std::array<sPartitionInfo, pie::hac::nca::kPartitionNum> mPartitions;
 
 	void importHeader();

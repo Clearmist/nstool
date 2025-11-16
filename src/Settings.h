@@ -37,6 +37,11 @@ struct Settings
 		tc::Optional<tc::io::Path> path;
 	} infile;
 
+	struct OutputFileOptions
+	{
+		std::string filename;
+	} outfile;
+
 	struct Options
 	{
 		CliOutputMode cli_output_mode;
@@ -54,7 +59,7 @@ struct Settings
 	} code;
 
 	// Generic FS options
-	struct FsOptions 
+	struct FsOptions
 	{
 		bool show_fs_tree;
 		std::vector<ExtractJob> extract_jobs;
@@ -96,6 +101,8 @@ struct Settings
 	{
 		infile.filetype = FILE_TYPE_ERROR;
 		infile.path = tc::Optional<tc::io::Path>();
+
+		outfile.filename = "";
 
 		opt.cli_output_mode = CliOutputMode();
 		opt.verify = false;

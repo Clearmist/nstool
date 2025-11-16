@@ -113,7 +113,7 @@ void nstool::RomfsProcess::process()
 
 	// set properties for FsProcess
 	mFsProcess.setFsProperties({
-		fmt::format("DirNum:      {:d}", mDirNum), 
+		fmt::format("DirNum:      {:d}", mDirNum),
 		fmt::format("FileNum:     {:d}", mFileNum)
 	});
 
@@ -124,6 +124,11 @@ void nstool::RomfsProcess::process()
 void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
+}
+
+void nstool::RomfsProcess::setOutputFile(const std::string& file)
+{
+	mOutputFile = file;
 }
 
 void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
@@ -145,6 +150,7 @@ void nstool::RomfsProcess::setFsRootLabel(const std::string& root_label)
 void nstool::RomfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs)
 {
 	mFsProcess.setExtractJobs(extract_jobs);
+	mFsProcess.setExtractFile(mOutputFile);
 }
 
 void nstool::RomfsProcess::setShowFsTree(bool list_fs)
