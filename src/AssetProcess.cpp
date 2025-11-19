@@ -1,4 +1,5 @@
 #include "AssetProcess.h"
+#include "Report.hpp"
 
 #include "util.h"
 
@@ -8,15 +9,14 @@ nstool::AssetProcess::AssetProcess() :
 	mCliOutputMode(true, false, false, false),
 	mVerify(false)
 {
-}    
+}
 
 void nstool::AssetProcess::process()
 {
 	importHeader();
-	if (mCliOutputMode.show_basic_info)
-		displayHeader();
+	displayHeader();
 	processSections();
-}     
+}
 
 void nstool::AssetProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
@@ -59,6 +59,7 @@ void nstool::AssetProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -80,26 +81,34 @@ void nstool::AssetProcess::processSections()
 {
 	int64_t file_size = mFile->length();
 
+	Report& r = get_report();
+
 	if (mHdr.getIconInfo().size > 0 && mIconExtractPath.isSet())
 	{
-		if ((mHdr.getIconInfo().size + mHdr.getIconInfo().offset) > file_size) 
+		if ((mHdr.getIconInfo().size + mHdr.getIconInfo().offset) > file_size) {
 			throw tc::Exception(mModuleName, "ASET geometry for icon beyond file size");
+		}
 
-		fmt::print("Saving {:s}...", mIconExtractPath.get().to_string());
+		r.push("events", fmt::format("Saving {:s}", mIconExtractPath.get().to_string()));
+		r.text(fmt::format("Saving {:s}...", mIconExtractPath.get().to_string()));
+
 		writeSubStreamToFile(mFile, mHdr.getIconInfo().offset, mHdr.getIconInfo().size, mIconExtractPath.get());
 	}
 
 	if (mHdr.getNacpInfo().size > 0)
 	{
-		if ((mHdr.getNacpInfo().size + mHdr.getNacpInfo().offset) > file_size) 
+		if ((mHdr.getNacpInfo().size + mHdr.getNacpInfo().offset) > file_size) {
 			throw tc::Exception(mModuleName, "ASET geometry for nacp beyond file size");
+		}
 
 		if (mNacpExtractPath.isSet())
 		{
-			fmt::print("Saving {:s}...", mNacpExtractPath.get().to_string());
+			r.push("events", fmt::format("Saving {:s}", mNacpExtractPath.get().to_string()));
+			r.text(fmt::format("Saving {:s}...", mNacpExtractPath.get().to_string()));
+
 			writeSubStreamToFile(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size, mNacpExtractPath.get());
 		}
-		
+
 		mNacp.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size));
 		mNacp.setCliOutputMode(mCliOutputMode);
 		mNacp.setVerifyMode(mVerify);
@@ -109,8 +118,9 @@ void nstool::AssetProcess::processSections()
 
 	if (mHdr.getRomfsInfo().size > 0)
 	{
-		if ((mHdr.getRomfsInfo().size + mHdr.getRomfsInfo().offset) > file_size) 
+		if ((mHdr.getRomfsInfo().size + mHdr.getRomfsInfo().offset) > file_size) {
 			throw tc::Exception(mModuleName, "ASET geometry for romfs beyond file size");
+		}
 
 		mRomfs.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getRomfsInfo().offset, mHdr.getRomfsInfo().size));
 		mRomfs.setCliOutputMode(mCliOutputMode);
@@ -122,18 +132,23 @@ void nstool::AssetProcess::processSections()
 
 void nstool::AssetProcess::displayHeader()
 {
-	if (mCliOutputMode.show_layout)
-	{
-		fmt::print("[ASET Header]\n");
-		fmt::print("  Icon:\n");
-		fmt::print("    Offset:       0x{:x}\n", mHdr.getIconInfo().offset);
-		fmt::print("    Size:         0x{:x}\n", mHdr.getIconInfo().size);
-		fmt::print("  NACP:\n");
-		fmt::print("    Offset:       0x{:x}\n", mHdr.getNacpInfo().offset);
-		fmt::print("    Size:         0x{:x}\n", mHdr.getNacpInfo().size);
-		fmt::print("  RomFs:\n");
-		fmt::print("    Offset:       0x{:x}\n", mHdr.getRomfsInfo().offset);
-		fmt::print("    Size:         0x{:x}\n", mHdr.getRomfsInfo().size);
-	}	
+	Report& r = get_report();
+
+	r.text("[ASET Header]", Report::TextType::Layout);
+	r.text("  Icon:", Report::TextType::Layout);
+	r.text(fmt::format("    Offset:       0x{:x}", mHdr.getIconInfo().offset), Report::TextType::Layout);
+	r.text(fmt::format("    Size:         0x{:x}", mHdr.getIconInfo().size), Report::TextType::Layout);
+	r.text("  NACP:", Report::TextType::Layout);
+	r.text(fmt::format("    Offset:       0x{:x}", mHdr.getNacpInfo().offset), Report::TextType::Layout);
+	r.text(fmt::format("    Size:         0x{:x}", mHdr.getNacpInfo().size), Report::TextType::Layout);
+	r.text("  RomFs:", Report::TextType::Layout);
+	r.text(fmt::format("    Offset:       0x{:x}", mHdr.getRomfsInfo().offset), Report::TextType::Layout);
+	r.text(fmt::format("    Size:         0x{:x}", mHdr.getRomfsInfo().size), Report::TextType::Layout);
+
+	r.set("data.asetHeader.icon.offset", mHdr.getIconInfo().offset);
+	r.set("data.asetHeader.icon.size", mHdr.getIconInfo().size);
+	r.set("data.asetHeader.nacp.offset", mHdr.getNacpInfo().offset);
+	r.set("data.asetHeader.nacp.size", mHdr.getNacpInfo().size);
+	r.set("data.asetHeader.romfs.offset", mHdr.getRomfsInfo().offset);
+	r.set("data.asetHeader.romfs.size", mHdr.getRomfsInfo().size);
 }
-		

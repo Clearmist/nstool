@@ -88,9 +88,9 @@ void nstool::writeStreamToFile(const std::shared_ptr<tc::io::IStream>& in_stream
 
 void nstool::writeStreamToStream(const std::shared_ptr<tc::io::IStream>& in_stream, const std::shared_ptr<tc::io::IStream>& out_stream, tc::ByteData& cache)
 {
-	// iterate thru child files
+	// iterate through child files
 	size_t cache_read_len;
-	
+
 	in_stream->seek(0, tc::io::SeekOrigin::Begin);
 	out_stream->seek(0, tc::io::SeekOrigin::Begin);
 	for (int64_t remaining_data = in_stream->length(); remaining_data > 0;)

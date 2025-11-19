@@ -67,10 +67,13 @@ void nstool::PfsProcess::process()
 
 	// set properties for FsProcess
 	mFsProcess.setFsProperties({
-		fmt::format("Type:        {:s}", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType())), 
+		fmt::format("Type:        {:s}", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType())),
 		fmt::format("FileNum:     {:d}", mPfs.getFileList().size())
 	});
-	
+
+	mFsProcess.setProperties("type", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType()));
+	mFsProcess.setProperties("fileCount", mPfs.getFileList().size());
+
 	mFsProcess.process();
 }
 
@@ -82,7 +85,6 @@ void nstool::PfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& fi
 void nstool::PfsProcess::setCliOutputMode(CliOutputMode type)
 {
 	mCliOutputMode = type;
-	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::PfsProcess::setVerifyMode(bool verify)

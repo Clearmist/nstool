@@ -17,12 +17,13 @@ public:
     };
 
     // JSON entry.
-    void add(const std::string& path, const std::string& value);
-    void add(const std::string& path, const char* value);
-    void add(const std::string& path, int64_t value);
-    void add(const std::string& path, uint64_t value);
-    void add(const std::string& path, double value);
-    void add(const std::string& path, bool value);
+    void set(const std::string& path, const std::string& value);
+    void set(const std::string& path, const char* value);
+    void set(const std::string& path, int64_t value);
+    void set(const std::string& path, uint64_t value);
+    void set(const std::string& path, double value);
+    void set(const std::string& path, bool value);
+    void set(const std::string& path, const nlohmann::json& value);
 
     // JSON array entry: append to an array at "path".
     void push(const std::string& path, const std::string& value);

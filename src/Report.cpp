@@ -46,37 +46,55 @@ static nlohmann::json& ensure_array_path(nlohmann::json& root, const std::string
 }
 
 // -------------------------------
-// JSON "add" functions
+// JSON "set" functions
 // -------------------------------
 
-void Report::add(const std::string& path, const std::string& value)
+void Report::set(const std::string& path, const std::string& value)
 {
     ensure_path(root_, path) = value;
 }
 
-void Report::add(const std::string& path, const char* value)
+void Report::set(const std::string& path, const char* value)
 {
     ensure_path(root_, path) = value ? value : "";
 }
 
-void Report::add(const std::string& path, int64_t value)
+void Report::set(const std::string& path, int64_t value)
 {
     ensure_path(root_, path) = value;
 }
 
-void Report::add(const std::string& path, uint64_t value)
+void Report::set(const std::string& path, uint64_t value)
 {
     ensure_path(root_, path) = value;
 }
 
-void Report::add(const std::string& path, double value)
+void Report::set(const std::string& path, double value)
 {
     ensure_path(root_, path) = value;
 }
 
-void Report::add(const std::string& path, bool value)
+void Report::set(const std::string& path, bool value)
 {
     ensure_path(root_, path) = value;
+}
+
+void Report::set(const std::string& path, const nlohmann::json& value)
+{
+    nlohmann::json& node = ensure_path(root_, path);
+
+    if (node.is_null()) {
+        // There is no node so set the value.
+        node = value;
+    }
+    else if (node.is_object() && value.is_object()) {
+        // There is a node at this path so merge the objets.
+        node.update(value);
+    }
+    else {
+        // Overwrite the existing node.
+        node = value;
+    }
 }
 
 // -------------------------------
@@ -119,7 +137,7 @@ void Report::push(const std::string& path, const nlohmann::json& value)
 }
 
 // -------------------------------
-// TEXT "add"
+// TEXT "set"
 // -------------------------------
 
 void Report::text(const std::string& line, TextType type)
@@ -136,6 +154,10 @@ void Report::text(const std::string& line, TextType type)
 
 void Report::write_text(std::ostream& os) const
 {
+    if (text_lines_.empty()) {
+        return;
+    }
+
     for (const auto& entry : text_lines_) {
         switch (entry.type) {
         case TextType::Basic:

@@ -81,7 +81,7 @@ void nstool::GameCardProcess::importHeader()
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
 	}
-	
+
 	// check stream is large enough for header
 	if (mFile->length() < tc::io::IOUtil::castSizeToInt64(sizeof(pie::hac::sSdkGcHeader)))
 	{
@@ -106,7 +106,7 @@ void nstool::GameCardProcess::importHeader()
 		mIsTrueSdkXci = false;
 		mGcHeaderOffset = 0;
 	}
-	else 
+	else
 	{
 		throw tc::Exception(mModuleName, "Corrupt GameCard Image: Unexpected magic bytes.");
 	}
@@ -115,10 +115,10 @@ void nstool::GameCardProcess::importHeader()
 
 	// generate hash of raw header
 	tc::crypto::GenerateSha2256Hash(mHdrHash.data(), (byte_t*)&hdr_ptr->header, sizeof(pie::hac::sGcHeader));
-	
+
 	// save the signature
 	memcpy(mHdrSignature.data(), hdr_ptr->signature.data(), mHdrSignature.size());
-	
+
 	// decrypt extended header
 	byte_t xci_header_key_index = hdr_ptr->header.key_flag & 0xf;
 	if (mKeyCfg.xci_header_key.find(xci_header_key_index) != mKeyCfg.xci_header_key.end())
@@ -126,7 +126,7 @@ void nstool::GameCardProcess::importHeader()
 		pie::hac::GameCardUtil::decryptXciHeader(&hdr_ptr->header, mKeyCfg.xci_header_key[xci_header_key_index].data());
 		mProccessExtendedHeader = true;
 	}
-	
+
 	// deserialise header
 	mHdr.fromBytes((byte_t*)&hdr_ptr->header, sizeof(pie::hac::sGcHeader));
 }
@@ -147,8 +147,8 @@ void nstool::GameCardProcess::displayHeader()
 	{
 		fmt::print("    {:s}\n", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr));
 	}
-	
-	
+
+
 	if (mCliOutputMode.show_extended_info)
 	{
 		fmt::print("  KekIndex:               {:s} ({:d})\n", pie::hac::GameCardUtil::getKekIndexAsString((pie::hac::gc::KekIndex)mHdr.getKekIndex()), mHdr.getKekIndex());
@@ -197,7 +197,7 @@ void nstool::GameCardProcess::displayHeader()
 		}
 	}
 
-	
+
 	if (mProccessExtendedHeader)
 	{
 		fmt::print("[GameCard/ExtendedHeader]\n");
@@ -252,7 +252,7 @@ void nstool::GameCardProcess::validateXciSignature()
 			fmt::print("[WARNING] GameCard Header Signature: FAIL\n");
 		}
 	}
-	else 
+	else
 	{
 		fmt::print("[WARNING] GameCard Header Signature: FAIL (Failed to load rsa public key.)\n");
 	}
@@ -274,10 +274,13 @@ void nstool::GameCardProcess::processRootPfs()
 	mFsProcess.setFsFormatName("PartitionFs");
 	mFsProcess.setFsProperties({
 		fmt::format("Type:      Nested HFS0"),
-		fmt::format("DirNum:    {:d}", gc_vfs_snapshot.dir_entries.empty() ? 0 : gc_vfs_snapshot.dir_entries.size() - 1), // -1 to not include root directory
+		// Subtract 1 to not include the root directory.
+		fmt::format("DirNum:    {:d}", gc_vfs_snapshot.dir_entries.empty() ? 0 : gc_vfs_snapshot.dir_entries.size() - 1),
 		fmt::format("FileNum:   {:d}", gc_vfs_snapshot.file_entries.size())
 	});
-	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
+	mFsProcess.setProperties("type", "Nested HFS0");
+	mFsProcess.setProperties("dirCount", gc_vfs_snapshot.dir_entries.empty() ? 0 : gc_vfs_snapshot.dir_entries.size() - 1);
+	mFsProcess.setProperties("fileCount", gc_vfs_snapshot.file_entries.size());
 	mFsProcess.setFsRootLabel(kXciMountPointName);
 	mFsProcess.process();
 }

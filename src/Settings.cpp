@@ -538,6 +538,7 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	mShowLayout(false),
 	mShowKeydata(false),
 	mVerbose(false),
+	mMachineReadable(false),
 	mNcaEncryptedContentKey(),
 	mNcaContentKey(),
 	mTikPathList(),
@@ -567,7 +568,11 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	}
 
 	if (mMachineReadable) {
+		r.setShowExtendedInfo(true);
+		r.setShowLayout(true);
 		r.setShowMachineReadable(true);
+
+		fs.show_fs_tree = true;
 	}
 
 	// locate key file, if not specfied

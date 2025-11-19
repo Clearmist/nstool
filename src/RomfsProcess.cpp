@@ -113,9 +113,12 @@ void nstool::RomfsProcess::process()
 
 	// set properties for FsProcess
 	mFsProcess.setFsProperties({
-		fmt::format("DirNum:      {:d}", mDirNum), 
+		fmt::format("DirNum:      {:d}", mDirNum),
 		fmt::format("FileNum:     {:d}", mFileNum)
 	});
+
+	mFsProcess.setProperties("dirCount", mDirNum);
+	mFsProcess.setProperties("fileCount", mFileNum);
 
 	// process filesystem
 	mFsProcess.process();
@@ -129,7 +132,6 @@ void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& 
 void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
 {
 	mCliOutputMode = type;
-	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::RomfsProcess::setVerifyMode(bool verify)
