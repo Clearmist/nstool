@@ -1,8 +1,8 @@
 #include "PkiValidator.h"
-
 #include <tc/crypto.h>
 #include <pietendo/hac/define/types.h>
 #include <pietendo/hac/es/SignUtils.h>
+#include "Report.hpp"
 
 nstool::PkiValidator::PkiValidator() :
 	mModuleName("nstool::PkiValidator")
@@ -14,7 +14,7 @@ void nstool::PkiValidator::setKeyCfg(const KeyBag& keycfg)
 {
 	// save a copy of the certificate bank
 	std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> old_certs = mCertificateBank;
-	
+
 	// clear the certificate bank
 	mCertificateBank.clear();
 
@@ -42,8 +42,8 @@ void nstool::PkiValidator::addCertificate(const pie::hac::es::SignedData<pie::ha
 	pie::hac::es::sign::HashAlgo cert_hash_algo;
 	tc::ByteData cert_hash;
 
-	try 
-	{	
+	try
+	{
 		makeCertIdent(cert, cert_ident);
 
 		if (doesCertExist(cert_ident) == true)
@@ -73,7 +73,7 @@ void nstool::PkiValidator::addCertificate(const pie::hac::es::SignedData<pie::ha
 
 		mCertificateBank.push_back(cert);
 	}
-	catch (const tc::Exception& e) 
+	catch (const tc::Exception& e)
 	{
 		throw tc::Exception(mModuleName, fmt::format("Failed to add certificate {:s} ({:s})", cert_ident, e.error()));
 	}
@@ -85,8 +85,8 @@ void nstool::PkiValidator::clearCertificates()
 }
 
 void nstool::PkiValidator::validateSignature(const std::string& issuer, pie::hac::es::sign::SignatureId signature_id, const tc::ByteData& signature, const tc::ByteData& hash) const
-{	
-	pie::hac::es::sign::SignatureAlgo sign_algo = pie::hac::es::sign::getSignatureAlgo(signature_id);	
+{
+	pie::hac::es::sign::SignatureAlgo sign_algo = pie::hac::es::sign::getSignatureAlgo(signature_id);
 
 	// validate signature
 	bool sig_valid = false;
@@ -112,14 +112,14 @@ void nstool::PkiValidator::validateSignature(const std::string& issuer, pie::hac
 
 		if (sign_algo == pie::hac::es::sign::SIGN_ALGO_ECDSA240)
 		{
-			throw tc::Exception(mModuleName, "ECDSA signatures are not supported");	
+			throw tc::Exception(mModuleName, "ECDSA signatures are not supported");
 		}
 
 		rsa_key = itr->second.rsa_key;
 	}
 	else
 	{
-		// try to find issuer cert		
+		// try to find issuer cert
 		const pie::hac::es::CertificateBody& issuer_cert = getCert(issuer).getBody();
 		pie::hac::es::cert::PublicKeyType issuer_pubk_type = issuer_cert.getPublicKeyType();
 
@@ -168,8 +168,6 @@ void nstool::PkiValidator::validateSignature(const std::string& issuer, pie::hac
 	{
 		throw tc::Exception(mModuleName, "Incorrect signature");
 	}
-
-	
 }
 
 void nstool::PkiValidator::makeCertIdent(const pie::hac::es::SignedData<pie::hac::es::CertificateBody>& cert, std::string& ident) const
@@ -187,9 +185,11 @@ bool nstool::PkiValidator::doesCertExist(const std::string& ident) const
 {
 	bool exists = false;
 	std::string full_cert_name;
+
 	for (size_t i = 0; i < mCertificateBank.size(); i++)
 	{
 		makeCertIdent(mCertificateBank[i], full_cert_name);
+
 		if (full_cert_name == ident)
 		{
 			exists = true;
@@ -203,9 +203,11 @@ bool nstool::PkiValidator::doesCertExist(const std::string& ident) const
 const pie::hac::es::SignedData<pie::hac::es::CertificateBody>& nstool::PkiValidator::getCert(const std::string& ident) const
 {
 	std::string full_cert_name;
+
 	for (size_t i = 0; i < mCertificateBank.size(); i++)
 	{
 		makeCertIdent(mCertificateBank[i], full_cert_name);
+
 		if (full_cert_name == ident)
 		{
 			return mCertificateBank[i];

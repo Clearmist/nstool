@@ -1,4 +1,5 @@
 #include "NroProcess.h"
+#include "Report.hpp"
 
 nstool::NroProcess::NroProcess() :
 	mModuleName("nstool::NroProcess"),
@@ -13,13 +14,15 @@ void nstool::NroProcess::process()
 	importHeader();
 	importCodeSegments();
 
-	if (mCliOutputMode.show_basic_info)
+	if (mCliOutputMode.show_basic_info) {
 		displayHeader();
+	}
 
 	processRoMeta();
 
-	if (mIsHomebrewNro)
+	if (mIsHomebrewNro) {
 		mAssetProc.process();
+	}
 }
 
 void nstool::NroProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
@@ -83,6 +86,7 @@ void nstool::NroProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -106,6 +110,7 @@ void nstool::NroProcess::importHeader()
 	pie::hac::sNroHeader* raw_hdr = (pie::hac::sNroHeader*)scratch.data();
 
 	int64_t file_size = mFile->length();
+
 	if (((tc::bn::le64<uint64_t>*)raw_hdr->reserved_0.data())->unwrap() == pie::hac::nro::kNroHomebrewStructMagic && file_size > int64_t(mHdr.getNroSize()))
 	{
 		mIsHomebrewNro = true;
@@ -113,8 +118,9 @@ void nstool::NroProcess::importHeader()
 		mAssetProc.setCliOutputMode(mCliOutputMode);
 		mAssetProc.setVerifyMode(mVerify);
 	}
-	else
+	else {
 		mIsHomebrewNro = false;
+	}
 }
 
 void nstool::NroProcess::importCodeSegments()
@@ -156,6 +162,7 @@ void nstool::NroProcess::displayHeader()
 	fmt::print("    .ro:\n");
 	fmt::print("      Offset:     0x{:x}\n", mHdr.getRoInfo().memory_offset);
 	fmt::print("      Size:       0x{:x}\n", mHdr.getRoInfo().size);
+
 	if (mCliOutputMode.show_extended_info)
 	{
 		fmt::print("    .api_info:\n");
@@ -167,7 +174,8 @@ void nstool::NroProcess::displayHeader()
 		fmt::print("    .dynsym:\n");
 		fmt::print("      Offset:     0x{:x}\n", mHdr.getRoDynSymInfo().memory_offset);
 		fmt::print("      Size:       0x{:x}\n", mHdr.getRoDynSymInfo().size);
-	}                                                                
+	}
+
 	fmt::print("    .data:\n");
 	fmt::print("      Offset:     0x{:x}\n", mHdr.getDataInfo().memory_offset);
 	fmt::print("      Size:       0x{:x}\n", mHdr.getDataInfo().size);

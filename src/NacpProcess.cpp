@@ -1,6 +1,6 @@
 #include "NacpProcess.h"
-
 #include <pietendo/hac/ApplicationControlPropertyUtil.h>
+#include "Report.hpp"
 
 nstool::NacpProcess::NacpProcess() :
 	mModuleName("nstool::NacpProcess"),
@@ -14,8 +14,9 @@ void nstool::NacpProcess::process()
 {
 	importNacp();
 
-	if (mCliOutputMode.show_basic_info)
+	if (mCliOutputMode.show_basic_info) {
 		displayNacp();
+	}
 }
 
 void nstool::NacpProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
@@ -44,6 +45,7 @@ void nstool::NacpProcess::importNacp()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -51,6 +53,7 @@ void nstool::NacpProcess::importNacp()
 
 	// check if file_size does matches expected size
 	size_t file_size = tc::io::IOUtil::castInt64ToSize(mFile->length());
+
 	if (file_size != sizeof(pie::hac::sApplicationControlProperty))
 	{
 		throw tc::Exception(mModuleName, "File was incorrect size.");
@@ -67,11 +70,12 @@ void nstool::NacpProcess::importNacp()
 void nstool::NacpProcess::displayNacp()
 {
 	fmt::print("[ApplicationControlProperty]\n");
-	
+
 	// Title
 	if (mNacp.getTitle().size() > 0)
 	{
 		fmt::print("  Title:\n");
+
 		for (auto itr = mNacp.getTitle().begin(); itr != mNacp.getTitle().end(); itr++)
 		{
 			fmt::print("    {:s}:\n", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(itr->language));
@@ -93,7 +97,7 @@ void nstool::NacpProcess::displayNacp()
 	{
 		fmt::print("  ISBN:                                   (NotSet)\n");
 	}
-	
+
 	// StartupUserAccount
 	if (mNacp.getStartupUserAccount() != pie::hac::nacp::StartupUserAccount_None || mCliOutputMode.show_extended_info)
 	{
@@ -116,6 +120,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getAttribute().size() > 0)
 	{
 		fmt::print("  Attribute:\n");
+
 		for (auto itr = mNacp.getAttribute().begin(); itr != mNacp.getAttribute().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getAttributeFlagAsString(*itr));
@@ -130,6 +135,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getSupportedLanguage().size() > 0)
 	{
 		fmt::print("  SupportedLanguage:\n");
+
 		for (auto itr = mNacp.getSupportedLanguage().begin(); itr != mNacp.getSupportedLanguage().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(*itr));
@@ -144,6 +150,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getParentalControl().size() > 0)
 	{
 		fmt::print("  ParentalControl:\n");
+
 		for (auto itr = mNacp.getParentalControl().begin(); itr != mNacp.getParentalControl().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getParentalControlFlagAsString(*itr));
@@ -188,7 +195,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getRatingAge().size() > 0)
 	{
 		fmt::print("  RatingAge:\n");
-		
+
 		for (auto itr = mNacp.getRatingAge().begin(); itr != mNacp.getRatingAge().end(); itr++)
 		{
 			fmt::print("    {:s}:\n", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation));
@@ -266,6 +273,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getLocalCommunicationId().size() > 0)
 	{
 		fmt::print("  LocalCommunicationId:\n");
+
 		for (auto itr = mNacp.getLocalCommunicationId().begin(); itr != mNacp.getLocalCommunicationId().end(); itr++)
 		{
 			fmt::print("    0x{:016x}\n", *itr);
@@ -277,10 +285,7 @@ void nstool::NacpProcess::displayNacp()
 	}
 
 	// LogoType
-	//if (mNacp.getLogoType() != pie::hac::nacp::LogoType_Nintendo || mCliOutputMode.show_extended_info)
-	//{
-		fmt::print("  LogoType:                               {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLogoTypeAsString(mNacp.getLogoType()));
-	//}
+	fmt::print("  LogoType:                               {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLogoTypeAsString(mNacp.getLogoType()));
 
 	// LogoHandling
 	if (mNacp.getLogoHandling() != pie::hac::nacp::LogoHandling_Auto || mCliOutputMode.show_extended_info)
@@ -332,6 +337,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getStartupUserAccountOption().size() > 0)
 	{
 		fmt::print("  StartupUserAccountOption:\n");
+
 		for (auto itr = mNacp.getStartupUserAccountOption().begin(); itr != mNacp.getStartupUserAccountOption().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountOptionFlagAsString(*itr));
@@ -400,6 +406,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getPlayLogQueryableApplicationId().size() > 0)
 	{
 		fmt::print("  PlayLogQueryableApplicationId:\n");
+
 		for (auto itr = mNacp.getPlayLogQueryableApplicationId().begin(); itr != mNacp.getPlayLogQueryableApplicationId().end(); itr++)
 		{
 			fmt::print("    0x{:016x}\n", *itr);
@@ -420,6 +427,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getRepair().size() > 0)
 	{
 		fmt::print("  Repair:\n");
+
 		for (auto itr = mNacp.getRepair().begin(); itr != mNacp.getRepair().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRepairFlagAsString(*itr));
@@ -440,6 +448,7 @@ void nstool::NacpProcess::displayNacp()
 	if (mNacp.getRequiredNetworkServiceLicenseOnLaunch().size() > 0)
 	{
 		fmt::print("  RequiredNetworkServiceLicenseOnLaunch:\n");
+
 		for (auto itr = mNacp.getRequiredNetworkServiceLicenseOnLaunch().begin(); itr != mNacp.getRequiredNetworkServiceLicenseOnLaunch().end(); itr++)
 		{
 			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRequiredNetworkServiceLicenseOnLaunchFlagAsString(*itr));
@@ -452,9 +461,11 @@ void nstool::NacpProcess::displayNacp()
 
 	// NeighborDetectionClientConfiguration
 	auto detect_config = mNacp.getNeighborDetectionClientConfiguration();
+
 	if (detect_config.countSendGroupConfig() > 0 || detect_config.countReceivableGroupConfig() > 0)
 	{
 		fmt::print("  NeighborDetectionClientConfiguration:\n");
+
 		if (detect_config.countSendGroupConfig() > 0)
 		{
 			fmt::print("    SendGroupConfig:\n");
@@ -465,13 +476,16 @@ void nstool::NacpProcess::displayNacp()
 		{
 			fmt::print("    SendGroupConfig: None\n");
 		}
+
 		if (detect_config.countReceivableGroupConfig() > 0)
 		{
 			fmt::print("    ReceivableGroupConfig:\n");
+
 			for (size_t i = 0; i < pie::hac::nacp::kReceivableGroupConfigurationCount; i++)
 			{
-				if (detect_config.receivable_data_configuration[i].isNull())
+				if (detect_config.receivable_data_configuration[i].isNull()) {
 					continue;
+				}
 
 				fmt::print("      GroupId:  0x{:016x}\n", detect_config.receivable_data_configuration[i].group_id);
 				fmt::print("        Key:    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(detect_config.receivable_data_configuration[i].key.data(), detect_config.receivable_data_configuration[i].key.size(), false, ""));
@@ -486,7 +500,7 @@ void nstool::NacpProcess::displayNacp()
 	{
 		fmt::print("  NeighborDetectionClientConfiguration:   None\n");
 	}
-	
+
 	// JitConfiguration
 	if (mNacp.getJitConfiguration().is_enabled || mCliOutputMode.show_extended_info)
 	{
@@ -494,7 +508,7 @@ void nstool::NacpProcess::displayNacp()
 		fmt::print("    IsEnabled:  {}\n", mNacp.getJitConfiguration().is_enabled);
 		fmt::print("    MemorySize: 0x{:016x}\n", mNacp.getJitConfiguration().memory_size);
 	}
-	
+
 	// PlayReportPermission
 	if (mNacp.getPlayReportPermission() != pie::hac::nacp::PlayReportPermission_None || mCliOutputMode.show_extended_info)
 	{
@@ -518,6 +532,7 @@ void nstool::NacpProcess::displayNacp()
 	{
 		fmt::print("  AccessibleLaunchRequiredVersion:\n");
 		fmt::print("    ApplicationId:\n");
+
 		for (auto itr = mNacp.getAccessibleLaunchRequiredVersionApplicationId().begin(); itr != mNacp.getAccessibleLaunchRequiredVersionApplicationId().end(); itr++)
 		{
 			fmt::print("      0x{:016x}\n", *itr);

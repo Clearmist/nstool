@@ -1,8 +1,7 @@
 #include "KipProcess.h"
-
 #include <pietendo/hac/KernelCapabilityUtil.h>
-
 #include <tc/NotImplementedException.h>
+#include "Report.hpp"
 
 nstool::KipProcess::KipProcess() :
 	mModuleName("nstool::KipProcess"),
@@ -15,6 +14,7 @@ nstool::KipProcess::KipProcess() :
 void nstool::KipProcess::process()
 {
 	importHeader();
+
 	//importCodeSegments(); // code segments not imported because compression not supported yet
 	if (mCliOutputMode.show_basic_info)
 	{
@@ -44,6 +44,7 @@ void nstool::KipProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -161,40 +162,47 @@ void nstool::KipProcess::displayHeader()
 	fmt::print("    UseSecureMemory:     {}\n", mHdr.getUseSecureMemoryFlag());
 	fmt::print("  Program Sections:\n");
 	fmt::print("     .text:\n");
+
 	if (mCliOutputMode.show_layout)
 	{
 		fmt::print("      FileOffset:     0x{:x}\n", mHdr.getTextSegmentInfo().file_layout.offset);
 		fmt::print("      FileSize:       0x{:x}{:s}\n", mHdr.getTextSegmentInfo().file_layout.size, (mHdr.getTextSegmentInfo().is_compressed? " (COMPRESSED)" : ""));
 	}
+
 	fmt::print("      MemoryOffset:   0x{:x}\n", mHdr.getTextSegmentInfo().memory_layout.offset);
 	fmt::print("      MemorySize:     0x{:x}\n", mHdr.getTextSegmentInfo().memory_layout.size);
 	fmt::print("    .ro:\n");
+
 	if (mCliOutputMode.show_layout)
 	{
 		fmt::print("      FileOffset:     0x{:x}\n", mHdr.getRoSegmentInfo().file_layout.offset);
 		fmt::print("      FileSize:       0x{:x}{:s}\n", mHdr.getRoSegmentInfo().file_layout.size, (mHdr.getRoSegmentInfo().is_compressed? " (COMPRESSED)" : ""));
 	}
+
 	fmt::print("      MemoryOffset:   0x{:x}\n", mHdr.getRoSegmentInfo().memory_layout.offset);
 	fmt::print("      MemorySize:     0x{:x}\n", mHdr.getRoSegmentInfo().memory_layout.size);
 	fmt::print("    .data:\n");
+
 	if (mCliOutputMode.show_layout)
 	{
 		fmt::print("      FileOffset:     0x{:x}\n", mHdr.getDataSegmentInfo().file_layout.offset);
 		fmt::print("      FileSize:       0x{:x}{:s}\n", mHdr.getDataSegmentInfo().file_layout.size, (mHdr.getDataSegmentInfo().is_compressed? " (COMPRESSED)" : ""));
 	}
+
 	fmt::print("      MemoryOffset:   0x{:x}\n", mHdr.getDataSegmentInfo().memory_layout.offset);
 	fmt::print("      MemorySize:     0x{:x}\n", mHdr.getDataSegmentInfo().memory_layout.size);
 	fmt::print("    .bss:\n");
 	fmt::print("      MemorySize:     0x{:x}\n", mHdr.getBssSize());
-
 }
 
 void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityControl& kern)
 {
 	fmt::print("[Kernel Capabilities]\n");
+
 	if (kern.getThreadInfo().isSet())
 	{
 		pie::hac::ThreadInfoHandler threadInfo = kern.getThreadInfo();
+
 		fmt::print("  Thread Priority:\n");
 		fmt::print("    Min:     {:d}\n", threadInfo.getMinPriority());
 		fmt::print("    Max:     {:d}\n", threadInfo.getMaxPriority());
@@ -208,61 +216,76 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
 		auto syscall_ids = kern.getSystemCalls().getSystemCallIds();
 		fmt::print("  SystemCalls:\n");
 		std::vector<std::string> syscall_names;
+
 		for (size_t syscall_id = 0; syscall_id < syscall_ids.size(); syscall_id++)
 		{
-			if (syscall_ids.test(syscall_id))
+			if (syscall_ids.test(syscall_id)) {
 				syscall_names.push_back(pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(syscall_id)));
+			}
 		}
+
 		fmt::print("{:s}", tc::cli::FormatUtil::formatListWithLineLimit(syscall_names, 60, 4));
 	}
+
 	if (kern.getMemoryMaps().isSet())
 	{
 		auto maps = kern.getMemoryMaps().getMemoryMaps();
 		auto ioMaps = kern.getMemoryMaps().getIoMemoryMaps();
 
 		fmt::print("  MemoryMaps:\n");
+
 		for (size_t i = 0; i < maps.size(); i++)
 		{
-			fmt::print("    {:s}\n", formatMappingAsString(maps[i]));	
+			fmt::print("    {:s}\n", formatMappingAsString(maps[i]));
 		}
-		//fmt::print("  IoMaps:\n");
+
 		for (size_t i = 0; i < ioMaps.size(); i++)
 		{
 			fmt::print("    {:s}\n", formatMappingAsString(ioMaps[i]));
 		}
 	}
+
 	if (kern.getInterupts().isSet())
 	{
 		std::vector<std::string> interupts;
+
 		for (auto itr = kern.getInterupts().getInteruptList().begin(); itr != kern.getInterupts().getInteruptList().end(); itr++)
 		{
 			interupts.push_back(fmt::format("0x{:x}", *itr));
 		}
+
 		fmt::print("  Interupts Flags:\n");
 		fmt::print("{:s}", tc::cli::FormatUtil::formatListWithLineLimit(interupts, 60, 4));
 	}
+
 	if (kern.getMiscParams().isSet())
 	{
 		fmt::print("  ProgramType:        {:s} ({:d})\n", pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType()), (uint32_t)kern.getMiscParams().getProgramType());
 	}
+
 	if (kern.getKernelVersion().isSet())
 	{
 		fmt::print("  Kernel Version:     {:d}.{:d}\n", kern.getKernelVersion().getVerMajor(), kern.getKernelVersion().getVerMinor());
 	}
+
 	if (kern.getHandleTableSize().isSet())
 	{
 		fmt::print("  Handle Table Size:  0x{:x}\n", kern.getHandleTableSize().getHandleTableSize());
 	}
+
 	if (kern.getMiscFlags().isSet())
 	{
 		auto misc_flags = kern.getMiscFlags().getMiscFlags();
 		fmt::print("  Misc Flags:\n");
 		std::vector<std::string> misc_flags_names;
+
 		for (size_t misc_flags_bit = 0; misc_flags_bit < misc_flags.size(); misc_flags_bit++)
 		{
-			if (misc_flags.test(misc_flags_bit))
+			if (misc_flags.test(misc_flags_bit)) {
 				misc_flags_names.push_back(pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
+			}
 		}
+
 		fmt::print("{:s}", tc::cli::FormatUtil::formatListWithLineLimit(misc_flags_names, 60, 4));
 	}
 }

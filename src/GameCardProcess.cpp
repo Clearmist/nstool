@@ -1,15 +1,12 @@
 #include "GameCardProcess.h"
-
 #include <tc/crypto.h>
 #include <tc/io/IOUtil.h>
-
 #include <pietendo/hac/GameCardUtil.h>
 #include <pietendo/hac/ContentMetaUtil.h>
 #include <pietendo/hac/ContentArchiveUtil.h>
-
 #include <pietendo/hac/GameCardFsSnapshotGenerator.h>
 #include "FsProcess.h"
-
+#include "Report.hpp"
 
 nstool::GameCardProcess::GameCardProcess() :
 	mModuleName("nstool::GameCardProcess"),
@@ -30,12 +27,14 @@ void nstool::GameCardProcess::process()
 	importHeader();
 
 	// validate header signature
-	if (mVerify)
+	if (mVerify) {
 		validateXciSignature();
+	}
 
 	// display header
-	if (mCliOutputMode.show_basic_info)
+	if (mCliOutputMode.show_basic_info) {
 		displayHeader();
+	}
 
 	// process nested HFS0
 	processRootPfs();
@@ -77,6 +76,7 @@ void nstool::GameCardProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -138,16 +138,19 @@ void nstool::GameCardProcess::displayHeader()
 	fmt::print("[GameCard/Header]\n");
 	fmt::print("  CardHeaderVersion:      {:d}\n", mHdr.getCardHeaderVersion());
 	fmt::print("  RomSize:                {:s}", pie::hac::GameCardUtil::getRomSizeAsString((pie::hac::gc::RomSize)mHdr.getRomSizeType()));
-	if (mCliOutputMode.show_extended_info)
+
+	if (mCliOutputMode.show_extended_info) {
 		fmt::print(" (0x{:x})", mHdr.getRomSizeType());
+	}
+
 	fmt::print("\n");
 	fmt::print("  PackageId:              0x{:016x}\n", mHdr.getPackageId());
 	fmt::print("  Flags:                  0x{:02x}\n", *((byte_t*)&raw_hdr->flags));
+
 	for (auto itr = mHdr.getFlags().begin(); itr != mHdr.getFlags().end(); itr++)
 	{
 		fmt::print("    {:s}\n", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr));
 	}
-
 
 	if (mCliOutputMode.show_extended_info)
 	{
@@ -157,46 +160,57 @@ void nstool::GameCardProcess::displayHeader()
 		fmt::print("    Hash:\n");
 		fmt::print("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(mHdr.getInitialDataHash().data(), mHdr.getInitialDataHash().size(), true, "", 0x10, 6, false));
 	}
+
 	if (mCliOutputMode.show_extended_info)
 	{
 		fmt::print("  Extended Header AesCbc IV:\n");
 		fmt::print("    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(mHdr.getAesCbcIv().data(), mHdr.getAesCbcIv().size(), true, ""));
 	}
+
 	fmt::print("  SelSec:                 0x{:x}\n", mHdr.getSelSec());
 	fmt::print("  SelT1Key:               0x{:x}\n", mHdr.getSelT1Key());
 	fmt::print("  SelKey:                 0x{:x}\n", mHdr.getSelKey());
+
 	if (mCliOutputMode.show_layout)
 	{
 		fmt::print("  RomAreaStartPage:       0x{:x}", mHdr.getRomAreaStartPage());
-		if (mHdr.getRomAreaStartPage() != (uint32_t)(-1))
+
+		if (mHdr.getRomAreaStartPage() != (uint32_t)(-1)) {
 			fmt::print(" (0x{:x})", pie::hac::GameCardUtil::blockToAddr(mHdr.getRomAreaStartPage()));
-		fmt::print("\n");
+		}
 
+		fmt::print("\n");
 		fmt::print("  BackupAreaStartPage:    0x{:x}", mHdr.getBackupAreaStartPage());
-		if (mHdr.getBackupAreaStartPage() != (uint32_t)(-1))
+
+		if (mHdr.getBackupAreaStartPage() != (uint32_t)(-1)) {
 			fmt::print(" (0x{:x})", pie::hac::GameCardUtil::blockToAddr(mHdr.getBackupAreaStartPage()));
-		fmt::print("\n");
+		}
 
+		fmt::print("\n");
 		fmt::print("  ValidDataEndPage:       0x{:x}", mHdr.getValidDataEndPage());
-		if (mHdr.getValidDataEndPage() != (uint32_t)(-1))
+
+		if (mHdr.getValidDataEndPage() != (uint32_t)(-1)) {
 			fmt::print(" (0x{:x})", pie::hac::GameCardUtil::blockToAddr(mHdr.getValidDataEndPage()));
-		fmt::print("\n");
+		}
 
+		fmt::print("\n");
 		fmt::print("  LimArea:                0x{:x}", mHdr.getLimAreaPage());
-		if (mHdr.getLimAreaPage() != (uint32_t)(-1))
-			fmt::print(" (0x{:x})", pie::hac::GameCardUtil::blockToAddr(mHdr.getLimAreaPage()));
-		fmt::print("\n");
 
+		if (mHdr.getLimAreaPage() != (uint32_t)(-1)) {
+			fmt::print(" (0x{:x})", pie::hac::GameCardUtil::blockToAddr(mHdr.getLimAreaPage()));
+		}
+
+		fmt::print("\n");
 		fmt::print("  PartitionFs Header:\n");
 		fmt::print("    Offset:               0x{:x}\n", mHdr.getPartitionFsAddress());
 		fmt::print("    Size:                 0x{:x}\n", mHdr.getPartitionFsSize());
+
 		if (mCliOutputMode.show_extended_info)
 		{
 			fmt::print("    Hash:\n");
 			fmt::print("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(mHdr.getPartitionFsHash().data(), mHdr.getPartitionFsHash().size(), true, "", 0x10, 6, false));
 		}
 	}
-
 
 	if (mProccessExtendedHeader)
 	{
@@ -228,8 +242,10 @@ bool nstool::GameCardProcess::validateRegionOfFile(int64_t offset, int64_t len, 
 	tc::crypto::Sha2256Generator sha256_gen;
 	sha256_gen.initialize();
 	sha256_gen.update(scratch.data(), scratch.size());
-	if (use_salt)
+
+	if (use_salt) {
 		sha256_gen.update(&salt, sizeof(salt));
+	}
 
 	// calculate hash
 	pie::hac::detail::sha256_hash_t calc_hash;

@@ -7,7 +7,6 @@
 #include <tc/cli.h>
 #include <fmt/core.h>
 
-
 namespace nstool {
 
 struct CliOutputMode

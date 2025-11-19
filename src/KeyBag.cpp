@@ -1,16 +1,14 @@
 #include "KeyBag.h"
-
 #include "util.h"
 #include <tc/cli/FormatUtil.h>
-
 #include <pietendo/hac/define/types.h>
 #include <pietendo/hac/define/gc.h>
 #include <pietendo/hac/AesKeygen.h>
-
 #include <pietendo/hac/es/SignUtils.h>
 #include <pietendo/hac/es/SignedData.h>
 #include <pietendo/hac/es/CertificateBody.h>
 #include <pietendo/hac/es/TicketBody_V2.h>
+#include "Report.hpp"
 
 nstool::KeyBagInitializer::KeyBagInitializer(bool isDev, const tc::Optional<tc::io::Path>& keyfile_path, const tc::Optional<tc::io::Path>& titlekeyfile_path, const std::vector<tc::io::Path>& tik_path_list, const tc::Optional<tc::io::Path>& cert_path)
 {
@@ -18,18 +16,22 @@ nstool::KeyBagInitializer::KeyBagInitializer(bool isDev, const tc::Optional<tc::
 	{
 		importBaseKeyFile(keyfile_path.get(), isDev);
 	}
+
 	if (titlekeyfile_path.isSet())
 	{
 		importTitleKeyFile(titlekeyfile_path.get());
 	}
+
 	if (cert_path.isSet())
 	{
 		importCertificateChain(cert_path.get());
 	}
+
 	if (!tik_path_list.empty())
 	{
-		for (auto itr = tik_path_list.begin(); itr != tik_path_list.end(); itr++)
+		for (auto itr = tik_path_list.begin(); itr != tik_path_list.end(); itr++) {
 			importTicket(*itr);
+		}
 	}
 
 	// this will populate known keys if they aren't supplied by the user provided keyfiles.
@@ -56,7 +58,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 	tc::Optional<rsa_key_t> pki_root_sign_key;
 
 	// macros for importing
-	
+
 #define _SAVE_AES128KEY(key_name, dst) \
 	{ \
 	std::string key,val; \
@@ -122,7 +124,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 		} \
 	} \
 	}
-	
+
 	// keynames
 	enum NameVariantIndex
 	{
@@ -130,9 +132,9 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 		LEGACY_HACTOOL,
 		LEGACY_0
 	};
-	
+
 	static const size_t kNameVariantNum = 3;
-	
+
 	std::vector<std::string> kMasterBase = { "master" };
 	std::vector<std::string> kPkg1Base = { "package1" };
 	std::vector<std::string> kPkg2Base = { "package2" };
@@ -148,7 +150,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 	std::vector<std::string> kNcaKeyAreaEncKeyHwBase = { "nca_key_area_key_hw", "key_area_hw_key" };
 	std::vector<std::string> kKekGenBase = { "aes_kek_generation" };
 	std::vector<std::string> kKeyGenBase = { "aes_key_generation" };
-	
+
 	// misc str
 	const std::string kKeyStr = "key";
 	const std::string kKekStr = "kek";
@@ -199,7 +201,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				_SAVE_AES128KEY(fmt::format("{:s}_{:s}_{:s}", kNcaKeyAreaEncKeyBase[name_idx], kNcaKeyAreaKeyIndexStr[keak_idx], kSourceStr), key_area_key_source[keak_idx]);
 			}
 		}
-		
+
 		if (name_idx < kKekGenBase.size())
 		{
 			// tc::Optional<aes128_key_t> aes_kek_generation_source;
@@ -228,7 +230,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 			_SAVE_AES128XTSKEY(fmt::format("{:s}_{:s}_{:s}", kContentArchiveHeaderBase[name_idx], kKeyStr, kSourceStr), nca_header_key_source);
 		}
 
-		/* package1 */ 
+		/* package1 */
 		// package1_key_xx
 		if (name_idx < kPkg1Base.size())
 		{
@@ -272,7 +274,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 			// nca header key
 			//fmt::print("{:s}_{:s}\n", kContentArchiveHeaderBase[name_idx], kKeyStr);
 			_SAVE_AES128XTSKEY(fmt::format("{:s}_{:s}", kContentArchiveHeaderBase[name_idx], kKeyStr), nca_header_key);
-			
+
 			// nca header sign0 key (generations)
 			for (size_t keygen_rev = 0; keygen_rev < kKeyGenerationNum; keygen_rev++)
 			{
@@ -280,11 +282,12 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				//fmt::print("{:s}_{:s}_{:02x}_{:s}\n", kContentArchiveHeaderBase[name_idx], kSignKey, keygen_rev, kModulusStr);
 				_SAVE_RSAKEY(fmt::format("{:s}_{:s}_{:02x}", kContentArchiveHeaderBase[name_idx], kSignKey, keygen_rev), nca_header_sign0_key[(byte_t)keygen_rev], 2048);
 			}
+
 			// nca header sign0 key (generation 0)
 			//fmt::print("{:s}_{:s}_{:s}\n", kContentArchiveHeaderBase[name_idx], kSignKey, kPrivateStr);
 			//fmt::print("{:s}_{:s}_{:s}\n", kContentArchiveHeaderBase[name_idx], kSignKey, kModulusStr);
 			_SAVE_RSAKEY(fmt::format("{:s}_{:s}", kContentArchiveHeaderBase[name_idx], kSignKey), nca_header_sign0_key[0], 2048);
-			
+
 		}
 
 		// nca body key (unused since prototype format)
@@ -301,6 +304,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				}
 			}
 		}
+
 		// nca key area "hw" encryption keys
 		if (name_idx < kNcaKeyAreaEncKeyHwBase.size())
 		{
@@ -324,6 +328,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				//fmt::print("{:s}_{:s}_{:02x}_{:s}\n", kAcidBase[name_idx], kSignKey, keygen_rev, kModulusStr);
 				_SAVE_RSAKEY(fmt::format("{:s}_{:s}_{:02x}", kAcidBase[name_idx], kSignKey, keygen_rev), acid_sign_key[(byte_t)keygen_rev], 2048);
 			}
+
 			// acid sign key (generation 0)
 			//fmt::print("{:s}_{:s}_{:s}\n", kAcidBase[name_idx], kSignKey, kPrivateStr);
 			//fmt::print("{:s}_{:s}_{:s}\n", kAcidBase[name_idx], kSignKey, kModulusStr);
@@ -340,6 +345,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				//fmt::print("{:s}_{:s}_{:02x}_{:s}\n", kNrrCertBase[name_idx], kSignKey, keygen_rev, kModulusStr);
 				_SAVE_RSAKEY(fmt::format("{:s}_{:s}_{:02x}", kNrrCertBase[name_idx], kSignKey, keygen_rev), nrr_certificate_sign_key[(byte_t)keygen_rev], 2048);
 			}
+
 			// nrr certificate sign key (generation 0)
 			//fmt::print("{:s}_{:s}_{:s}\n", kNrrCertBase[name_idx], kSignKey, kPrivateStr);
 			//fmt::print("{:s}_{:s}_{:s}\n", kNrrCertBase[name_idx], kSignKey, kModulusStr);
@@ -355,6 +361,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				//fmt::print("{:s}_{:s}_{:02x}\n", kXciHeaderBase[name_idx], kKeyStr, kek_index);
 				_SAVE_AES128KEY(fmt::format("{:s}_{:s}_{:02x}", kXciHeaderBase[name_idx], kKeyStr, kek_index), xci_header_key[kek_index]);
 			}
+
 			// xci header key (old label, prod/dev keys are actually a fake distinction, the are different key indexes available to both?, so select correct index when importing)
 			//fmt::print("{:s}_{:s}\n", kXciHeaderBase[name_idx], kKeyStr);
 			_SAVE_AES128KEY(fmt::format("{:s}_{:s}", kXciHeaderBase[name_idx], kKeyStr), xci_header_key[isDev ? pie::hac::gc::KekIndex_Dev : pie::hac::gc::KekIndex_Prod]);
@@ -391,8 +398,6 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 			//fmt::print("{:s}_{:s}_{:s}\n", kPkiRootBase[name_idx], kSignKey, kModulusStr);
 			_SAVE_RSAKEY(fmt::format("{:s}_{:s}", kPkiRootBase[name_idx], kSignKey), pki_root_sign_key, 4096);
 		}
-
-		
 	}
 
 #undef _SAVE_RSAKEY
@@ -410,7 +415,7 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				{
 					aes128_key_t nca_header_kek_tmp;
 					pie::hac::AesKeygen::generateKey(nca_header_kek_tmp.data(), aes_kek_generation_source.get().data(), nca_header_kek_source.get().data(), aes_key_generation_source.get().data(), itr->second.data());
-					
+
 					aes128_xtskey_t nca_header_key_tmp;
 					pie::hac::AesKeygen::generateKey(nca_header_key_tmp[0].data(), nca_header_key_source.get()[0].data(), nca_header_kek_tmp.data());
 					pie::hac::AesKeygen::generateKey(nca_header_key_tmp[1].data(), nca_header_key_source.get()[1].data(), nca_header_kek_tmp.data());
@@ -429,12 +434,14 @@ void nstool::KeyBagInitializer::importBaseKeyFile(const tc::io::Path& keyfile_pa
 				}
 			}
 		}
+
 		if (ticket_titlekek_source.isSet() && etik_common_key.find(itr->first) == etik_common_key.end())
 		{
 			aes128_key_t etik_common_key_tmp;
 			pie::hac::AesKeygen::generateKey(etik_common_key_tmp.data(), ticket_titlekek_source.get().data(), itr->second.data());
 			etik_common_key[itr->first] = etik_common_key_tmp;
 		}
+
 		if (package2_key_source.isSet() && pkg2_key.find(itr->first) == pkg2_key.end())
 		{
 			aes128_key_t pkg2_key_tmp;
@@ -462,26 +469,29 @@ void nstool::KeyBagInitializer::importTitleKeyFile(const tc::io::Path& keyfile_p
 	tc::ByteData tmp;
 	KeyBag::rights_id_t rights_id_tmp;
 	KeyBag::aes128_key_t title_key_tmp;
+
 	for (auto itr = keyfile_dict.begin(); itr != keyfile_dict.end(); itr++)
 	{
-		//fmt::print("RightsID[{:s}] = TitleKey[{:s}]\n", itr->first, itr->second);
-
 		// parse the rights id
 		tmp = tc::cli::FormatUtil::hexStringToBytes(itr->first);
+
 		if (tmp.size() != rights_id_tmp.size())
 		{
 			fmt::print("[nstool::KeyBagInitializer WARNING] RightsID: \"{}\" has incorrect length. Skipping...\n", itr->first);
 			continue;
 		}
+
 		memcpy(rights_id_tmp.data(), tmp.data(), rights_id_tmp.size());
 
 		// parse the title key
 		tmp = tc::cli::FormatUtil::hexStringToBytes(itr->second);
+
 		if (tmp.size() != title_key_tmp.size())
 		{
 			fmt::print("[nstool::KeyBagInitializer WARNING] TitleKey for \"{}\": \"{}\" has incorrect length. Skipping...\n", itr->first, itr->second);
 			continue;
 		}
+
 		memcpy(title_key_tmp.data(), tmp.data(), title_key_tmp.size());
 
 		// save to encrypted key dict
@@ -493,6 +503,7 @@ void nstool::KeyBagInitializer::importCertificateChain(const tc::io::Path& cert_
 {
 	// open cert file
 	std::shared_ptr<tc::io::FileStream> certfile_stream;
+
 	try {
 		certfile_stream = std::make_shared<tc::io::FileStream>(tc::io::FileStream(cert_path, tc::io::FileMode::Open, tc::io::FileAccess::Read));
 	}
@@ -500,9 +511,10 @@ void nstool::KeyBagInitializer::importCertificateChain(const tc::io::Path& cert_
 		fmt::print("[WARNING] Failed to open certificate file \"{:s}\" ({:s}).\n", cert_path.to_string(), e.error());
 		return;
 	}
-	
+
 	// check size
 	size_t cert_raw_size = tc::io::IOUtil::castInt64ToSize(certfile_stream->length());
+
 	if (cert_raw_size > 0x10000)
 	{
 		fmt::print("[WARNING] Certificate file \"{:s}\" was too large.\n", cert_path.to_string());
@@ -515,6 +527,7 @@ void nstool::KeyBagInitializer::importCertificateChain(const tc::io::Path& cert_
 	certfile_stream->read(cert_raw.data(), cert_raw.size());
 
 	pie::hac::es::SignedData<pie::hac::es::CertificateBody> cert;
+
 	try {
 		for (size_t f_pos = 0; f_pos < cert_raw.size(); f_pos += cert.getBytes().size())
 		{
@@ -548,6 +561,7 @@ void nstool::KeyBagInitializer::importTicket(const tc::io::Path& tik_path)
 {
 	// open cert file
 	std::shared_ptr<tc::io::FileStream> tik_stream;
+
 	try {
 		tik_stream = std::make_shared<tc::io::FileStream>(tc::io::FileStream(tik_path, tc::io::FileMode::Open, tc::io::FileAccess::Read));
 	}
@@ -558,6 +572,7 @@ void nstool::KeyBagInitializer::importTicket(const tc::io::Path& tik_path)
 
 	// check size
 	size_t tik_raw_size = tc::io::IOUtil::castInt64ToSize(tik_stream->length());
+
 	if (tik_raw_size > 0x10000)
 	{
 		fmt::print("[WARNING] Ticket \"{:s}\" was too large.\n", tik_path.to_string());
@@ -570,14 +585,15 @@ void nstool::KeyBagInitializer::importTicket(const tc::io::Path& tik_path)
 	tik_stream->read(tik_raw.data(), tik_raw.size());
 
 	pie::hac::es::SignedData<pie::hac::es::TicketBody_V2> tik;
+
 	try {
 		// de serialise ticket
 		tik.fromBytes(tik_raw.data(), tik_raw.size());
-		
+
 		// save rights id
 		rights_id_t rights_id;
 		memcpy(rights_id.data(), tik.getBody().getRightsId(), rights_id.size());
-		
+
 		// check ticket is not personalised
 		if (tik.getBody().getTitleKeyEncType() != pie::hac::es::ticket::AES128_CBC)
 		{
@@ -619,7 +635,7 @@ void nstool::KeyBagInitializer::importTicket(const tc::io::Path& tik_path)
 
 		// add to decrypted key dict
 		external_content_keys[rights_id] = dec_title_key;
-		
+
 	}
 	catch (tc::Exception& e) {
 		fmt::print("[WARNING] Ticket \"{:s}\" is corrupted ({:s}).\n", tik_path.to_string(), e.error());
@@ -666,7 +682,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		0x8D, 0xAB, 0x5A, 0xFA, 0x71, 0x60, 0x1B, 0x12, 0xE7, 0x99, 0x70, 0xF1, 0x99, 0x2A, 0x50, 0x18,
 		0x8B, 0x6B, 0x61, 0x90, 0xE2, 0x7E, 0x8B, 0x90, 0xD4, 0xD5, 0xC0, 0xCB, 0x7C, 0x08, 0x06, 0xD9
 	};
-	
+
 	/* Keydata for very early beta NCA0 archives' RSA-OAEP. */
 	/*
 	static const pie::hac::detail::rsa2048_block_t beta_nca0_modulus = {
@@ -718,10 +734,10 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		0x49, 0x50, 0x95, 0x8C, 0x55, 0x80, 0x7E, 0x39, 0xB1, 0x48, 0x05, 0x1E, 0x21, 0xC7, 0x24, 0x4F
 	};
 
-	static const std::vector<sRsaKeyForGeneration> kProdNcaHeaderSign0Modulus = 
+	static const std::vector<sRsaKeyForGeneration> kProdNcaHeaderSign0Modulus =
 	{
 		{
-			0x00, 
+			0x00,
 			{0xBF, 0xBE, 0x40, 0x6C, 0xF4, 0xA7, 0x80, 0xE9, 0xF0, 0x7D, 0x0C, 0x99, 0x61, 0x1D, 0x77, 0x2F,
 			0x96, 0xBC, 0x4B, 0x9E, 0x58, 0x38, 0x1B, 0x03, 0xAB, 0xB1, 0x75, 0x49, 0x9F, 0x2B, 0x4D, 0x58,
 			0x34, 0xB0, 0x05, 0xA3, 0x75, 0x22, 0xBE, 0x1A, 0x3F, 0x03, 0x73, 0xAC, 0x70, 0x68, 0xD1, 0x16,
@@ -740,7 +756,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 			0x04, 0x40, 0x1A, 0x9E, 0x9A, 0x67, 0xF6, 0x72, 0x29, 0xFA, 0x04, 0xF0, 0x9D, 0xE4, 0xF4, 0x03,}
 		},
 		{
-			0x01, 
+			0x01,
 			{0xAD, 0xE3, 0xE1, 0xFA, 0x04, 0x35, 0xE5, 0xB6, 0xDD, 0x49, 0xEA, 0x89, 0x29, 0xB1, 0xFF, 0xB6,
 			0x43, 0xDF, 0xCA, 0x96, 0xA0, 0x4A, 0x13, 0xDF, 0x43, 0xD9, 0x94, 0x97, 0x96, 0x43, 0x65, 0x48,
 			0x70, 0x58, 0x33, 0xA2, 0x7D, 0x35, 0x7B, 0x96, 0x74, 0x5E, 0x0B, 0x5C, 0x32, 0x18, 0x14, 0x24,
@@ -760,10 +776,10 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		},
 	};
 
-	static const std::vector<sRsaKeyForGeneration> kProdAcidSignModulus = 
+	static const std::vector<sRsaKeyForGeneration> kProdAcidSignModulus =
 	{
 		{
-			0x00, 
+			0x00,
 			{0xDD, 0xC8, 0xDD, 0xF2, 0x4E, 0x6D, 0xF0, 0xCA, 0x9E, 0xC7, 0x5D, 0xC7, 0x7B, 0xAD, 0xFE, 0x7D,
 			0x23, 0x89, 0x69, 0xB6, 0xF2, 0x06, 0xA2, 0x02, 0x88, 0xE1, 0x55, 0x91, 0xAB, 0xCB, 0x4D, 0x50,
 			0x2E, 0xFC, 0x9D, 0x94, 0x76, 0xD6, 0x4C, 0xD8, 0xFF, 0x10, 0xFA, 0x5E, 0x93, 0x0A, 0xB4, 0x57,
@@ -782,7 +798,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 			0x5B, 0x32, 0x4C, 0x37, 0xEF, 0xB1, 0x71, 0x68, 0x53, 0x0A, 0xED, 0x51, 0x7D, 0x35, 0x22, 0xFD,}
 		},
 		{
-			0x01, 
+			0x01,
 			{0xE7, 0xAA, 0x25, 0xC8, 0x01, 0xA5, 0x14, 0x6B, 0x01, 0x60, 0x3E, 0xD9, 0x96, 0x5A, 0xBF, 0x90,
 			0xAC, 0xA7, 0xFD, 0x9B, 0x5B, 0xBD, 0x8A, 0x26, 0xB0, 0xCB, 0x20, 0x28, 0x9A, 0x72, 0x12, 0xF5,
 			0x20, 0x65, 0xB3, 0xB9, 0x84, 0x58, 0x1F, 0x27, 0xBC, 0x7C, 0xA2, 0xC9, 0x9E, 0x18, 0x95, 0xCF,
@@ -821,10 +837,10 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		0x71, 0xB0, 0x5C, 0xF4, 0xAD, 0x63, 0x4F, 0xC5, 0xE2, 0xAC, 0x1E, 0xC4, 0x33, 0x96, 0x09, 0x7B
 	};
 
-	static const std::vector<sRsaKeyForGeneration> kDevNcaHeaderSign0Modulus = 
+	static const std::vector<sRsaKeyForGeneration> kDevNcaHeaderSign0Modulus =
 	{
 		{
-			0x00, 
+			0x00,
 			{0xD8, 0xF1, 0x18, 0xEF, 0x32, 0x72, 0x4C, 0xA7, 0x47, 0x4C, 0xB9, 0xEA, 0xB3, 0x04, 0xA8, 0xA4,
 			0xAC, 0x99, 0x08, 0x08, 0x04, 0xBF, 0x68, 0x57, 0xB8, 0x43, 0x94, 0x2B, 0xC7, 0xB9, 0x66, 0x49,
 			0x85, 0xE5, 0x8A, 0x9B, 0xC1, 0x00, 0x9A, 0x6A, 0x8D, 0xD0, 0xEF, 0xCE, 0xFF, 0x86, 0xC8, 0x5C,
@@ -843,7 +859,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 			0xCC, 0x6E, 0xD2, 0x46, 0x13, 0x65, 0x2B, 0xD6, 0x44, 0x33, 0x59, 0xB5, 0x8F, 0xB9, 0x4A, 0xA9,}
 		},
 		{
-			0x01, 
+			0x01,
 			{0x9A, 0xBC, 0x88, 0xBD, 0x0A, 0xBE, 0xD7, 0x0C, 0x9B, 0x42, 0x75, 0x65, 0x38, 0x5E, 0xD1, 0x01,
 			0xCD, 0x12, 0xAE, 0xEA, 0xE9, 0x4B, 0xDB, 0xB4, 0x5E, 0x36, 0x10, 0x96, 0xDA, 0x3D, 0x2E, 0x66,
 			0xD3, 0x99, 0x13, 0x8A, 0xBE, 0x67, 0x41, 0xC8, 0x93, 0xD9, 0x3E, 0x42, 0xCE, 0x34, 0xCE, 0x96,
@@ -863,10 +879,10 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		},
 	};
 
-	static const std::vector<sRsaKeyForGeneration> kDevAcidSignModulus = 
+	static const std::vector<sRsaKeyForGeneration> kDevAcidSignModulus =
 	{
 		{
-			0x00, 
+			0x00,
 			{0xD6, 0x34, 0xA5, 0x78, 0x6C, 0x68, 0xCE, 0x5A, 0xC2, 0x37, 0x17, 0xF3, 0x82, 0x45, 0xC6, 0x89,
 			0xE1, 0x2D, 0x06, 0x67, 0xBF, 0xB4, 0x06, 0x19, 0x55, 0x6B, 0x27, 0x66, 0x0C, 0xA4, 0xB5, 0x87,
 			0x81, 0x25, 0xF4, 0x30, 0xBC, 0x53, 0x08, 0x68, 0xA2, 0x48, 0x49, 0x8C, 0x3F, 0x38, 0x40, 0x9C,
@@ -885,7 +901,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 			0x72, 0x9E, 0x93, 0x7B, 0x7A, 0xA2, 0x57, 0x60, 0xB7, 0x5B, 0xA9, 0x84, 0xAE, 0x64, 0x88, 0x69}
 		},
 		{
-			0x01, 
+			0x01,
 			{0xBC, 0xA5, 0x6A, 0x7E, 0xEA, 0x38, 0x34, 0x62, 0xA6, 0x10, 0x18, 0x3C, 0xE1, 0x63, 0x7B, 0xF0,
 			0xD3, 0x08, 0x8C, 0xF5, 0xC5, 0xC4, 0xC7, 0x93, 0xE9, 0xD9, 0xE6, 0x32, 0xF3, 0xA0, 0xF6, 0x6E,
 			0x8A, 0x98, 0x76, 0x47, 0x33, 0x47, 0x65, 0x02, 0x70, 0xDC, 0x86, 0x5F, 0x3D, 0x61, 0x5A, 0x70,
@@ -913,7 +929,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		tc::ByteData certificate;
 	};
 
-	static const std::vector<sBroadOnRsaKeyAndCert> kProdBroadOnRsaKeyAndCert = 
+	static const std::vector<sBroadOnRsaKeyAndCert> kProdBroadOnRsaKeyAndCert =
 	{
 		{
 			"Root",
@@ -947,7 +963,7 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 		}
 	};
 
-	static const std::vector<sBroadOnRsaKeyAndCert> kDevBroadOnRsaKeyAndCert = 
+	static const std::vector<sBroadOnRsaKeyAndCert> kDevBroadOnRsaKeyAndCert =
 	{
 		{
 			"Root",
@@ -983,60 +999,72 @@ void nstool::KeyBagInitializer::importKnownKeys(bool isDev)
 
 	if (isDev)
 	{
-		if (xci_header_sign_key.isNull())
+		if (xci_header_sign_key.isNull()) {
 			xci_header_sign_key = tc::crypto::RsaPublicKey(kXciHeaderSignModulus.data(), kXciHeaderSignModulus.size());
+		}
 
-		if (xci_cert_sign_key.isNull())
+		if (xci_cert_sign_key.isNull()) {
 			xci_cert_sign_key = tc::crypto::RsaPublicKey(kXciCertSignModulus.data(), kXciCertSignModulus.size());
+		}
 
-		if (pkg2_sign_key.isNull())
+		if (pkg2_sign_key.isNull()) {
 			pkg2_sign_key = tc::crypto::RsaPublicKey(kDevPackage2HeaderModulus.data(), kDevPackage2HeaderModulus.size());
+		}
 
 		for (auto itr = kDevNcaHeaderSign0Modulus.begin(); itr != kDevNcaHeaderSign0Modulus.end(); itr++)
 		{
-			if (nca_header_sign0_key.find(itr->generation) == nca_header_sign0_key.end())
+			if (nca_header_sign0_key.find(itr->generation) == nca_header_sign0_key.end()) {
 				nca_header_sign0_key[itr->generation] = tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size());
+			}
 		}
 
 		for (auto itr = kDevAcidSignModulus.begin(); itr != kDevAcidSignModulus.end(); itr++)
 		{
-			if (acid_sign_key.find(itr->generation) == acid_sign_key.end())
+			if (acid_sign_key.find(itr->generation) == acid_sign_key.end()) {
 				acid_sign_key[itr->generation] = tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size());
+			}
 		}
 
 		for (auto itr = kDevBroadOnRsaKeyAndCert.begin(); itr != kDevBroadOnRsaKeyAndCert.end(); itr++)
 		{
-			if (broadon_signer.find(itr->issuer) == broadon_signer.end())
+			if (broadon_signer.find(itr->issuer) == broadon_signer.end()) {
 				broadon_signer[itr->issuer] = {itr->certificate, itr->key_type, tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size())};
+			}
 		}
 	}
 	else
 	{
-		if (xci_header_sign_key.isNull())
+		if (xci_header_sign_key.isNull()) {
 			xci_header_sign_key = tc::crypto::RsaPublicKey(kXciHeaderSignModulus.data(), kXciHeaderSignModulus.size());
+		}
 
-		if (xci_cert_sign_key.isNull())
+		if (xci_cert_sign_key.isNull()) {
 			xci_cert_sign_key = tc::crypto::RsaPublicKey(kXciCertSignModulus.data(), kXciCertSignModulus.size());
+		}
 
-		if (pkg2_sign_key.isNull())
+		if (pkg2_sign_key.isNull()) {
 			pkg2_sign_key = tc::crypto::RsaPublicKey(kProdPackage2HeaderModulus.data(), kProdPackage2HeaderModulus.size());
+		}
 
 		for (auto itr = kProdNcaHeaderSign0Modulus.begin(); itr != kProdNcaHeaderSign0Modulus.end(); itr++)
 		{
-			if (nca_header_sign0_key.find(itr->generation) == nca_header_sign0_key.end())
+			if (nca_header_sign0_key.find(itr->generation) == nca_header_sign0_key.end()) {
 				nca_header_sign0_key[itr->generation] = tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size());
+			}
 		}
 
 		for (auto itr = kProdAcidSignModulus.begin(); itr != kProdAcidSignModulus.end(); itr++)
 		{
-			if (acid_sign_key.find(itr->generation) == acid_sign_key.end())
+			if (acid_sign_key.find(itr->generation) == acid_sign_key.end()) {
 				acid_sign_key[itr->generation] = tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size());
+			}
 		}
 
 		for (auto itr = kProdBroadOnRsaKeyAndCert.begin(); itr != kProdBroadOnRsaKeyAndCert.end(); itr++)
 		{
-			if (broadon_signer.find(itr->issuer) == broadon_signer.end())
+			if (broadon_signer.find(itr->issuer) == broadon_signer.end()) {
 				broadon_signer[itr->issuer] = {itr->certificate, itr->key_type, tc::crypto::RsaPublicKey(itr->modulus.data(), itr->modulus.size())};
+			}
 		}
 	}
 }

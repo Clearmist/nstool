@@ -1,4 +1,5 @@
 #include "ElfSymbolParser.h"
+#include "Report.hpp"
 
 nstool::ElfSymbolParser::ElfSymbolParser() :
 	mModuleName("nstool::ElfSymbolParser"),
@@ -26,6 +27,7 @@ void nstool::ElfSymbolParser::parseData(const byte_t *dyn_sym, size_t dyn_sym_si
 	size_t dynSymSize = is64Bit ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym);
 
 	sElfSymbol symbol;
+
 	for (size_t i = 0; i < dyn_sym_size; i += dynSymSize)
 	{
 		uint32_t name_pos;
@@ -50,8 +52,6 @@ void nstool::ElfSymbolParser::parseData(const byte_t *dyn_sym, size_t dyn_sym_si
 			throw tc::Exception(mModuleName, "Out of bounds symbol name offset");
 		}
 
-		//for (; dyn_str[name_pos] == 0x00 && name_pos < dyn_str_size; name_pos++);
-		
 		symbol.name = std::string((char*)&dyn_str[name_pos]);
 		mSymbolList.push_back(symbol);
 	}

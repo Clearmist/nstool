@@ -1,5 +1,6 @@
 #include "EsTikProcess.h"
 #include "PkiValidator.h"
+#include "Report.hpp"
 
 #include <pietendo/hac/es/SignUtils.h>
 
@@ -15,11 +16,13 @@ void nstool::EsTikProcess::process()
 {
 	importTicket();
 
-	if (mVerify)
+	if (mVerify) {
 		verifyTicket();
+	}
 
-	if (mCliOutputMode.show_basic_info)
+	if (mCliOutputMode.show_basic_info) {
 		displayTicket();
+	}
 }
 
 void nstool::EsTikProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
@@ -53,6 +56,7 @@ void nstool::EsTikProcess::importTicket()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -90,7 +94,7 @@ void nstool::EsTikProcess::verifyTicket()
 		break;
 	}
 
-	try 
+	try
 	{
 		pki_validator.setKeyCfg(mKeyCfg);
 		pki_validator.addCertificates(mCerts);
@@ -104,18 +108,21 @@ void nstool::EsTikProcess::verifyTicket()
 
 void nstool::EsTikProcess::displayTicket()
 {
-	const pie::hac::es::TicketBody_V2& body = mTik.getBody();	
+	const pie::hac::es::TicketBody_V2& body = mTik.getBody();
 
 	fmt::print("[ES Ticket]\n");
 	fmt::print("  SignType:         {:s}", getSignTypeStr(mTik.getSignature().getSignType()));
-	if (mCliOutputMode.show_extended_info)
-		fmt::print(" (0x{:x})", (uint32_t)mTik.getSignature().getSignType());
-	fmt::print("\n");
 
+	if (mCliOutputMode.show_extended_info) {
+		fmt::print(" (0x{:x})", (uint32_t)mTik.getSignature().getSignType());
+	}
+
+	fmt::print("\n");
 	fmt::print("  Issuer:           {:s}\n", body.getIssuer());
 	fmt::print("  Title Key:\n");
 	fmt::print("    EncMode:        {:s}\n", getTitleKeyPersonalisationStr(body.getTitleKeyEncType()));
 	fmt::print("    KeyGeneration:  {:d}\n", (uint32_t)body.getCommonKeyId());
+
 	if (body.getTitleKeyEncType() == pie::hac::es::ticket::RSA2048)
 	{
 		fmt::print("    Data:\n");
@@ -130,32 +137,37 @@ void nstool::EsTikProcess::displayTicket()
 	{
 		fmt::print("    Data:           <cannot display>\n");
 	}
+
 	fmt::print("  Version:          {:s} (v{:d})\n", getTitleVersionStr(body.getTicketVersion()), body.getTicketVersion());
-	fmt::print("  License Type:     {:s}\n", getLicenseTypeStr(body.getLicenseType())); 
+	fmt::print("  License Type:     {:s}\n", getLicenseTypeStr(body.getLicenseType()));
+
 	if (body.getPropertyFlags().size() > 0 || mCliOutputMode.show_extended_info)
 	{
 		pie::hac::es::sTicketBody_v2* raw_body = (pie::hac::es::sTicketBody_v2*)body.getBytes().data();
 		fmt::print("  PropertyMask:     0x{:04x}\n", ((tc::bn::le16<uint16_t>*)&raw_body->property_mask)->unwrap());
+
 		for (size_t i = 0; i < body.getPropertyFlags().size(); i++)
 		{
 			fmt::print("    {:s}\n", getPropertyFlagStr(body.getPropertyFlags()[i]));
 		}
 	}
+
 	if (mCliOutputMode.show_extended_info)
 	{
 		fmt::print("  Reserved Region:\n");
 		fmt::print("    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, ""));
 	}
-	
-	if (body.getTicketId() != 0 || mCliOutputMode.show_extended_info)
+
+	if (body.getTicketId() != 0 || mCliOutputMode.show_extended_info) {
 		fmt::print("  TicketId:         0x{:016x}\n", body.getTicketId());
-	
-	if (body.getDeviceId() != 0 || mCliOutputMode.show_extended_info)
+	}
+
+	if (body.getDeviceId() != 0 || mCliOutputMode.show_extended_info) {
 		fmt::print("  DeviceId:         0x{:016x}\n", body.getDeviceId());
-	
+	}
+
 	fmt::print("  RightsId:         \n");
 	fmt::print("    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(body.getRightsId(), 16, true, ""));
-
 	fmt::print("  SectionTotalSize:       0x{:x}\n", body.getSectionTotalSize());
 	fmt::print("  SectionHeaderOffset:    0x{:x}\n", body.getSectionHeaderOffset());
 	fmt::print("  SectionNum:             0x{:x}\n", body.getSectionNum());
@@ -165,6 +177,7 @@ void nstool::EsTikProcess::displayTicket()
 std::string nstool::EsTikProcess::getSignTypeStr(uint32_t type) const
 {
 	std::string str;
+
 	switch(type)
 	{
 	case (pie::hac::es::sign::SIGN_ID_RSA4096_SHA1):
@@ -189,12 +202,14 @@ std::string nstool::EsTikProcess::getSignTypeStr(uint32_t type) const
 		str = "Unknown";
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getTitleKeyPersonalisationStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::AES128_CBC):
@@ -207,12 +222,14 @@ std::string nstool::EsTikProcess::getTitleKeyPersonalisationStr(byte_t flag) con
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getLicenseTypeStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::LICENSE_PERMANENT):
@@ -237,12 +254,14 @@ std::string nstool::EsTikProcess::getLicenseTypeStr(byte_t flag) const
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getPropertyFlagStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::FLAG_PRE_INSTALL):
@@ -267,6 +286,7 @@ std::string nstool::EsTikProcess::getPropertyFlagStr(byte_t flag) const
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 

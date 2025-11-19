@@ -1,5 +1,6 @@
 #include "EsCertProcess.h"
 #include "PkiValidator.h"
+#include "Report.hpp"
 #include "util.h"
 
 #include <pietendo/hac/es/SignUtils.h>
@@ -16,11 +17,13 @@ void nstool::EsCertProcess::process()
 {
 	importCerts();
 
-	if (mVerify)
+	if (mVerify) {
 		validateCerts();
+	}
 
-	if (mCliOutputMode.show_basic_info)
+	if (mCliOutputMode.show_basic_info) {
 		displayCerts();
+	}
 }
 
 void nstool::EsCertProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
@@ -49,6 +52,7 @@ void nstool::EsCertProcess::importCerts()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -56,6 +60,7 @@ void nstool::EsCertProcess::importCerts()
 
 	// check if file_size is greater than 20MB, don't import.
 	size_t file_size = tc::io::IOUtil::castInt64ToSize(mFile->length());
+
 	if (file_size > (0x100000 * 20))
 	{
 		throw tc::Exception(mModuleName, "File too large.");
@@ -67,6 +72,7 @@ void nstool::EsCertProcess::importCerts()
 	mFile->read(scratch.data(), scratch.size());
 
 	pie::hac::es::SignedData<pie::hac::es::CertificateBody> cert;
+
 	for (size_t f_pos = 0; f_pos < scratch.size(); f_pos += cert.getBytes().size())
 	{
 		cert.fromBytes(scratch.data() + f_pos, scratch.size() - f_pos);
@@ -77,7 +83,7 @@ void nstool::EsCertProcess::importCerts()
 void nstool::EsCertProcess::validateCerts()
 {
 	PkiValidator pki;
-	
+
 	try
 	{
 		pki.setKeyCfg(mKeyCfg);
@@ -101,23 +107,28 @@ void nstool::EsCertProcess::displayCerts()
 void nstool::EsCertProcess::displayCert(const pie::hac::es::SignedData<pie::hac::es::CertificateBody>& cert)
 {
 	fmt::print("[ES Certificate]\n");
-
 	fmt::print("  SignType       {:s}", getSignTypeStr(cert.getSignature().getSignType()));
-	if (mCliOutputMode.show_extended_info)
-		fmt::print(" (0x{:x}) ({:s})", (uint32_t)cert.getSignature().getSignType(), getEndiannessStr(cert.getSignature().isLittleEndian()));
-	fmt::print("\n");
 
+	if (mCliOutputMode.show_extended_info) {
+		fmt::print(" (0x{:x}) ({:s})", (uint32_t)cert.getSignature().getSignType(), getEndiannessStr(cert.getSignature().isLittleEndian()));
+	}
+
+	fmt::print("\n");
 	fmt::print("  Issuer:        {:s}\n", cert.getBody().getIssuer());
 	fmt::print("  Subject:       {:s}\n", cert.getBody().getSubject());
 	fmt::print("  PublicKeyType: {:s}", getPublicKeyTypeStr(cert.getBody().getPublicKeyType()));
-	if (mCliOutputMode.show_extended_info)
+
+	if (mCliOutputMode.show_extended_info) {
 		fmt::print(" ({:d})", (uint32_t)cert.getBody().getPublicKeyType());
+	}
+
 	fmt::print("\n");
 	fmt::print("  CertID:        0x{:x}\n", cert.getBody().getCertId());
-	
+
 	if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::RSA4096)
 	{
 		fmt::print("  PublicKey:\n");
+
 		if (mCliOutputMode.show_extended_info)
 		{
 			fmt::print("    Modulus:\n");
@@ -136,6 +147,7 @@ void nstool::EsCertProcess::displayCert(const pie::hac::es::SignedData<pie::hac:
 	else if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::RSA2048)
 	{
 		fmt::print("  PublicKey:\n");
+
 		if (mCliOutputMode.show_extended_info)
 		{
 			fmt::print("    Modulus:\n");
@@ -154,6 +166,7 @@ void nstool::EsCertProcess::displayCert(const pie::hac::es::SignedData<pie::hac:
 	else if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::ECDSA240)
 	{
 		fmt::print("  PublicKey:\n");
+
 		if (mCliOutputMode.show_extended_info)
 		{
 			fmt::print("    Modulus:\n");
@@ -174,6 +187,7 @@ void nstool::EsCertProcess::displayCert(const pie::hac::es::SignedData<pie::hac:
 std::string nstool::EsCertProcess::getSignTypeStr(pie::hac::es::sign::SignatureId type) const
 {
 	std::string str;
+
 	switch (type)
 	{
 	case (pie::hac::es::sign::SIGN_ID_RSA4096_SHA1):
@@ -209,6 +223,7 @@ std::string nstool::EsCertProcess::getEndiannessStr(bool isLittleEndian) const
 std::string nstool::EsCertProcess::getPublicKeyTypeStr(pie::hac::es::cert::PublicKeyType type) const
 {
 	std::string str;
+
 	switch (type)
 	{
 	case (pie::hac::es::cert::RSA4096):
@@ -224,5 +239,6 @@ std::string nstool::EsCertProcess::getPublicKeyTypeStr(pie::hac::es::cert::Publi
 		str = "Unknown";
 		break;
 	}
+
 	return str;
 }

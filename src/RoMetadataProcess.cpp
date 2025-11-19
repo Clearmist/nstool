@@ -1,5 +1,5 @@
 #include "RoMetadataProcess.h"
-
+#include "Report.hpp"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -20,15 +20,15 @@ nstool::RoMetadataProcess::RoMetadataProcess() :
 	mPrivateApiList(),
 	mSymbolList()
 {
-
 }
 
 void nstool::RoMetadataProcess::process()
 {
 	importApiList();
-	
-	if (mCliOutputMode.show_basic_info)
+
+	if (mCliOutputMode.show_basic_info) {
 		displayRoMetaData();
+	}
 }
 
 void nstool::RoMetadataProcess::setRoBinary(const tc::ByteData& bin)
@@ -150,53 +150,65 @@ void nstool::RoMetadataProcess::importApiList()
 void nstool::RoMetadataProcess::displayRoMetaData()
 {
 	size_t api_num = mSdkVerApiList.size() + mPublicApiList.size() + mDebugApiList.size() + mPrivateApiList.size();
-	
+
 	if (api_num > 0 && (mListApi || mCliOutputMode.show_extended_info))
 	{
 		fmt::print("[SDK API List]\n");
+
 		if (mSdkVerApiList.size() > 0)
 		{
 			fmt::print("  Sdk Revision: {:s}\n", mSdkVerApiList[0].getModuleName());
 		}
+
 		if (mPublicApiList.size() > 0)
 		{
 			fmt::print("  Public APIs:\n");
+
 			for (size_t i = 0; i < mPublicApiList.size(); i++)
 			{
 				fmt::print("    {:s} (vender: {:s})\n", mPublicApiList[i].getModuleName(), mPublicApiList[i].getVenderName());
 			}
 		}
+
 		if (mDebugApiList.size() > 0)
 		{
 			fmt::print("  Debug APIs:\n");
+
 			for (size_t i = 0; i < mDebugApiList.size(); i++)
 			{
 				fmt::print("    {:s} (vender: {:s})\n", mDebugApiList[i].getModuleName(), mDebugApiList[i].getVenderName());
 			}
 		}
+
 		if (mPrivateApiList.size() > 0)
 		{
 			fmt::print("  Private APIs:\n");
+
 			for (size_t i = 0; i < mPrivateApiList.size(); i++)
 			{
 				fmt::print("    {:s} (vender: {:s})\n", mPrivateApiList[i].getModuleName(), mPrivateApiList[i].getVenderName());
 			}
 		}
+
 		if (mGuidelineApiList.size() > 0)
 		{
 			fmt::print("  Guideline APIs:\n");
+
 			for (size_t i = 0; i < mGuidelineApiList.size(); i++)
 			{
 				fmt::print("    {:s} (vender: {:s})\n", mGuidelineApiList[i].getModuleName(), mGuidelineApiList[i].getVenderName());
 			}
 		}
 	}
+
 	if (mSymbolList.getSymbolList().size() > 0 && (mListSymbols || mCliOutputMode.show_extended_info))
 	{
 		fmt::print("[Symbol List]\n");
+
 		for (size_t i = 0; i < mSymbolList.getSymbolList().size(); i++)
 		{
 			const ElfSymbolParser::sElfSymbol& symbol = mSymbolList.getSymbolList()[i];
+
 			fmt::print("  {:s}  [SHN={:s} ({:04x})][STT={:s}][STB={:s}]\n", symbol.name, getSectionIndexStr(symbol.shn_index), symbol.shn_index, getSymbolTypeStr(symbol.symbol_type), getSymbolBindingStr(symbol.symbol_binding));
 		}
 	}
@@ -205,6 +217,7 @@ void nstool::RoMetadataProcess::displayRoMetaData()
 std::string nstool::RoMetadataProcess::getSectionIndexStr(uint16_t shn_index) const
 {
 	std::string str;
+
 	switch (shn_index)
 	{
 		case (elf::SHN_UNDEF):
@@ -232,12 +245,14 @@ std::string nstool::RoMetadataProcess::getSectionIndexStr(uint16_t shn_index) co
 			str = "UNKNOWN";
 			break;
 	}
+
 	return str;
 }
 
 std::string nstool::RoMetadataProcess::getSymbolTypeStr(byte_t symbol_type) const
 {
 	std::string str;
+
 	switch (symbol_type)
 	{
 		case (elf::STT_NOTYPE):
@@ -271,12 +286,14 @@ std::string nstool::RoMetadataProcess::getSymbolTypeStr(byte_t symbol_type) cons
 			str = "UNKNOWN";
 			break;
 	}
+
 	return str;
 }
 
 std::string nstool::RoMetadataProcess::getSymbolBindingStr(byte_t symbol_binding) const
 {
 	std::string str;
+
 	switch (symbol_binding)
 	{
 		case (elf::STB_LOCAL):
@@ -304,5 +321,6 @@ std::string nstool::RoMetadataProcess::getSymbolBindingStr(byte_t symbol_binding
 			str = "UNKNOWN";
 			break;
 	}
+
 	return str;
 }
