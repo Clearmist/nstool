@@ -1,7 +1,7 @@
 #include <tc.h>
 #include <tc/os/UnicodeMain.h>
+#include "Report.hpp"
 #include "Settings.h"
-
 
 #include "GameCardProcess.h"
 #include "PfsProcess.h"
@@ -18,28 +18,27 @@
 #include "EsTikProcess.h"
 #include "AssetProcess.h"
 
-
 int umain(const std::vector<std::string>& args, const std::vector<std::string>& env)
 {
-	try 
+	try
 	{
 		nstool::Settings set = nstool::SettingsInitializer(args);
-		
+
 		std::shared_ptr<tc::io::IStream> infile_stream = std::make_shared<tc::io::FileStream>(tc::io::FileStream(set.infile.path.get(), tc::io::FileMode::Open, tc::io::FileAccess::Read));
 
 		if (set.infile.filetype == nstool::Settings::FILE_TYPE_GAMECARD)
-		{	
+		{
 			nstool::GameCardProcess obj;
 
 			obj.setInputFile(infile_stream);
-			
+
 			obj.setKeyCfg(set.opt.keybag);
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
-		
+
 			obj.process();
 		}
 		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_PARTITIONFS || set.infile.filetype == nstool::Settings::FILE_TYPE_NSP)
@@ -53,10 +52,9 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
-			
+
 			obj.process();
 		}
-		
 		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ROMFS)
 		{
 			nstool::RomfsProcess obj;
@@ -113,7 +111,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			obj.setInputFile(infile_stream);
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-			
+
 			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
 			obj.setListApi(set.code.list_api);
 			obj.setListSymbols(set.code.list_symbols);
@@ -127,15 +125,18 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			obj.setInputFile(infile_stream);
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-			
+
 			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
 			obj.setListApi(set.code.list_api);
 			obj.setListSymbols(set.code.list_symbols);
 
-			if (set.aset.icon_extract_path.isSet())
+			if (set.aset.icon_extract_path.isSet()) {
 				obj.setAssetIconExtractPath(set.aset.icon_extract_path.get());
-			if (set.aset.nacp_extract_path.isSet())
+			}
+
+			if (set.aset.nacp_extract_path.isSet()) {
 				obj.setAssetNacpExtractPath(set.aset.nacp_extract_path.get());
+			}
 
 			obj.setAssetRomfsShowFsTree(set.fs.show_fs_tree);
 			obj.setAssetRomfsExtractJobs(set.fs.extract_jobs);
@@ -160,8 +161,9 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
-			if (set.kip.extract_path.isSet())
+			if (set.kip.extract_path.isSet()) {
 				obj.setKipExtractPath(set.kip.extract_path.get());
+			}
 
 			obj.process();
 		}
@@ -192,7 +194,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 
 			obj.setInputFile(infile_stream);
 			obj.setKeyCfg(set.opt.keybag);
-			//obj.setCertificateChain(user_set.getCertificateChain());
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
@@ -206,10 +207,13 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
-			if (set.aset.icon_extract_path.isSet())
+			if (set.aset.icon_extract_path.isSet()) {
 				obj.setIconExtractPath(set.aset.icon_extract_path.get());
-			if (set.aset.nacp_extract_path.isSet())
+			}
+
+			if (set.aset.nacp_extract_path.isSet()) {
 				obj.setNacpExtractPath(set.aset.nacp_extract_path.get());
+			}
 
 			obj.setRomfsShowFsTree(set.fs.show_fs_tree);
 			obj.setRomfsExtractJobs(set.fs.extract_jobs);
@@ -222,5 +226,8 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 		fmt::print("[{0}{1}ERROR] {2}\n", e.module(), (strlen(e.module()) != 0 ? " ": ""), e.error());
 		return 1;
 	}
+
+	get_report().write(std::cout);
+
 	return 0;
 }

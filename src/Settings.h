@@ -54,7 +54,7 @@ struct Settings
 	} code;
 
 	// Generic FS options
-	struct FsOptions 
+	struct FsOptions
 	{
 		bool show_fs_tree;
 		std::vector<ExtractJob> extract_jobs;
@@ -134,13 +134,13 @@ private:
 	bool mShowLayout;
 	bool mShowKeydata;
 	bool mVerbose;
+	bool mMachineReadable;
 
 	tc::Optional<tc::io::Path> mKeysetPath;
 	tc::Optional<tc::io::Path> mTitleKeysetPath;
 	tc::Optional<KeyBag::aes128_key_t> mNcaEncryptedContentKey;
 	tc::Optional<KeyBag::aes128_key_t> mNcaContentKey;
 	std::vector<tc::io::Path> mTikPathList;
-	//tc::Optional<tc::io::Path> mTikPath;
 	tc::Optional<tc::io::Path> mCertPath;
 
 	void loadKeyFile(tc::Optional<tc::io::Path>& keyfile_path, const std::string& keyfile_name, const std::string& cli_hint);

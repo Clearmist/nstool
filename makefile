@@ -1,4 +1,4 @@
-# C++/C Recursive Project Makefile 
+# C++/C Recursive Project Makefile
 # (c) Jack
 # Version 9 (20231231)
 
@@ -83,7 +83,7 @@ ifeq ($(PROJECT_PLATFORM), WIN32)
 	ARFLAGS = cr
 else ifeq ($(PROJECT_PLATFORM), GNU)
 	# GNU/Linux Flags/Libs
-	#CC = 
+	#CC =
 	#CXX =
 	DEFINEFLAGS =
 	WARNFLAGS = -Wall -Wno-unused-value -Wno-unused-but-set-variable
@@ -93,7 +93,7 @@ else ifeq ($(PROJECT_PLATFORM), GNU)
 	ARFLAGS = cr
 else ifeq ($(PROJECT_PLATFORM), MACOS)
 	# MacOS Flags/Libs
-	#CC = 
+	#CC =
 	#CXX =
 	DEFINEFLAGS =
 	WARNFLAGS = -Wall -Wno-unused-value -Wno-unused-private-field
@@ -117,21 +117,21 @@ TESTSRC_OBJ = $(foreach dir,$(PROJECT_TESTSRC_SUBDIRS),$(subst .cpp,.o,$(wildcar
 #	- 'test_program' for building the test program
 # test_program can be used with program or static_lib, but program and static_lib cannot be used together
 all: program
-	
+
 clean: clean_object_files remove_binary_dir
 
 # Object Compile Rules
 %.o: %.c
 	@echo CC $<
-	@$(CC) $(CFLAGS) -c $< -o $@ 
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp
 	@echo CXX $<
-	@$(CXX) $(CXXFLAGS) -c $< -o $@ 
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.cc
 	@echo CXX $<
-	@$(CXX) $(CXXFLAGS) -c $< -o $@ 
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Binary Directory
 .PHONY: create_binary_dir
