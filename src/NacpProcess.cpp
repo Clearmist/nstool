@@ -237,7 +237,10 @@ void nstool::NacpProcess::displayNacp()
 			r.text(fmt::format("      Age: {:d}", itr->age));
 
 			r.push("data.applicationControlProperty.ratingAge", nlohmann::json{
-				{"organization", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation)},
+				{"organization", nlohmann::json{
+					{"string", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation)},
+					{"int", itr->organisation}
+				}},
 				{"age", itr->age}
 			});
 		}

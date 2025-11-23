@@ -71,7 +71,10 @@ void nstool::PfsProcess::process()
 		fmt::format("FileNum:     {:d}", mPfs.getFileList().size())
 	});
 
-	mFsProcess.setProperties("type", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType()));
+	mFsProcess.setProperties("type", nlohmann::json{
+		{"string", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType())},
+		{"int", mPfs.getFsType()}
+	});
 	mFsProcess.setProperties("fileCount", mPfs.getFileList().size());
 	mFsProcess.process();
 }

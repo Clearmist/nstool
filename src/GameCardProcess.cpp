@@ -347,7 +347,7 @@ void nstool::GameCardProcess::processRootPfs()
 	std::shared_ptr<tc::io::IStream> gc_fs_raw = std::make_shared<tc::io::SubStream>(tc::io::SubStream(mFile, mHdr.getPartitionFsAddress(), pie::hac::GameCardUtil::blockToAddr(mHdr.getValidDataEndPage()+1) - mHdr.getPartitionFsAddress()));
 
 	auto gc_vfs_snapshot = pie::hac::GameCardFsSnapshotGenerator(gc_fs_raw, mHdr.getPartitionFsSize(), mVerify ? pie::hac::GameCardFsSnapshotGenerator::ValidationMode_Warn : pie::hac::GameCardFsSnapshotGenerator::ValidationMode_None);
-	mFileSystem = std::make_shared<tc::io::VirtualFileSystem>(tc::io::VirtualFileSystem(gc_vfs_snapshot) );
+	mFileSystem = std::make_shared<tc::io::VirtualFileSystem>(tc::io::VirtualFileSystem(gc_vfs_snapshot));
 
 	mFsProcess.setInputFileSystem(mFileSystem);
 	mFsProcess.setFsFormatName("PartitionFs");
