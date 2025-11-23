@@ -1,5 +1,4 @@
 #include "ElfSymbolParser.h"
-#include "Report.hpp"
 
 nstool::ElfSymbolParser::ElfSymbolParser() :
 	mModuleName("nstool::ElfSymbolParser"),

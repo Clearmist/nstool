@@ -31,11 +31,8 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::GameCardProcess obj;
 
 			obj.setInputFile(infile_stream);
-
 			obj.setKeyCfg(set.opt.keybag);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
 
@@ -46,10 +43,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::PfsProcess obj;
 
 			obj.setInputFile(infile_stream);
-
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
 
@@ -60,9 +54,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::RomfsProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
 
@@ -75,9 +67,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			obj.setInputFile(infile_stream);
 			obj.setBaseNcaPath(set.nca.base_nca_path);
 			obj.setKeyCfg(set.opt.keybag);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setShowFsTree(set.fs.show_fs_tree);
 			obj.setExtractJobs(set.fs.extract_jobs);
 
@@ -89,7 +79,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 
 			obj.setInputFile(infile_stream);
 			obj.setKeyCfg(set.opt.keybag);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -99,7 +88,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::CnmtProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -109,9 +97,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::NsoProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
 			obj.setListApi(set.code.list_api);
 			obj.setListSymbols(set.code.list_symbols);
@@ -123,9 +109,7 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::NroProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
-
 			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
 			obj.setListApi(set.code.list_api);
 			obj.setListSymbols(set.code.list_symbols);
@@ -148,7 +132,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::NacpProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -158,7 +141,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::IniProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			if (set.kip.extract_path.isSet()) {
@@ -172,7 +154,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::KipProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -183,7 +164,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 
 			obj.setInputFile(infile_stream);
 			obj.setKeyCfg(set.opt.keybag);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -194,7 +174,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 
 			obj.setInputFile(infile_stream);
 			obj.setKeyCfg(set.opt.keybag);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			obj.process();
@@ -204,7 +183,6 @@ int umain(const std::vector<std::string>& args, const std::vector<std::string>& 
 			nstool::AssetProcess obj;
 
 			obj.setInputFile(infile_stream);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
 			obj.setVerifyMode(set.opt.verify);
 
 			if (set.aset.icon_extract_path.isSet()) {

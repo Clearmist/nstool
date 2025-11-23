@@ -15,7 +15,6 @@ public:
 	void process();
 
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	void setIs64BitInstruction(bool flag);
@@ -33,7 +32,7 @@ private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 
 	pie::hac::NroHeader mHdr;

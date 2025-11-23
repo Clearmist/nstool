@@ -38,7 +38,7 @@ void nstool::FsProcess::process()
 	}
 
 	// Merge the various properties and their values into the data object.
-	r.set("data", getProperties());
+	r.merge("data", getProperties());
 
 	if (mShowFsTree)
 	{
@@ -126,7 +126,7 @@ void nstool::FsProcess::extractFs()
 				tc::io::Path file_extract_path = itr->extract_path + itr->virtual_path.back();
 
 				r.text(fmt::format("Saving {:s}...", file_extract_path.to_string()));
-				r.push("events", {
+				r.push("events", nlohmann::json{
 					{"severity", "info"},
 					{"message", fmt::format("Extracting directory {:s}", file_extract_path.to_string())}
 				});
@@ -154,7 +154,7 @@ void nstool::FsProcess::extractFs()
 				local_fs->getDirectoryListing(parent_dir_path, dir_listing);
 
 				r.text(fmt::format("Saving {:s} as {:s}...", itr->virtual_path.to_string(), itr->extract_path.to_string()));
-				r.push("events", {
+				r.push("events", nlohmann::json{
 					{"severity", "info"},
 					{"message", fmt::format("Extracting {:s} as {:s}", itr->virtual_path.to_string(), itr->extract_path.to_string())}
 				});
@@ -167,7 +167,7 @@ void nstool::FsProcess::extractFs()
 
 			// extract path could not be determined, inform the user and skip this job
 			r.text(fmt::format("[WARNING] Extract path was invalid, and was skipped: {:s}", itr->extract_path.to_string()));
-			r.push("events", {
+			r.push("events", nlohmann::json{
 				{"severity", "warn"},
 				{"message", fmt::format("Extract path was invalid, and was skipped: {:s}", itr->extract_path.to_string())}
 			});
@@ -190,7 +190,7 @@ void nstool::FsProcess::extractFs()
 		}
 
 		r.text(fmt::format("[WARNING] Failed to extract virtual path: \"{:s}\"", itr->virtual_path.to_string()));
-		r.push("events", {
+		r.push("events", nlohmann::json{
 			{"severity", "warn"},
 			{"message", "Failed to extract virtual path: \"{:s}\"", itr->virtual_path.to_string()}
 		});
@@ -208,6 +208,7 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 	mInputFs->getDirectoryListing(v_path, info);
 
 	std::string rootLabel = mFsRootLabel.isSet() ? mFsRootLabel.get() : "Root";
+	std::string prefixLabel = v_path.size() == 1 ? (rootLabel + ":") : (rootLabel + ":/" + v_path.back());
 
 	if (print_fs)
 	{
@@ -235,7 +236,7 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 			std::string padded = std::string(v_path.size(), ' ') + " {:s}";
 
 			r.text(fmt::format(padded, *itr));
-			r.push("data.tree", fmt::format("{}:/{}", rootLabel, *itr));
+			r.push("data.tree", fmt::format("{}/{}", prefixLabel, *itr));
 		}
 
 		if (extract_fs)
@@ -244,7 +245,7 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 			out_path = l_path + *itr;
 
 			r.text(fmt::format("Saving {:s}...", out_path.to_string()));
-			r.push("events", {
+			r.push("events", nlohmann::json{
 				{"severity", "info"},
 				{"message", fmt::format("Extracting to {:s}", out_path.to_string())}
 			});
@@ -262,7 +263,7 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 
 				if (cache_read_len == 0)
 				{
-					throw tc::io::IOException(mModuleLabel, fmt::format("Failed to read from {:s}file.", (mFsFormatName.isSet() ? (mFsFormatName.get() + " ") : "")));
+					throw tc::io::IOException(mModuleLabel, fmt::format("Failed to read from {:s} file.", (mFsFormatName.isSet() ? (mFsFormatName.get() + " ") : "")));
 				}
 
 				out_stream->write(mDataCache.data(), cache_read_len);

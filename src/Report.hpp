@@ -16,23 +16,26 @@ public:
         Keydata
     };
 
-    // JSON entry.
-    void set(const std::string& path, const std::string& value);
-    void set(const std::string& path, const char* value);
-    void set(const std::string& path, int64_t value);
-    void set(const std::string& path, uint64_t value);
-    void set(const std::string& path, double value);
-    void set(const std::string& path, bool value);
-    void set(const std::string& path, const nlohmann::json& value);
+    // Set a JSON entry.
+    template <typename T>
+    void set(const std::string& path, const T& value)
+    {
+        // Let the JSON library convert the type.
+        nlohmann::json j = value;
 
-    // JSON array entry: append to an array at "path".
-    void push(const std::string& path, const std::string& value);
-    void push(const std::string& path, const char* value);
-    void push(const std::string& path, int64_t value);
-    void push(const std::string& path, uint64_t value);
-    void push(const std::string& path, double value);
-    void push(const std::string& path, bool value);
-    void push(const std::string& path, const nlohmann::json& value);
+        // Delegate to a helper.
+        add_json_internal(path, j);
+    }
+
+    // Add to a JSON array entry.
+    template<typename T>
+    void push(const std::string& path, T&& value)
+    {
+        nlohmann::json j = std::forward<T>(value);
+        push_json_internal(path, j);
+    }
+
+    void merge(const std::string& path, const nlohmann::json& value);
 
     // TEXT entry.
     void text(const std::string& line, TextType type = TextType::Basic);
@@ -71,6 +74,9 @@ private:
     bool showLayout = false;
     bool showKeydata = false;
     bool showMachineReadable = false;
+
+    void add_json_internal(const std::string& path, const nlohmann::json& value);
+    void push_json_internal(const std::string& path, const nlohmann::json& value);
 };
 
 Report& get_report();

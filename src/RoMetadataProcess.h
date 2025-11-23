@@ -19,8 +19,6 @@ public:
 	void setDynSym(size_t offset, size_t size);
 	void setDynStr(size_t offset, size_t size);
 
-	void setCliOutputMode(CliOutputMode type);
-
 	void setIs64BitInstruction(bool flag);
 	void setListApi(bool listApi);
 	void setListSymbols(bool listSymbols);
@@ -34,13 +32,12 @@ public:
 private:
 	std::string mModuleName;
 
-	CliOutputMode mCliOutputMode;
 	bool mIs64BitInstruction;
 	bool mListApi;
-	bool mListSymbols;	
+	bool mListSymbols;
 
-	struct sLayout 
-	{ 
+	struct sLayout
+	{
 		sLayout() : offset(0), size(0) {}
 		size_t offset;
 		size_t size;
@@ -55,7 +52,7 @@ private:
 	std::vector<SdkApiString> mDebugApiList;
 	std::vector<SdkApiString> mPrivateApiList;
 	std::vector<SdkApiString> mGuidelineApiList;
-	
+
 	ElfSymbolParser mSymbolList;
 
 	void importApiList();

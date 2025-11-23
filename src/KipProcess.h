@@ -13,13 +13,12 @@ public:
 	void process();
 
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 
 	pie::hac::KernelInitialProcessHeader mHdr;

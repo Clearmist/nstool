@@ -1,5 +1,4 @@
 #include "Report.hpp"
-
 #include <sstream>
 #include <ostream>
 
@@ -45,54 +44,17 @@ static nlohmann::json& ensure_array_path(nlohmann::json& root, const std::string
     return node;
 }
 
-// -------------------------------
-// JSON "set" functions
-// -------------------------------
-
-void Report::set(const std::string& path, const std::string& value)
-{
-    ensure_path(root_, path) = value;
-}
-
-void Report::set(const std::string& path, const char* value)
-{
-    ensure_path(root_, path) = value ? value : "";
-}
-
-void Report::set(const std::string& path, int64_t value)
-{
-    ensure_path(root_, path) = value;
-}
-
-void Report::set(const std::string& path, uint64_t value)
-{
-    ensure_path(root_, path) = value;
-}
-
-void Report::set(const std::string& path, double value)
-{
-    ensure_path(root_, path) = value;
-}
-
-void Report::set(const std::string& path, bool value)
-{
-    ensure_path(root_, path) = value;
-}
-
-void Report::set(const std::string& path, const nlohmann::json& value)
+void Report::add_json_internal(const std::string& path, const nlohmann::json& value)
 {
     nlohmann::json& node = ensure_path(root_, path);
 
     if (node.is_null()) {
-        // There is no node so set the value.
         node = value;
     }
     else if (node.is_object() && value.is_object()) {
-        // There is a node at this path so merge the objets.
         node.update(value);
     }
     else {
-        // Overwrite the existing node.
         node = value;
     }
 }
@@ -101,39 +63,10 @@ void Report::set(const std::string& path, const nlohmann::json& value)
 // JSON "push" functions (arrays)
 // -------------------------------
 
-void Report::push(const std::string& path, const std::string& value)
+void Report::push_json_internal(const std::string& path, const nlohmann::json& value)
 {
-    ensure_array_path(root_, path).push_back(value);
-}
-
-void Report::push(const std::string& path, const char* value)
-{
-    ensure_array_path(root_, path).push_back(value ? value : "");
-}
-
-void Report::push(const std::string& path, int64_t value)
-{
-    ensure_array_path(root_, path).push_back(value);
-}
-
-void Report::push(const std::string& path, uint64_t value)
-{
-    ensure_array_path(root_, path).push_back(value);
-}
-
-void Report::push(const std::string& path, double value)
-{
-    ensure_array_path(root_, path).push_back(value);
-}
-
-void Report::push(const std::string& path, bool value)
-{
-    ensure_array_path(root_, path).push_back(value);
-}
-
-void Report::push(const std::string& path, const nlohmann::json& value)
-{
-    ensure_array_path(root_, path).push_back(value);
+    nlohmann::json& node = ensure_array_path(root_, path);
+    node.push_back(value);
 }
 
 // -------------------------------
@@ -146,6 +79,20 @@ void Report::text(const std::string& line, TextType type)
     entry.line = line;
     entry.type = type;
     text_lines_.push_back(std::move(entry));
+}
+
+void Report::merge(const std::string& path, const nlohmann::json& value)
+{
+    nlohmann::json& node = ensure_path(root_, path);
+
+    if (!node.is_object()) {
+        // Convert whatever is there into an empty object.
+        node = nlohmann::json::object();
+    }
+
+    if (value.is_object()) {
+        node.update(value);
+    }
 }
 
 // -------------------------------

@@ -15,7 +15,6 @@ public:
 
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setKeyCfg(const KeyBag& keycfg);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	const pie::hac::Meta& getMeta() const;
@@ -25,7 +24,7 @@ private:
 
 	std::shared_ptr<tc::io::IStream> mFile;
 	KeyBag mKeyCfg;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 
 	pie::hac::Meta mMeta;

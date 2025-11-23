@@ -6,7 +6,6 @@
 
 nstool::RoMetadataProcess::RoMetadataProcess() :
 	mModuleName("nstool::RoMetadataProcess"),
-	mCliOutputMode(true, false, false, false),
 	mIs64BitInstruction(true),
 	mListApi(false),
 	mListSymbols(false),
@@ -26,9 +25,7 @@ void nstool::RoMetadataProcess::process()
 {
 	importApiList();
 
-	if (mCliOutputMode.show_basic_info) {
-		displayRoMetaData();
-	}
+	displayRoMetaData();
 }
 
 void nstool::RoMetadataProcess::setRoBinary(const tc::ByteData& bin)
@@ -41,20 +38,17 @@ void nstool::RoMetadataProcess::setApiInfo(size_t offset, size_t size)
 	mApiInfo.offset = offset;
 	mApiInfo.size = size;
 }
+
 void nstool::RoMetadataProcess::setDynSym(size_t offset, size_t size)
 {
 	mDynSym.offset = offset;
 	mDynSym.size = size;
 }
+
 void nstool::RoMetadataProcess::setDynStr(size_t offset, size_t size)
 {
 	mDynStr.offset = offset;
 	mDynStr.size = size;
-}
-
-void nstool::RoMetadataProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::RoMetadataProcess::setIs64BitInstruction(bool flag)
@@ -149,67 +143,99 @@ void nstool::RoMetadataProcess::importApiList()
 
 void nstool::RoMetadataProcess::displayRoMetaData()
 {
+	Report& r = get_report();
+
 	size_t api_num = mSdkVerApiList.size() + mPublicApiList.size() + mDebugApiList.size() + mPrivateApiList.size();
 
-	if (api_num > 0 && (mListApi || mCliOutputMode.show_extended_info))
+	if (api_num > 0)
 	{
-		fmt::print("[SDK API List]\n");
+		r.text("[SDK API List]", Report::TextType::Extended);
 
 		if (mSdkVerApiList.size() > 0)
 		{
-			fmt::print("  Sdk Revision: {:s}\n", mSdkVerApiList[0].getModuleName());
+			r.text(fmt::format("  Sdk Revision: {:s}", mSdkVerApiList[0].getModuleName()), Report::TextType::Extended);
+
+			r.set("data.sdkRevision", mSdkVerApiList[0].getModuleName());
 		}
 
 		if (mPublicApiList.size() > 0)
 		{
-			fmt::print("  Public APIs:\n");
+			r.text("  Public APIs:", Report::TextType::Extended);
 
 			for (size_t i = 0; i < mPublicApiList.size(); i++)
 			{
-				fmt::print("    {:s} (vender: {:s})\n", mPublicApiList[i].getModuleName(), mPublicApiList[i].getVenderName());
+				r.text(fmt::format("    {:s} (vendor: {:s})", mPublicApiList[i].getModuleName(), mPublicApiList[i].getVenderName()), Report::TextType::Extended);
+
+				r.push("data.publicAPI", nlohmann::json{
+					{"module", mPublicApiList[i].getModuleName()},
+					{"vendor", mPublicApiList[i].getVenderName()}
+				});
 			}
 		}
 
 		if (mDebugApiList.size() > 0)
 		{
-			fmt::print("  Debug APIs:\n");
+			r.text("  Debug APIs:", Report::TextType::Extended);
 
 			for (size_t i = 0; i < mDebugApiList.size(); i++)
 			{
-				fmt::print("    {:s} (vender: {:s})\n", mDebugApiList[i].getModuleName(), mDebugApiList[i].getVenderName());
+				r.text(fmt::format("    {:s} (vendor: {:s})", mDebugApiList[i].getModuleName(), mDebugApiList[i].getVenderName()), Report::TextType::Extended);
+
+				r.push("data.debugAPI", nlohmann::json{
+					{"module", mDebugApiList[i].getModuleName()},
+					{"vendor", mDebugApiList[i].getVenderName()}
+				});
 			}
 		}
 
 		if (mPrivateApiList.size() > 0)
 		{
-			fmt::print("  Private APIs:\n");
+			r.text("  Private APIs:", Report::TextType::Extended);
 
 			for (size_t i = 0; i < mPrivateApiList.size(); i++)
 			{
-				fmt::print("    {:s} (vender: {:s})\n", mPrivateApiList[i].getModuleName(), mPrivateApiList[i].getVenderName());
+				r.text(fmt::format("    {:s} (vendor: {:s})", mPrivateApiList[i].getModuleName(), mPrivateApiList[i].getVenderName()), Report::TextType::Extended);
+
+				r.push("data.privateAPI", nlohmann::json{
+					{"module", mPrivateApiList[i].getModuleName()},
+					{"vendor", mPrivateApiList[i].getVenderName()}
+				});
 			}
 		}
 
 		if (mGuidelineApiList.size() > 0)
 		{
-			fmt::print("  Guideline APIs:\n");
+			r.text("  Guideline APIs:", Report::TextType::Extended);
 
 			for (size_t i = 0; i < mGuidelineApiList.size(); i++)
 			{
-				fmt::print("    {:s} (vender: {:s})\n", mGuidelineApiList[i].getModuleName(), mGuidelineApiList[i].getVenderName());
+				r.text(fmt::format("    {:s} (vendor: {:s})", mGuidelineApiList[i].getModuleName(), mGuidelineApiList[i].getVenderName()), Report::TextType::Extended);
+
+				r.push("data.guidelineAPI", nlohmann::json{
+					{"module", mGuidelineApiList[i].getModuleName()},
+					{"vendor", mGuidelineApiList[i].getVenderName()}
+				});
 			}
 		}
 	}
 
-	if (mSymbolList.getSymbolList().size() > 0 && (mListSymbols || mCliOutputMode.show_extended_info))
+	if (mSymbolList.getSymbolList().size() > 0)
 	{
-		fmt::print("[Symbol List]\n");
+		r.text("[Symbol List]", Report::TextType::Extended);
 
 		for (size_t i = 0; i < mSymbolList.getSymbolList().size(); i++)
 		{
 			const ElfSymbolParser::sElfSymbol& symbol = mSymbolList.getSymbolList()[i];
 
-			fmt::print("  {:s}  [SHN={:s} ({:04x})][STT={:s}][STB={:s}]\n", symbol.name, getSectionIndexStr(symbol.shn_index), symbol.shn_index, getSymbolTypeStr(symbol.symbol_type), getSymbolBindingStr(symbol.symbol_binding));
+			r.text(fmt::format("  {:s}  [SHN={:s} ({:04x})][STT={:s}][STB={:s}]", symbol.name, getSectionIndexStr(symbol.shn_index), symbol.shn_index, getSymbolTypeStr(symbol.symbol_type), getSymbolBindingStr(symbol.symbol_binding)), Report::TextType::Extended);
+
+			r.push("data.symbols", nlohmann::json{
+				{"name", symbol.name},
+				{"shn", getSectionIndexStr(symbol.shn_index)},
+				{"shnIndex", symbol.shn_index},
+				{"stt", getSymbolTypeStr(symbol.symbol_type)},
+				{"stb", getSymbolBindingStr(symbol.symbol_binding)}
+			});
 		}
 	}
 }

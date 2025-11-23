@@ -74,7 +74,14 @@ public:
 
 	void processOption(const std::string& option, const std::vector<std::string>& params)
 	{
-		fmt::print("[WARNING] Option \"{}\" is deprecated.{}{}\n", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage);
+		Report& r = get_report();
+
+		r.text(fmt::format("[WARNING] Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage));
+
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", fmt::format("Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage)}
+		});
 	}
 private:
 	std::string mWarnMessage;
@@ -510,18 +517,26 @@ public:
 			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires a parameter.", option));
 		}
 
-		fmt::print("[WARNING] \"{:s} {:s}\" is deprecated. ", option, params[0]);
+		Report& r = get_report();
+
+		std::string message = fmt::format("\"{:s} {:s}\" is deprecated. ", option, params[0]);
 
 		// if custom path is root path, use the shortened version of -x
 		if (mCustomPath == tc::io::Path("/"))
 		{
-			fmt::print("Consider using \"-x {:s}\" instead.\n", params[0]);
+			message = message + fmt::format("Consider using \"-x {:s}\" instead.", params[0]);
 		}
 		else
 		{
-			fmt::print("Consider using \"-x {:s} {:s}\" instead.\n", mCustomPath.to_string(), params[0]);
+			message = message + fmt::format("Consider using \"-x {:s} {:s}\" instead.", mCustomPath.to_string(), params[0]);
 		}
 
+		r.text("[WARNING] " + message);
+
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", message}
+		});
 
 		mJobs.push_back({mCustomPath, tc::io::Path(params[0])});
 	}
@@ -592,7 +607,6 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	opt.keybag.fallback_content_key = mNcaContentKey;
 
 	// dump keys if requires
-	// but not opt.cli_output_mode.show_keydata, since this that enabled by toggling -v,--verbose, personally I don't think a summary of imported keydata should be included in verbose output.
 	if (mShowKeydata) {
 		dump_keys();
 	}
@@ -651,7 +665,6 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 
 	// get user-provided keydata
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(mKeysetPath, {"-k", "--keyset"})));
-	//opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(mTitleKeysetPath, {"--titlekeyset"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamAesKeyOptionHandler>(new SingleParamAesKeyOptionHandler(mNcaEncryptedContentKey, {"--titlekey"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamAesKeyOptionHandler>(new SingleParamAesKeyOptionHandler(mNcaContentKey, {"--contentkey", "--bodykey"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathArrayOptionHandler>(new SingleParamPathArrayOptionHandler(mTikPathList, {"--tik"})));
@@ -867,12 +880,12 @@ void nstool::SettingsInitializer::dump_keys() const
 
 	for (auto itr = opt.keybag.nca_header_sign0_key.begin(); itr != opt.keybag.nca_header_sign0_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Header0-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Header0-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
 
 	for (auto itr = opt.keybag.acid_sign_key.begin(); itr != opt.keybag.acid_sign_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Acid-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Acid-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
 
 	if (opt.keybag.nca_header_key.isSet())
@@ -904,14 +917,14 @@ void nstool::SettingsInitializer::dump_keys() const
 
 	for (auto itr = opt.keybag.nrr_certificate_sign_key.begin(); itr != opt.keybag.nrr_certificate_sign_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
 
 	r.text("  XCI Keys:", Report::TextType::Keydata);
 
 	if (opt.keybag.xci_header_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
 
 	for (auto itr = opt.keybag.xci_header_key.begin(); itr != opt.keybag.xci_header_key.end(); itr++)
@@ -921,7 +934,7 @@ void nstool::SettingsInitializer::dump_keys() const
 
 	if (opt.keybag.xci_cert_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.xci_cert_sign_key.get(), fmt::format("CERT-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.xci_cert_sign_key.get(), fmt::format("CERT-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
 
 	r.text("  Package1 Keys:", Report::TextType::Keydata);
@@ -935,7 +948,7 @@ void nstool::SettingsInitializer::dump_keys() const
 
 	if (opt.keybag.pkg2_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.pkg2_sign_key.get(), fmt::format("Header-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.pkg2_sign_key.get(), fmt::format("Header-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
 
 	for (auto itr = opt.keybag.pkg2_key.begin(); itr != opt.keybag.pkg2_key.end(); itr++)
@@ -974,7 +987,7 @@ void nstool::SettingsInitializer::dump_keys() const
 		switch(itr->second.key_type) {
 			case pie::hac::es::sign::SIGN_ALGO_RSA2048:
 			case pie::hac::es::sign::SIGN_ALGO_RSA4096:
-				dump_rsa_key(itr->second.rsa_key, "RsaKey", 6, opt.cli_output_mode.show_extended_info);
+				dump_rsa_key(itr->second.rsa_key, "RsaKey", 6, r.getShowExtendedInfo());
 				break;
 			case pie::hac::es::sign::SIGN_ALGO_ECDSA240:
 			default:
@@ -1043,7 +1056,7 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfil
 			keyfile_path = tmp_path;
 		}
 		catch (tc::io::FileNotFoundException&) {
-			r.push("events", {
+			r.push("events", nlohmann::json{
 				{"severity", "warn"},
 				{"message", fmt::format("Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}
 			});
@@ -1052,7 +1065,7 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfil
 		}
 	}
 	else {
-		r.push("events", {
+		r.push("events", nlohmann::json{
 			{"severity", "warn"},
 			{"message", fmt::format("Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}
 		});
@@ -1072,7 +1085,7 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 	{
 		Report& r = get_report();
 
-		r.push("events", {
+		r.push("events", nlohmann::json{
 			{"severity", "warn"},
 			{"message", "Failed to load NCA Header Key."}
 		});

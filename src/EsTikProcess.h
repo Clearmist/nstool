@@ -18,16 +18,15 @@ public:
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setKeyCfg(const KeyBag& keycfg);
 	void setCertificateChain(const std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>>& certs);
-	void setCliOutputMode(CliOutputMode mode);
 	void setVerifyMode(bool verify);
 private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
 	KeyBag mKeyCfg;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
-	
+
 	std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> mCerts;
 
 	pie::hac::es::SignedData<pie::hac::es::TicketBody_V2> mTik;

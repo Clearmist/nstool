@@ -15,7 +15,6 @@ public:
 
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	// fs specific
@@ -33,14 +32,14 @@ private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 
 	pie::hac::PartitionFsHeader mPfs;
 
 	std::shared_ptr<tc::io::IFileSystem> mFileSystem;
 	FsProcess mFsProcess;
-	
+
 	size_t determineHeaderSize(const pie::hac::sPfsHeader* hdr);
 	bool validateHeaderMagic(const pie::hac::sPfsHeader* hdr);
 };

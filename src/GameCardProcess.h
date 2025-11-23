@@ -17,7 +17,6 @@ public:
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setKeyCfg(const KeyBag& keycfg);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	// fs specific
@@ -30,9 +29,9 @@ private:
 
 	std::shared_ptr<tc::io::IStream> mFile;
 	KeyBag mKeyCfg;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
-	
+
 	bool mIsTrueSdkXci;
 	bool mIsSdkXciEncrypted;
 	size_t mGcHeaderOffset;
@@ -40,7 +39,7 @@ private:
 	pie::hac::detail::rsa2048_signature_t mHdrSignature;
 	pie::hac::detail::sha256_hash_t mHdrHash;
 	pie::hac::GameCardHeader mHdr;
-	
+
 	// fs processing
 	std::shared_ptr<tc::io::IFileSystem> mFileSystem;
 	FsProcess mFsProcess;

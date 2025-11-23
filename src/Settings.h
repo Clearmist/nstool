@@ -39,7 +39,6 @@ struct Settings
 
 	struct Options
 	{
-		CliOutputMode cli_output_mode;
 		bool verify;
 		bool is_dev;
 		KeyBag keybag;
@@ -97,7 +96,6 @@ struct Settings
 		infile.filetype = FILE_TYPE_ERROR;
 		infile.path = tc::Optional<tc::io::Path>();
 
-		opt.cli_output_mode = CliOutputMode();
 		opt.verify = false;
 		opt.is_dev = false;
 		opt.keybag = KeyBag();

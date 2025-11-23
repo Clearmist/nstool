@@ -6,7 +6,6 @@
 nstool::IniProcess::IniProcess() :
 	mModuleName("nstool::IniProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false),
 	mKipExtractPath()
 {
@@ -17,11 +16,8 @@ void nstool::IniProcess::process()
 	importHeader();
 	importKipList();
 
-	if (mCliOutputMode.show_basic_info)
-	{
-		displayHeader();
-		displayKipList();
-	}
+	displayHeader();
+	displayKipList();
 
 	if (mKipExtractPath.isSet())
 	{
@@ -32,11 +28,6 @@ void nstool::IniProcess::process()
 void nstool::IniProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::IniProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::IniProcess::setVerifyMode(bool verify)
@@ -99,9 +90,14 @@ void nstool::IniProcess::importKipList()
 
 void nstool::IniProcess::displayHeader()
 {
-	fmt::print("[INI Header]\n");
-	fmt::print("  Size:         0x{:x}\n", mHdr.getSize());
-	fmt::print("  KIP Num:      {:d}\n", mHdr.getKipNum());
+	Report& r = get_report();
+
+	r.text("[INI Header]");
+	r.text(fmt::format("  Size:         0x{:x}", mHdr.getSize()));
+	r.text(fmt::format("  KIP Num:      {:d}", mHdr.getKipNum()));
+
+	r.set("data.iniHeader.size", fmt::format("0x{:x}", mHdr.getSize()));
+	r.set("data.iniHeader.kipNumber", mHdr.getKipNum());
 }
 
 void nstool::IniProcess::displayKipList()
@@ -111,7 +107,6 @@ void nstool::IniProcess::displayKipList()
 		KipProcess obj;
 
 		obj.setInputFile(itr->stream);
-		obj.setCliOutputMode(mCliOutputMode);
 		obj.setVerifyMode(mVerify);
 		obj.process();
 	}
@@ -132,12 +127,17 @@ void nstool::IniProcess::extractKipList()
 	// extract KIPs
 	for (auto itr = mKipList.begin(); itr != mKipList.end(); itr++)
 	{
+		Report& r = get_report();
+
 		out_path = mKipExtractPath.get();
 		out_path += fmt::format("{:s}.kip", itr->hdr.getName());
 
-		if (mCliOutputMode.show_basic_info) {
-			fmt::print("Saving {:s}...\n", out_path.to_string());
-		}
+		r.text(fmt::format("Saving {:s}...", out_path.to_string()));
+
+		r.push("events", nlohmann::json{
+			{"severity", "info"},
+			{"message", fmt::format("Extracting to {:s}", out_path.to_string())}
+		});
 
 		writeStreamToFile(itr->stream, out_path, cache);
 	}

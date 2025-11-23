@@ -5,7 +5,6 @@
 nstool::NacpProcess::NacpProcess() :
 	mModuleName("nstool::NacpProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false)
 {
 }
@@ -14,19 +13,12 @@ void nstool::NacpProcess::process()
 {
 	importNacp();
 
-	if (mCliOutputMode.show_basic_info) {
-		displayNacp();
-	}
+	displayNacp();
 }
 
 void nstool::NacpProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::NacpProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::NacpProcess::setVerifyMode(bool verify)
@@ -69,394 +61,484 @@ void nstool::NacpProcess::importNacp()
 
 void nstool::NacpProcess::displayNacp()
 {
-	fmt::print("[ApplicationControlProperty]\n");
+	Report& r = get_report();
+
+	r.text("[ApplicationControlProperty]");
 
 	// Title
 	if (mNacp.getTitle().size() > 0)
 	{
-		fmt::print("  Title:\n");
+		r.text("  Title:");
 
 		for (auto itr = mNacp.getTitle().begin(); itr != mNacp.getTitle().end(); itr++)
 		{
-			fmt::print("    {:s}:\n", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(itr->language));
-			fmt::print("      Name:       {:s}\n", itr->name);
-			fmt::print("      Publisher:  {:s}\n", itr->publisher);
+			r.text(fmt::format("    {:s}:", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(itr->language)));
+			r.text(fmt::format("      Name:       {:s}", itr->name));
+			r.text(fmt::format("      Publisher:  {:s}", itr->publisher));
+
+			r.push("data.applicationControlProperty.title", nlohmann::json{
+				{"language", nlohmann::json{
+					{"string", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(itr->language)},
+					{"int", itr->language}
+				}},
+				{"name", itr->name},
+				{"publisher", itr->publisher}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  Title:                                  None\n");
+		r.text("  Title:                                  None", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.title", nlohmann::json::array());
 	}
 
 	// Isbn
 	if (mNacp.getIsbn().empty() == false)
 	{
-		fmt::print("  ISBN:                                   {:s}\n", mNacp.getIsbn());
+		r.text(fmt::format("  ISBN:                                   {:s}", mNacp.getIsbn()));
+
+		r.set("data.applicationControlProperty.isbn", mNacp.getIsbn());
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  ISBN:                                   (NotSet)\n");
+		r.text("  ISBN:                                   (NotSet)", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.isbn", nullptr);
 	}
 
 	// StartupUserAccount
-	if (mNacp.getStartupUserAccount() != pie::hac::nacp::StartupUserAccount_None || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  StartupUserAccount:                     {:s}\n", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountAsString(mNacp.getStartupUserAccount()));
-	}
+	r.text(fmt::format("  StartupUserAccount:                     {:s}", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountAsString(mNacp.getStartupUserAccount())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.startupUserAccount", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountAsString(mNacp.getStartupUserAccount())},
+		{"int", mNacp.getStartupUserAccount()}
+	});
 
 	// UserAccountSwitchLock
-	if (mNacp.getUserAccountSwitchLock() != pie::hac::nacp::UserAccountSwitchLock_Disable || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  UserAccountSwitchLock:                  {:s}\n", pie::hac::ApplicationControlPropertyUtil::getUserAccountSwitchLockAsString(mNacp.getUserAccountSwitchLock()));
-	}
+	r.text(fmt::format("  UserAccountSwitchLock:                  {:s}", pie::hac::ApplicationControlPropertyUtil::getUserAccountSwitchLockAsString(mNacp.getUserAccountSwitchLock())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.useAccountSwitchLock", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getUserAccountSwitchLockAsString(mNacp.getUserAccountSwitchLock())},
+		{"int", mNacp.getUserAccountSwitchLock()}
+	});
 
 	// AddOnContentRegistrationType
-	if (mNacp.getAddOnContentRegistrationType() != pie::hac::nacp::AddOnContentRegistrationType_AllOnLaunch || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  AddOnContentRegistrationType:           {:s}\n", pie::hac::ApplicationControlPropertyUtil::getAddOnContentRegistrationTypeAsString(mNacp.getAddOnContentRegistrationType()));
-	}
+	r.text(fmt::format("  AddOnContentRegistrationType:           {:s}", pie::hac::ApplicationControlPropertyUtil::getAddOnContentRegistrationTypeAsString(mNacp.getAddOnContentRegistrationType())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.addOnContentRegistrationType", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getAddOnContentRegistrationTypeAsString(mNacp.getAddOnContentRegistrationType())},
+		{"int", mNacp.getAddOnContentRegistrationType()}
+	});
 
 	// Attribute
 	if (mNacp.getAttribute().size() > 0)
 	{
-		fmt::print("  Attribute:\n");
+		r.text("  Attribute:");
 
 		for (auto itr = mNacp.getAttribute().begin(); itr != mNacp.getAttribute().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getAttributeFlagAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getAttributeFlagAsString(*itr)));
+
+			r.push("data.applicationControlProperty.attributes", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getAttributeFlagAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  Attribute:                              None\n");
+		r.text("  Attribute:                              None", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.attributes", nlohmann::json::array());
 	}
 
 	// SupportedLanguage
 	if (mNacp.getSupportedLanguage().size() > 0)
 	{
-		fmt::print("  SupportedLanguage:\n");
+		r.text("  SupportedLanguage:");
 
 		for (auto itr = mNacp.getSupportedLanguage().begin(); itr != mNacp.getSupportedLanguage().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(*itr)));
+
+			r.push("data.applicationControlProperty.supportedLanguages", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getLanguageAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  SupportedLanguage:                      None\n");
+		r.text("  SupportedLanguage:                      None", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.supportedLanguages", nlohmann::json::array());
 	}
 
 	// ParentalControl
 	if (mNacp.getParentalControl().size() > 0)
 	{
-		fmt::print("  ParentalControl:\n");
+		r.text("  ParentalControl:");
 
 		for (auto itr = mNacp.getParentalControl().begin(); itr != mNacp.getParentalControl().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getParentalControlFlagAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getParentalControlFlagAsString(*itr)));
+
+			r.push("data.applicationControlProperty.parentalControlFlags", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getParentalControlFlagAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  ParentalControl:                        None\n");
+		r.text("  ParentalControl:                        None", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.parentalControlFlags", nlohmann::json::array());
 	}
 
 	// Screenshot
-	if (mNacp.getScreenshot() != pie::hac::nacp::Screenshot_Allow || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  Screenshot:                             {:s}\n", pie::hac::ApplicationControlPropertyUtil::getScreenshotAsString(mNacp.getScreenshot()));
-	}
+	r.text(fmt::format("  Screenshot:                             {:s}", pie::hac::ApplicationControlPropertyUtil::getScreenshotAsString(mNacp.getScreenshot())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.screenshot", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getScreenshotAsString(mNacp.getScreenshot())},
+		{"int", mNacp.getScreenshot()}
+	});
 
 	// VideoCapture
-	if (mNacp.getVideoCapture() != pie::hac::nacp::VideoCapture_Disable || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  VideoCapture:                           {:s}\n", pie::hac::ApplicationControlPropertyUtil::getVideoCaptureAsString(mNacp.getVideoCapture()));
-	}
+	r.text(fmt::format("  VideoCapture:                           {:s}", pie::hac::ApplicationControlPropertyUtil::getVideoCaptureAsString(mNacp.getVideoCapture())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.videoCapture", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getVideoCaptureAsString(mNacp.getVideoCapture())},
+		{"int", mNacp.getVideoCapture()}
+	});
 
 	// DataLossConfirmation
-	if (mNacp.getDataLossConfirmation() != pie::hac::nacp::DataLossConfirmation_None || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  DataLossConfirmation:                   {:s}\n", pie::hac::ApplicationControlPropertyUtil::getDataLossConfirmationAsString(mNacp.getDataLossConfirmation()));
-	}
+	r.text(fmt::format("  DataLossConfirmation:                   {:s}", pie::hac::ApplicationControlPropertyUtil::getDataLossConfirmationAsString(mNacp.getDataLossConfirmation())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.dataLossConfirmation", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getDataLossConfirmationAsString(mNacp.getDataLossConfirmation())},
+		{"int", mNacp.getDataLossConfirmation()}
+	});
 
 	// PlayLogPolicy
-	if (mNacp.getPlayLogPolicy() != pie::hac::nacp::PlayLogPolicy_All || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  PlayLogPolicy:                          {:s}\n", pie::hac::ApplicationControlPropertyUtil::getPlayLogPolicyAsString(mNacp.getPlayLogPolicy()));
-	}
+	r.text(fmt::format("  PlayLogPolicy:                          {:s}", pie::hac::ApplicationControlPropertyUtil::getPlayLogPolicyAsString(mNacp.getPlayLogPolicy())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.playLogPolicy", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getPlayLogPolicyAsString(mNacp.getPlayLogPolicy())},
+		{"int", mNacp.getPlayLogPolicy()}
+	});
 
 	// PresenceGroupId
-	if (mNacp.getPresenceGroupId() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  PresenceGroupId:                        0x{:016x}\n", mNacp.getPresenceGroupId());
-	}
+	r.text(fmt::format("  PresenceGroupId:                        0x{:016x}", mNacp.getPresenceGroupId()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.presenceGroupId", fmt::format("0x{:016x}", mNacp.getPresenceGroupId()));
 
 	// RatingAge
 	if (mNacp.getRatingAge().size() > 0)
 	{
-		fmt::print("  RatingAge:\n");
+		r.text("  RatingAge:");
 
 		for (auto itr = mNacp.getRatingAge().begin(); itr != mNacp.getRatingAge().end(); itr++)
 		{
-			fmt::print("    {:s}:\n", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation));
-			fmt::print("      Age: {:d}\n", itr->age);
+			r.text(fmt::format("    {:s}:", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation)));
+			r.text(fmt::format("      Age: {:d}", itr->age));
+
+			r.push("data.applicationControlProperty.ratingAge", nlohmann::json{
+				{"organization", pie::hac::ApplicationControlPropertyUtil::getOrganisationAsString(itr->organisation)},
+				{"age", itr->age}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  RatingAge:                              None\n");
+		r.text("  RatingAge:                              None", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.ratingAge", nlohmann::json::array());
 	}
 
 	// DisplayVersion
 	if (mNacp.getDisplayVersion().empty() == false)
 	{
-		fmt::print("  DisplayVersion:                         {:s}\n", mNacp.getDisplayVersion());
+		r.text(fmt::format("  DisplayVersion:                         {:s}", mNacp.getDisplayVersion()));
+
+		r.set("data.applicationControlProperty.displayVersion", mNacp.getDisplayVersion());
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  DisplayVersion:                         (NotSet)\n");
+		r.text("  DisplayVersion:                         (NotSet)", Report::TextType::Extended);
+
+		r.set("data.applicationControlProperty.displayVersion", nullptr);
 	}
 
 	// AddOnContentBaseId
-	if (mNacp.getAddOnContentBaseId() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  AddOnContentBaseId:                     0x{:016x}\n", mNacp.getAddOnContentBaseId());
-	}
+	r.text(fmt::format("  AddOnContentBaseId:                     0x{:016x}", mNacp.getAddOnContentBaseId()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.addOnContentBaseId", fmt::format("0x{:016x}", mNacp.getAddOnContentBaseId()));
 
 	// SaveDataOwnerId
-	if (mNacp.getSaveDataOwnerId() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  SaveDataOwnerId:                        0x{:016x}\n", mNacp.getSaveDataOwnerId());
-	}
+	r.text(fmt::format("  SaveDataOwnerId:                        0x{:016x}", mNacp.getSaveDataOwnerId()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.saveDataOwnerId", fmt::format("0x{:016x}", mNacp.getSaveDataOwnerId()));
 
 	// UserAccountSaveDataSize
-	if (mNacp.getUserAccountSaveDataSize().size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  UserAccountSaveDataSize:                {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().size));
-	}
+	r.text(fmt::format("  UserAccountSaveDataSize:                {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.userAccountSaveDataSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().size)},
+		{"int", mNacp.getUserAccountSaveDataSize().size}
+	});
 
 	// UserAccountSaveDataJournalSize
-	if (mNacp.getUserAccountSaveDataSize().journal_size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  UserAccountSaveDataJournalSize:         {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().journal_size));
-	}
+	r.text(fmt::format("  UserAccountSaveDataJournalSize:         {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().journal_size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.userAccountSaveDataJournalSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataSize().journal_size)},
+		{"int", mNacp.getUserAccountSaveDataSize().journal_size}
+	});
 
 	// DeviceSaveDataSize
-	if (mNacp.getDeviceSaveDataSize().size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  DeviceSaveDataSize:                     {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().size));
-	}
+	r.text(fmt::format("  DeviceSaveDataSize:                     {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.deviceSaveDataSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().size)},
+		{"int", mNacp.getDeviceSaveDataSize().size}
+	});
 
 	// DeviceSaveDataJournalSize
-	if (mNacp.getDeviceSaveDataSize().journal_size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  DeviceSaveDataJournalSize:              {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().journal_size));
-	}
+	r.text(fmt::format("  DeviceSaveDataJournalSize:              {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().journal_size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.deviceSaveDataJournalSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataSize().journal_size)},
+		{"int", mNacp.getDeviceSaveDataSize().journal_size}
+	});
 
 	// BcatDeliveryCacheStorageSize
-	if (mNacp.getBcatDeliveryCacheStorageSize() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  BcatDeliveryCacheStorageSize:           {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getBcatDeliveryCacheStorageSize()));
-	}
+	r.text(fmt::format("  BcatDeliveryCacheStorageSize:           {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getBcatDeliveryCacheStorageSize())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.bcatDeliveryCacheStorageSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getBcatDeliveryCacheStorageSize())},
+		{"int", mNacp.getBcatDeliveryCacheStorageSize()}
+	});
 
 	// ApplicationErrorCodeCategory
 	if (mNacp.getApplicationErrorCodeCategory().empty() == false)
 	{
-		fmt::print("  ApplicationErrorCodeCategory:           {:s}\n", mNacp.getApplicationErrorCodeCategory());
+		r.text(fmt::format("  ApplicationErrorCodeCategory:           {:s}", mNacp.getApplicationErrorCodeCategory()));
+		r.set("data.applicationControlProperty.applicationErrorCodeCategory", mNacp.getApplicationErrorCodeCategory());
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  ApplicationErrorCodeCategory:           (NotSet)\n");
+		r.text(fmt::format("  ApplicationErrorCodeCategory:           (NotSet)"), Report::TextType::Extended);
+		r.set("data.applicationControlProperty.applicationErrorCodeCategory", nullptr);
 	}
 
 	// LocalCommunicationId
 	if (mNacp.getLocalCommunicationId().size() > 0)
 	{
-		fmt::print("  LocalCommunicationId:\n");
+		r.text("  LocalCommunicationId:");
 
 		for (auto itr = mNacp.getLocalCommunicationId().begin(); itr != mNacp.getLocalCommunicationId().end(); itr++)
 		{
-			fmt::print("    0x{:016x}\n", *itr);
+			r.text(fmt::format("    0x{:016x}", *itr));
+			r.push("data.applicationControlProperty.localCommunicationId", fmt::format("0x{:016x}", *itr));
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  LocalCommunicationId:                   None\n");
+		r.text("  LocalCommunicationId:                   None", Report::TextType::Extended);
+		r.push("data.applicationControlProperty.localCommunicationId", nlohmann::json::array());
 	}
 
 	// LogoType
-	fmt::print("  LogoType:                               {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLogoTypeAsString(mNacp.getLogoType()));
+	r.text(fmt::format("  LogoType:                               {:s}", pie::hac::ApplicationControlPropertyUtil::getLogoTypeAsString(mNacp.getLogoType())));
+	r.set("data.applicationControlProperty.logoType", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getLogoTypeAsString(mNacp.getLogoType())},
+		{"int", mNacp.getLogoType()}
+	});
 
 	// LogoHandling
-	if (mNacp.getLogoHandling() != pie::hac::nacp::LogoHandling_Auto || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  LogoHandling:                           {:s}\n", pie::hac::ApplicationControlPropertyUtil::getLogoHandlingAsString(mNacp.getLogoHandling()));
-	}
+	r.text(fmt::format("  LogoHandling:                           {:s}", pie::hac::ApplicationControlPropertyUtil::getLogoHandlingAsString(mNacp.getLogoHandling())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.logoHandling", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getLogoHandlingAsString(mNacp.getLogoHandling())},
+		{"int", mNacp.getLogoHandling()}
+	});
 
 	// RuntimeAddOnContentInstall
-	if (mNacp.getRuntimeAddOnContentInstall() != pie::hac::nacp::RuntimeAddOnContentInstall_Deny || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  RuntimeAddOnContentInstall:             {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRuntimeAddOnContentInstallAsString(mNacp.getRuntimeAddOnContentInstall()));
-	}
+	r.text(fmt::format("  RuntimeAddOnContentInstall:             {:s}", pie::hac::ApplicationControlPropertyUtil::getRuntimeAddOnContentInstallAsString(mNacp.getRuntimeAddOnContentInstall())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.runtimeAddOnContentInstall", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getRuntimeAddOnContentInstallAsString(mNacp.getRuntimeAddOnContentInstall())},
+		{"int", mNacp.getRuntimeAddOnContentInstall()}
+	});
 
 	// RuntimeParameterDelivery
-	if (mNacp.getRuntimeParameterDelivery() != pie::hac::nacp::RuntimeParameterDelivery_Always || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  RuntimeParameterDelivery:               {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRuntimeParameterDeliveryAsString(mNacp.getRuntimeParameterDelivery()));
-	}
+	r.text(fmt::format("  RuntimeParameterDelivery:               {:s}", pie::hac::ApplicationControlPropertyUtil::getRuntimeParameterDeliveryAsString(mNacp.getRuntimeParameterDelivery())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.runtimeParameterDelivery", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getRuntimeParameterDeliveryAsString(mNacp.getRuntimeParameterDelivery())},
+		{"int", mNacp.getRuntimeParameterDelivery()}
+	});
 
 	// CrashReport
-	if (mNacp.getCrashReport() != pie::hac::nacp::CrashReport_Deny || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CrashReport:                            {:s}\n", pie::hac::ApplicationControlPropertyUtil::getCrashReportAsString(mNacp.getCrashReport()));
-	}
+	r.text(fmt::format("  CrashReport:                            {:s}", pie::hac::ApplicationControlPropertyUtil::getCrashReportAsString(mNacp.getCrashReport())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.crashReport", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getCrashReportAsString(mNacp.getCrashReport())},
+		{"int", mNacp.getCrashReport()}
+	});
 
 	// Hdcp
-	if (mNacp.getHdcp() != pie::hac::nacp::Hdcp_None || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  Hdcp:                                   {:s}\n", pie::hac::ApplicationControlPropertyUtil::getHdcpAsString(mNacp.getHdcp()));
-	}
+	r.text(fmt::format("  Hdcp:                                   {:s}", pie::hac::ApplicationControlPropertyUtil::getHdcpAsString(mNacp.getHdcp())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.hdcp", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getHdcpAsString(mNacp.getHdcp())},
+		{"int", mNacp.getHdcp()}
+	});
 
 	// SeedForPsuedoDeviceId
-	if (mNacp.getSeedForPsuedoDeviceId() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  SeedForPsuedoDeviceId:                  0x{:016x}\n", mNacp.getSeedForPsuedoDeviceId());
-	}
+	r.text(fmt::format("  SeedForPsuedoDeviceId:                  0x{:016x}", mNacp.getSeedForPsuedoDeviceId()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.seedForPsuedoDeviceId", fmt::format("0x{:016x}",  mNacp.getSeedForPsuedoDeviceId()));
 
 	// BcatPassphase
 	if (mNacp.getBcatPassphase().empty() == false)
 	{
-		fmt::print("  BcatPassphase:                          {:s}\n", mNacp.getBcatPassphase());
+		r.text(fmt::format("  BcatPassphase:                          {:s}", mNacp.getBcatPassphase()));
+		r.set("data.applicationControlProperty.bcatPassphrase", mNacp.getBcatPassphase());
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  BcatPassphase:                          (NotSet)\n");
+		r.text("  BcatPassphase:                          (NotSet)", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.bcatPassphrase", nullptr);
 	}
 
 	// StartupUserAccountOption
 	if (mNacp.getStartupUserAccountOption().size() > 0)
 	{
-		fmt::print("  StartupUserAccountOption:\n");
+		r.text("  StartupUserAccountOption:");
 
 		for (auto itr = mNacp.getStartupUserAccountOption().begin(); itr != mNacp.getStartupUserAccountOption().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountOptionFlagAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountOptionFlagAsString(*itr)));
+			r.push("data.applicationControlProperty.startupUserAccountOption", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getStartupUserAccountOptionFlagAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  StartupUserAccountOption:               None\n");
+		r.text("  StartupUserAccountOption:               None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.startupUserAccountOption", nlohmann::json::array());
 	}
 
 	// UserAccountSaveDataSizeMax
-	if (mNacp.getUserAccountSaveDataMax().size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  UserAccountSaveDataSizeMax:             {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().size));
-	}
+	r.text(fmt::format("  UserAccountSaveDataSizeMax:             {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.userAccountSaveDataSizeMax", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().size)},
+		{"int", mNacp.getUserAccountSaveDataMax().size}
+	});
 
 	// UserAccountSaveDataJournalSizeMax
-	if (mNacp.getUserAccountSaveDataMax().journal_size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  UserAccountSaveDataJournalSizeMax:      {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().journal_size));
-	}
+	r.text(fmt::format("  UserAccountSaveDataJournalSizeMax:      {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().journal_size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.userAccountSaveDataJournalSizeMax", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getUserAccountSaveDataMax().journal_size)},
+		{"int", mNacp.getUserAccountSaveDataMax().journal_size}
+	});
 
 	// DeviceSaveDataSizeMax
-	if (mNacp.getDeviceSaveDataMax().size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  DeviceSaveDataSizeMax:                  {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().size));
-	}
+	r.text(fmt::format("  DeviceSaveDataSizeMax:                  {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.deviceSaveDataSizeMax", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().size)},
+		{"int", mNacp.getDeviceSaveDataMax().size}
+	});
 
 	// DeviceSaveDataJournalSizeMax
-	if (mNacp.getDeviceSaveDataMax().journal_size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  DeviceSaveDataJournalSizeMax:           {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().journal_size));
-	}
+	r.text(fmt::format("  DeviceSaveDataJournalSizeMax:           {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().journal_size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.deviceSaveDataJournalSizeMax", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getDeviceSaveDataMax().journal_size)},
+		{"int", mNacp.getDeviceSaveDataMax().journal_size}
+	});
 
 	// TemporaryStorageSize
-	if (mNacp.getTemporaryStorageSize() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  TemporaryStorageSize:                   {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getTemporaryStorageSize()));
-	}
+	r.text(fmt::format("  TemporaryStorageSize:                   {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getTemporaryStorageSize())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.temporaryStorageSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getTemporaryStorageSize())},
+		{"int", mNacp.getTemporaryStorageSize()}
+	});
 
 	// CacheStorageSize
-	if (mNacp.getCacheStorageSize().size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CacheStorageSize:                       {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().size));
-	}
+	r.text(fmt::format("  CacheStorageSize:                       {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.cacheStorageSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().size)},
+		{"int", mNacp.getCacheStorageSize().size}
+	});
 
 	// CacheStorageJournalSize
-	if (mNacp.getCacheStorageSize().journal_size != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CacheStorageJournalSize:                {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().journal_size));
-	}
+	r.text(fmt::format("  CacheStorageJournalSize:                {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().journal_size)), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.cacheStorageJournalSize", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageSize().journal_size)},
+		{"int", mNacp.getCacheStorageSize().journal_size}
+	});
 
 	// CacheStorageDataAndJournalSizeMax
-	if (mNacp.getCacheStorageDataAndJournalSizeMax() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CacheStorageDataAndJournalSizeMax:      {:s}\n", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageDataAndJournalSizeMax()));
-	}
+	r.text(fmt::format("  CacheStorageDataAndJournalSizeMax:      {:s}", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageDataAndJournalSizeMax())));
+	r.set("data.applicationControlProperty.cacheStorageDataAndJournalSizeMax", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getSaveDataSizeAsString(mNacp.getCacheStorageDataAndJournalSizeMax())},
+		{"int", mNacp.getCacheStorageDataAndJournalSizeMax()}
+	});
 
 	// CacheStorageIndexMax
-	if (mNacp.getCacheStorageIndexMax() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CacheStorageIndexMax:                   0x{:04x}\n", mNacp.getCacheStorageIndexMax());
-	}
+	r.text(fmt::format("  CacheStorageIndexMax:                   0x{:04x}", mNacp.getCacheStorageIndexMax()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.cacheStorageIndexMax", fmt::format("0x{:04x}", mNacp.getCacheStorageIndexMax()));
 
 	// PlayLogQueryableApplicationId
 	if (mNacp.getPlayLogQueryableApplicationId().size() > 0)
 	{
-		fmt::print("  PlayLogQueryableApplicationId:\n");
+		r.text("  PlayLogQueryableApplicationId:");
 
 		for (auto itr = mNacp.getPlayLogQueryableApplicationId().begin(); itr != mNacp.getPlayLogQueryableApplicationId().end(); itr++)
 		{
-			fmt::print("    0x{:016x}\n", *itr);
+			r.text(fmt::format("    0x{:016x}", *itr));
+			r.push("data.applicationControlProperty.playLogQueryableApplicationId", fmt::format("0x{:016x}", *itr));
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  PlayLogQueryableApplicationId:          None\n");
+		r.text("  PlayLogQueryableApplicationId:          None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.playLogQueryableApplicationId", nlohmann::json::array());
 	}
 
 	// PlayLogQueryCapability
-	if (mNacp.getPlayLogQueryCapability() != pie::hac::nacp::PlayLogQueryCapability_None || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  PlayLogQueryCapability:                 {:s}\n", pie::hac::ApplicationControlPropertyUtil::getPlayLogQueryCapabilityAsString(mNacp.getPlayLogQueryCapability()));
-	}
+	r.text(fmt::format("  PlayLogQueryCapability:                 {:s}", pie::hac::ApplicationControlPropertyUtil::getPlayLogQueryCapabilityAsString(mNacp.getPlayLogQueryCapability())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.playLogQueryCapability", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getPlayLogQueryCapabilityAsString(mNacp.getPlayLogQueryCapability())},
+		{"int", mNacp.getPlayLogQueryCapability()}
+	});
 
 	// Repair
 	if (mNacp.getRepair().size() > 0)
 	{
-		fmt::print("  Repair:\n");
+		r.text("  Repair:");
 
 		for (auto itr = mNacp.getRepair().begin(); itr != mNacp.getRepair().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRepairFlagAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getRepairFlagAsString(*itr)));
+			r.push("data.applicationControlProperty.repairFlags", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getRepairFlagAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  Repair:                                 None\n");
+		r.text("  Repair:                                 None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.repairFlags", nlohmann::json::array());
 	}
 
 	// ProgramIndex
-	if (mNacp.getProgramIndex() != 0 || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  ProgramIndex:                           0x{:02x}\n", mNacp.getProgramIndex());
-	}
+	r.text(fmt::format("  ProgramIndex:                           0x{:02x}", mNacp.getProgramIndex()), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.programIndex", fmt::format("0x{:02x}",  mNacp.getProgramIndex()));
 
 	// RequiredNetworkServiceLicenseOnLaunch
 	if (mNacp.getRequiredNetworkServiceLicenseOnLaunch().size() > 0)
 	{
-		fmt::print("  RequiredNetworkServiceLicenseOnLaunch:\n");
+		r.text("  RequiredNetworkServiceLicenseOnLaunch:");
 
 		for (auto itr = mNacp.getRequiredNetworkServiceLicenseOnLaunch().begin(); itr != mNacp.getRequiredNetworkServiceLicenseOnLaunch().end(); itr++)
 		{
-			fmt::print("    {:s}\n", pie::hac::ApplicationControlPropertyUtil::getRequiredNetworkServiceLicenseOnLaunchFlagAsString(*itr));
+			r.text(fmt::format("    {:s}", pie::hac::ApplicationControlPropertyUtil::getRequiredNetworkServiceLicenseOnLaunchFlagAsString(*itr)));
+			r.push("data.applicationControlProperty.requiredNetworkServiceLicenseOnLaunch", nlohmann::json{
+				{"string", pie::hac::ApplicationControlPropertyUtil::getRequiredNetworkServiceLicenseOnLaunchFlagAsString(*itr)},
+				{"int", *itr}
+			});
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  RequiredNetworkServiceLicenseOnLaunch:  None\n");
+		r.text("  RequiredNetworkServiceLicenseOnLaunch:  None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.requiredNetworkServiceLicenseOnLaunch", nlohmann::json::array());
 	}
 
 	// NeighborDetectionClientConfiguration
@@ -464,22 +546,31 @@ void nstool::NacpProcess::displayNacp()
 
 	if (detect_config.countSendGroupConfig() > 0 || detect_config.countReceivableGroupConfig() > 0)
 	{
-		fmt::print("  NeighborDetectionClientConfiguration:\n");
+		r.text("  NeighborDetectionClientConfiguration:");
 
 		if (detect_config.countSendGroupConfig() > 0)
 		{
-			fmt::print("    SendGroupConfig:\n");
-			fmt::print("      GroupId:  0x{:016x}\n", detect_config.send_data_configuration.group_id);
-			fmt::print("        Key:    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(detect_config.send_data_configuration.key.data(), detect_config.send_data_configuration.key.size(), false, ""));
+			r.text("    SendGroupConfig:");
+			r.text(fmt::format("      GroupId:  0x{:016x}", detect_config.send_data_configuration.group_id));
+			r.text(fmt::format("        Key:    {:s}", tc::cli::FormatUtil::formatBytesAsString(detect_config.send_data_configuration.key.data(), detect_config.send_data_configuration.key.size(), false, "")));
+
+			r.set("data.applicationControlProperty.neighborDetectionClientConfiguration.sendGroupConfig", nlohmann::json{
+				{"groupId", fmt::format("0x{:016x}", detect_config.send_data_configuration.group_id)},
+				{"key", tc::cli::FormatUtil::formatBytesAsString(detect_config.send_data_configuration.key.data(), detect_config.send_data_configuration.key.size(), false, "")}
+			});
 		}
-		else if (mCliOutputMode.show_extended_info)
+		else
 		{
-			fmt::print("    SendGroupConfig: None\n");
+			r.text("    SendGroupConfig: None", Report::TextType::Extended);
+			r.set("data.applicationControlProperty.neighborDetectionClientConfiguration.sendGroupConfig", nlohmann::json{
+				{"groupId", nullptr},
+				{"key", nullptr}
+			});
 		}
 
 		if (detect_config.countReceivableGroupConfig() > 0)
 		{
-			fmt::print("    ReceivableGroupConfig:\n");
+			r.text("    ReceivableGroupConfig:");
 
 			for (size_t i = 0; i < pie::hac::nacp::kReceivableGroupConfigurationCount; i++)
 			{
@@ -487,59 +578,76 @@ void nstool::NacpProcess::displayNacp()
 					continue;
 				}
 
-				fmt::print("      GroupId:  0x{:016x}\n", detect_config.receivable_data_configuration[i].group_id);
-				fmt::print("        Key:    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(detect_config.receivable_data_configuration[i].key.data(), detect_config.receivable_data_configuration[i].key.size(), false, ""));
+				r.text(fmt::format("      GroupId:  0x{:016x}", detect_config.receivable_data_configuration[i].group_id));
+				r.text(fmt::format("        Key:    {:s}", tc::cli::FormatUtil::formatBytesAsString(detect_config.receivable_data_configuration[i].key.data(), detect_config.receivable_data_configuration[i].key.size(), false, "")));
+
+				r.push("data.applicationControlProperty.neighborDetectionClientConfiguration.receivableGroupConfig", nlohmann::json{
+					{"groupId", fmt::format("0x{:016x}", detect_config.receivable_data_configuration[i].group_id)},
+					{"key", tc::cli::FormatUtil::formatBytesAsString(detect_config.receivable_data_configuration[i].key.data(), detect_config.receivable_data_configuration[i].key.size(), false, "")}
+				});
 			}
 		}
-		else if (mCliOutputMode.show_extended_info)
+		else
 		{
-			fmt::print("    ReceivableGroupConfig: None\n");
+			r.text("    ReceivableGroupConfig: None", Report::TextType::Extended);
+			r.set("data.applicationControlProperty.neighborDetectionClientConfiguration.receivableGroupConfig", nlohmann::json::array());
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  NeighborDetectionClientConfiguration:   None\n");
+		r.text("  NeighborDetectionClientConfiguration:   None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.neighborDetectionClientConfiguration", nlohmann::json{
+			{"sendGroupConfig", nlohmann::json{
+				{"groupId", nullptr},
+				{"key", nullptr}
+			}},
+			{"receivableGroupConfig", nlohmann::json::array()}
+		});
 	}
 
 	// JitConfiguration
-	if (mNacp.getJitConfiguration().is_enabled || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  JitConfiguration:\n");
-		fmt::print("    IsEnabled:  {}\n", mNacp.getJitConfiguration().is_enabled);
-		fmt::print("    MemorySize: 0x{:016x}\n", mNacp.getJitConfiguration().memory_size);
-	}
+	r.text("  JitConfiguration:", Report::TextType::Extended);
+	r.text(fmt::format("    IsEnabled:  {}", mNacp.getJitConfiguration().is_enabled), Report::TextType::Extended);
+	r.text(fmt::format("    MemorySize: 0x{:016x}", mNacp.getJitConfiguration().memory_size), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.jitConfiguration.isEnabled", mNacp.getJitConfiguration().is_enabled);
+	r.set("data.applicationControlProperty.jitConfiguration.memorySize", fmt::format("0x{:016x}", mNacp.getJitConfiguration().memory_size));
 
 	// PlayReportPermission
-	if (mNacp.getPlayReportPermission() != pie::hac::nacp::PlayReportPermission_None || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  PlayReportPermission:                   {:s}\n", pie::hac::ApplicationControlPropertyUtil::getPlayReportPermissionAsString(mNacp.getPlayReportPermission()));
-	}
+	r.text(fmt::format("  PlayReportPermission:                   {:s}", pie::hac::ApplicationControlPropertyUtil::getPlayReportPermissionAsString(mNacp.getPlayReportPermission())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.playReportPermission", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getPlayReportPermissionAsString(mNacp.getPlayReportPermission())},
+		{"int", mNacp.getPlayReportPermission()}
+	});
 
 	// CrashScreenshotForProd
-	if (mNacp.getCrashScreenshotForProd() != pie::hac::nacp::CrashScreenshotForProd_Deny || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CrashScreenshotForProd:                 {:s}\n", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForProdAsString(mNacp.getCrashScreenshotForProd()));
-	}
+	r.text(fmt::format("  CrashScreenshotForProd:                 {:s}", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForProdAsString(mNacp.getCrashScreenshotForProd())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.crashScreenshotForProduction", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForProdAsString(mNacp.getCrashScreenshotForProd())},
+		{"int", mNacp.getCrashScreenshotForProd()}
+	});
 
 	// CrashScreenshotForDev
-	if (mNacp.getCrashScreenshotForDev() != pie::hac::nacp::CrashScreenshotForDev_Deny || mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  CrashScreenshotForDev:                  {:s}\n", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForDevAsString(mNacp.getCrashScreenshotForDev()));
-	}
+	r.text(fmt::format("  CrashScreenshotForDev:                  {:s}", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForDevAsString(mNacp.getCrashScreenshotForDev())), Report::TextType::Extended);
+	r.set("data.applicationControlProperty.crashScreenshotForDevelopment", nlohmann::json{
+		{"string", pie::hac::ApplicationControlPropertyUtil::getCrashScreenshotForDevAsString(mNacp.getCrashScreenshotForDev())},
+		{"int", mNacp.getCrashScreenshotForDev()}
+	});
 
 	// AccessibleLaunchRequiredVersion
 	if (mNacp.getAccessibleLaunchRequiredVersionApplicationId().size() > 0)
 	{
-		fmt::print("  AccessibleLaunchRequiredVersion:\n");
-		fmt::print("    ApplicationId:\n");
+		r.text("  AccessibleLaunchRequiredVersion:");
+		r.text("    ApplicationId:");
 
 		for (auto itr = mNacp.getAccessibleLaunchRequiredVersionApplicationId().begin(); itr != mNacp.getAccessibleLaunchRequiredVersionApplicationId().end(); itr++)
 		{
-			fmt::print("      0x{:016x}\n", *itr);
+			r.text(fmt::format("      0x{:016x}", *itr));
+			r.push("data.applicationControlProperty.accessibleLaunchRequiredVersion.applicationId", fmt::format("0x{:016x}", *itr));
 		}
 	}
-	else if (mCliOutputMode.show_extended_info)
+	else
 	{
-		fmt::print("  AccessibleLaunchRequiredVersion:        None\n");
+		r.text("  AccessibleLaunchRequiredVersion:        None", Report::TextType::Extended);
+		r.set("data.applicationControlProperty.accessibleLaunchRequiredVersion.applicationId", nlohmann::json::array());
 	}
 }

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <cctype>
 #include "Report.hpp"
 
 inline bool isNotPrintable(char chr) {
@@ -156,4 +157,49 @@ std::string nstool::getTruncatedBytesString(const byte_t* data, size_t len, bool
 	}
 
 	return str;
+}
+
+std::string nstool::trimTrailingNewline(const std::string& s)
+{
+	std::string out = s;
+
+	while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) {
+		out.pop_back();
+	}
+
+	return out;
+}
+
+static std::string trim(const std::string& s)
+{
+    size_t start = 0;
+    while (start < s.size() && std::isspace((unsigned char)s[start])) {
+        ++start;
+	}
+
+    size_t end = s.size();
+    while (end > start && std::isspace((unsigned char)s[end - 1])) {
+        --end;
+	}
+
+    return s.substr(start, end - start);
+}
+
+std::vector<std::string> nstool::splitAndTrimLines(const std::string& s)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string line;
+
+    while (std::getline(ss, line))
+    {
+        std::string cleaned = trim(line);
+
+		// Skip empty lines.
+		if (!cleaned.empty()) {
+            result.push_back(cleaned);
+		}
+    }
+
+    return result;
 }

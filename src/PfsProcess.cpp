@@ -9,7 +9,6 @@
 nstool::PfsProcess::PfsProcess() :
 	mModuleName("nstool::PfsProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false),
 	mPfs(),
 	mFileSystem(),
@@ -80,11 +79,6 @@ void nstool::PfsProcess::process()
 void nstool::PfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::PfsProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::PfsProcess::setVerifyMode(bool verify)

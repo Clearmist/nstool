@@ -7,7 +7,6 @@
 nstool::RomfsProcess::RomfsProcess() :
 	mModuleName("nstool::RomfsProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false),
 	mDirNum(0),
 	mFileNum(0),
@@ -113,11 +112,6 @@ void nstool::RomfsProcess::process()
 void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::RomfsProcess::setVerifyMode(bool verify)

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "types.h"
 
 namespace nstool
@@ -14,4 +15,6 @@ void writeStreamToStream(const std::shared_ptr<tc::io::IStream>& in_stream, cons
 
 std::string getTruncatedBytesString(const byte_t* data, size_t len);
 std::string getTruncatedBytesString(const byte_t* data, size_t len, bool do_not_truncate);
+std::string trimTrailingNewline(const std::string& s);
+std::vector<std::string> splitAndTrimLines(const std::string& s);
 }

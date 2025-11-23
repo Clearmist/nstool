@@ -6,7 +6,6 @@
 nstool::AssetProcess::AssetProcess() :
 	mModuleName("nstool::AssetProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false)
 {
 }
@@ -21,11 +20,6 @@ void nstool::AssetProcess::process()
 void nstool::AssetProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::AssetProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::AssetProcess::setVerifyMode(bool verify)
@@ -110,7 +104,6 @@ void nstool::AssetProcess::processSections()
 		}
 
 		mNacp.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size));
-		mNacp.setCliOutputMode(mCliOutputMode);
 		mNacp.setVerifyMode(mVerify);
 
 		mNacp.process();
@@ -123,7 +116,6 @@ void nstool::AssetProcess::processSections()
 		}
 
 		mRomfs.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getRomfsInfo().offset, mHdr.getRomfsInfo().size));
-		mRomfs.setCliOutputMode(mCliOutputMode);
 		mRomfs.setVerifyMode(mVerify);
 
 		mRomfs.process();
