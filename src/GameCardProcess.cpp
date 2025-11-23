@@ -137,18 +137,18 @@ void nstool::GameCardProcess::displayHeader()
 	r.text(fmt::format("  PackageId:              0x{:016x}", mHdr.getPackageId()));
 	r.text(fmt::format("  Flags:                  0x{:02x}", *((byte_t*)&raw_hdr->flags)));
 
-	r.set("data.headerGameCard.cardHeaderVersion", mHdr.getCardHeaderVersion());
-	r.set("data.headerGameCard.romSize", nlohmann::json{
+	r.set("data.gameCardHeader.cardHeaderVersion", mHdr.getCardHeaderVersion());
+	r.set("data.gameCardHeader.romSize", nlohmann::json{
 		{"string", pie::hac::GameCardUtil::getRomSizeAsString((pie::hac::gc::RomSize)mHdr.getRomSizeType())},
 		{"hex", fmt::format("0x{:x}", mHdr.getRomSizeType())}
 	});
-	r.set("data.headerGameCard.packageId", fmt::format("0x{:016x}", mHdr.getPackageId()));
-	r.set("data.headerGameCard.flagHex", fmt::format("0x{:02x}", *((byte_t*)&raw_hdr->flags)));
+	r.set("data.gameCardHeader.packageId", fmt::format("0x{:016x}", mHdr.getPackageId()));
+	r.set("data.gameCardHeader.flagHex", fmt::format("0x{:02x}", *((byte_t*)&raw_hdr->flags)));
 
 	for (auto itr = mHdr.getFlags().begin(); itr != mHdr.getFlags().end(); itr++)
 	{
 		r.text(fmt::format("    {:s}", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr)));
-		r.push("data.headerGameCard.flags", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr));
+		r.push("data.gameCardHeader.flags", pie::hac::GameCardUtil::getHeaderFlagsAsString((pie::hac::gc::HeaderFlags)*itr));
 	}
 
 	std::string initialDataHash = trimTrailingNewline(tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(mHdr.getInitialDataHash().data(), mHdr.getInitialDataHash().size(), true, "", 0x10, 6, false));
@@ -164,53 +164,53 @@ void nstool::GameCardProcess::displayHeader()
 	r.text(fmt::format("  SelT1Key:               0x{:x}", mHdr.getSelT1Key()));
 	r.text(fmt::format("  SelKey:                 0x{:x}", mHdr.getSelKey()));
 
-	r.set("data.headerGameCard.kekIndex", nlohmann::json{
+	r.set("data.gameCardHeader.kekIndex", nlohmann::json{
 		{"string", pie::hac::GameCardUtil::getKekIndexAsString((pie::hac::gc::KekIndex)mHdr.getKekIndex())},
 		{"int", mHdr.getKekIndex()}
 	});
-	r.set("data.headerGameCard.titleKeyDecIndex", mHdr.getTitleKeyDecIndex());
+	r.set("data.gameCardHeader.titleKeyDecIndex", mHdr.getTitleKeyDecIndex());
 
 	auto lines = splitAndTrimLines(initialDataHash);
 
 	for (const auto& line : lines) {
-		r.push("data.headerGameCard.initialData.hash", line);
+		r.push("data.gameCardHeader.initialData.hash", line);
 	}
 
-	r.set("data.headerGameCard.extendedHeaderAesCbcIV", tc::cli::FormatUtil::formatBytesAsString(mHdr.getAesCbcIv().data(), mHdr.getAesCbcIv().size(), true, ""));
-	r.set("data.headerGameCard.selSec", fmt::format("0x{:x}", mHdr.getSelSec()));
-	r.set("data.headerGameCard.selT1Key", fmt::format("0x{:x}", mHdr.getSelT1Key()));
-	r.set("data.headerGameCard.selKey", fmt::format("0x{:x}", mHdr.getSelKey()));
+	r.set("data.gameCardHeader.extendedHeaderAesCbcIV", tc::cli::FormatUtil::formatBytesAsString(mHdr.getAesCbcIv().data(), mHdr.getAesCbcIv().size(), true, ""));
+	r.set("data.gameCardHeader.selSec", fmt::format("0x{:x}", mHdr.getSelSec()));
+	r.set("data.gameCardHeader.selT1Key", fmt::format("0x{:x}", mHdr.getSelT1Key()));
+	r.set("data.gameCardHeader.selKey", fmt::format("0x{:x}", mHdr.getSelKey()));
 
 	r.text(fmt::format("  RomAreaStartPage:       0x{:x}", mHdr.getRomAreaStartPage()), Report::TextType::Layout);
-	r.set("data.headerGameCard.romAreaStartPage.block", fmt::format("0x{:x}", mHdr.getRomAreaStartPage()));
+	r.set("data.gameCardHeader.romAreaStartPage.block", fmt::format("0x{:x}", mHdr.getRomAreaStartPage()));
 
 	if (mHdr.getRomAreaStartPage() != (uint32_t)(-1)) {
 		r.text(fmt::format("  RomAreaStartPageAddr    0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getRomAreaStartPage())), Report::TextType::Layout);
-		r.set("data.headerGameCard.romAreaStartPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getRomAreaStartPage())));
+		r.set("data.gameCardHeader.romAreaStartPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getRomAreaStartPage())));
 	}
 
 	r.text(fmt::format("  BackupAreaStartPage:    0x{:x}", mHdr.getBackupAreaStartPage()), Report::TextType::Layout);
-	r.set("data.headerGameCard.backupAreaStartPage.block", fmt::format("0x{:x}", mHdr.getBackupAreaStartPage()));
+	r.set("data.gameCardHeader.backupAreaStartPage.block", fmt::format("0x{:x}", mHdr.getBackupAreaStartPage()));
 
 	if (mHdr.getBackupAreaStartPage() != (uint32_t)(-1)) {
 		r.text(fmt::format("  BackupAreaStartPageAddr: 0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getBackupAreaStartPage())), Report::TextType::Layout);
-		r.set("data.headerGameCard.backupAreaStartPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getBackupAreaStartPage())));
+		r.set("data.gameCardHeader.backupAreaStartPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getBackupAreaStartPage())));
 	}
 
 	r.text(fmt::format("  ValidDataEndPage:       0x{:x}", mHdr.getValidDataEndPage()), Report::TextType::Layout);
-	r.set("data.headerGameCard.validDataEndPage.block", fmt::format("0x{:x}", mHdr.getValidDataEndPage()));
+	r.set("data.gameCardHeader.validDataEndPage.block", fmt::format("0x{:x}", mHdr.getValidDataEndPage()));
 
 	if (mHdr.getValidDataEndPage() != (uint32_t)(-1)) {
 		r.text(fmt::format("  ValidDataEndPageAddr:   0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getValidDataEndPage())), Report::TextType::Layout);
-		r.set("data.headerGameCard.validDataEndPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getValidDataEndPage())));
+		r.set("data.gameCardHeader.validDataEndPage.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getValidDataEndPage())));
 	}
 
 	r.text(fmt::format("  LimArea:                0x{:x}", mHdr.getLimAreaPage()), Report::TextType::Layout);
-	r.set("data.headerGameCard.limArea.block", fmt::format("0x{:x}", mHdr.getLimAreaPage()));
+	r.set("data.gameCardHeader.limArea.block", fmt::format("0x{:x}", mHdr.getLimAreaPage()));
 
 	if (mHdr.getLimAreaPage() != (uint32_t)(-1)) {
 		r.text(fmt::format("  LimAreaAddr:            0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getLimAreaPage())), Report::TextType::Layout);
-		r.set("data.headerGameCard.limArea.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getLimAreaPage())));
+		r.set("data.gameCardHeader.limArea.addr", fmt::format("0x{:x}", pie::hac::GameCardUtil::blockToAddr(mHdr.getLimAreaPage())));
 	}
 
 	std::string partitionFsHash = trimTrailingNewline(tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(mHdr.getPartitionFsHash().data(), mHdr.getPartitionFsHash().size(), true, "", 0x10, 6, false));
@@ -221,13 +221,13 @@ void nstool::GameCardProcess::displayHeader()
 	r.text("    Hash:", Report::TextType::Layout);
 	r.text(fmt::format("      {:s}", partitionFsHash), Report::TextType::Layout);
 
-	r.set("data.headerPartitionFs.offset", fmt::format("0x{:x}", mHdr.getPartitionFsAddress()));
-	r.set("data.headerPartitionFs.size", fmt::format("0x{:x}", mHdr.getPartitionFsSize()));
+	r.set("data.partitionFsHeader.offset", fmt::format("0x{:x}", mHdr.getPartitionFsAddress()));
+	r.set("data.partitionFsHeader.size", fmt::format("0x{:x}", mHdr.getPartitionFsSize()));
 
 	lines = splitAndTrimLines(partitionFsHash);
 
 	for (const auto& line : lines) {
-		r.push("data.headerPartitionFs.hash", line);
+		r.push("data.partitionFsHeader.hash", line);
 	}
 
 	r.text("[GameCard/ExtendedHeader]", Report::TextType::Extended);
@@ -245,34 +245,34 @@ void nstool::GameCardProcess::displayHeader()
 	r.text(fmt::format("    CUP TitleId:          0x{:016x}", mHdr.getUppId()), Report::TextType::Extended);
 	r.text(fmt::format("    CUP Digest:           {:s}", tc::cli::FormatUtil::formatBytesAsString(mHdr.getUppHash().data(), mHdr.getUppHash().size(), true, "")), Report::TextType::Extended);
 
-	r.set("data.headerGameCard.firmwareVersion", nlohmann::json{
+	r.set("data.gameCardHeader.firmwareVersion", nlohmann::json{
 		{"string", mHdr.getFwVersion()},
 		{"int", pie::hac::GameCardUtil::getCardFwVersionDescriptionAsString((pie::hac::gc::FwVersion)mHdr.getFwVersion())}
 	});
-	r.set("data.headerGameCard.accCtrl1", fmt::format("0x{:x}", mHdr.getAccCtrl1()));
-	r.set("data.headerGameCard.cardClockRate", pie::hac::GameCardUtil::getCardClockRateAsString((pie::hac::gc::CardClockRate)mHdr.getAccCtrl1()));
-	r.set("data.headerGameCard.wait1Time", nlohmann::json{
+	r.set("data.gameCardHeader.accCtrl1", fmt::format("0x{:x}", mHdr.getAccCtrl1()));
+	r.set("data.gameCardHeader.cardClockRate", pie::hac::GameCardUtil::getCardClockRateAsString((pie::hac::gc::CardClockRate)mHdr.getAccCtrl1()));
+	r.set("data.gameCardHeader.wait1Time", nlohmann::json{
 		{"read", fmt::format("0x{:x}", mHdr.getWait1TimeRead())},
 		{"write", fmt::format("0x{:x}", mHdr.getWait1TimeWrite())}
 	});
-	r.set("data.headerGameCard.wait2Time", nlohmann::json{
+	r.set("data.gameCardHeader.wait2Time", nlohmann::json{
 		{"read", fmt::format("0x{:x}", mHdr.getWait2TimeRead())},
 		{"write", fmt::format("0x{:x}", mHdr.getWait2TimeWrite())}
 	});
-	r.set("data.headerGameCard.sdkAddonVersion", nlohmann::json{
+	r.set("data.gameCardHeader.sdkAddonVersion", nlohmann::json{
 		{"string", pie::hac::ContentArchiveUtil::getSdkAddonVersionAsString(mHdr.getFwMode())},
 		{"int", mHdr.getFwMode()}
 	});
-	r.set("data.headerGameCard.compatibilityType", nlohmann::json{
+	r.set("data.gameCardHeader.compatibilityType", nlohmann::json{
 		{"string", pie::hac::GameCardUtil::getCompatibilityTypeAsString((pie::hac::gc::CompatibilityType)mHdr.getCompatibilityType())},
 		{"int", mHdr.getCompatibilityType()}
 	});
-	r.set("data.headerGameCard.updatePartition.cupVersion", nlohmann::json{
+	r.set("data.gameCardHeader.updatePartition.cupVersion", nlohmann::json{
 		{"string", pie::hac::ContentMetaUtil::getVersionAsString(mHdr.getUppVersion())},
 		{"int", mHdr.getUppVersion()}
 	});
-	r.set("data.headerGameCard.updatePartition.cupTitleId", fmt::format("0x{:016x}", mHdr.getUppId()));
-	r.set("data.headerGameCard.updatePartition.cupDigest", tc::cli::FormatUtil::formatBytesAsString(mHdr.getUppHash().data(), mHdr.getUppHash().size(), true, ""));
+	r.set("data.gameCardHeader.updatePartition.cupTitleId", fmt::format("0x{:016x}", mHdr.getUppId()));
+	r.set("data.gameCardHeader.updatePartition.cupDigest", tc::cli::FormatUtil::formatBytesAsString(mHdr.getUppHash().data(), mHdr.getUppHash().size(), true, ""));
 }
 
 bool nstool::GameCardProcess::validateRegionOfFile(int64_t offset, int64_t len, const byte_t* test_hash, bool use_salt, byte_t salt)
