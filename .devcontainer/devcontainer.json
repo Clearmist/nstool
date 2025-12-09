@@ -14,8 +14,8 @@
         "ms-vscode.cpptools",
         // Editor Config. Helps maintain consistent coding styles.
         "editorconfig.editorconfig",
-        // Task Explorer. Helps to run and manage tasks from within the file browser pane.
-        "actboy168.tasks",
+        // Fast tasks. Helps to run and manage tasks from within the file browser pane.
+        "batyan-soft.fast-tasks",
         // Markdown All in One. Provides markdown formatting for the readme files.
         "yzhang.markdown-all-in-one"
       ],

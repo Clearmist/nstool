@@ -25,5 +25,3 @@ WORKDIR /workspaces/nstool
 
 # Use bash as default shell
 SHELL ["/bin/bash", "-lc"]
-
-# Keep the image small and simple. Additional packages can be added as needed.
