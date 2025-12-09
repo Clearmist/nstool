@@ -23,12 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /workspaces/nstool
 WORKDIR /workspaces/nstool
 
-# Copy helper scripts into the image and make them executable.
-# During container creation these will be overwritten by the mounted workspace contents,
-# but we provide them to ensure the container image has them available.
-COPY .devcontainer/scripts /tmp/devcontainer-scripts
-RUN chmod +x /tmp/devcontainer-scripts/*.sh && mkdir -p .devcontainer && mv /tmp/devcontainer-scripts .devcontainer/scripts
-
 # Use bash as default shell
 SHELL ["/bin/bash", "-lc"]
 

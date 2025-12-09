@@ -10,9 +10,14 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        // C/C++ Extension. Provides C/C++ language support.
         "ms-vscode.cpptools",
-        "ms-vscode.cmake-tools",
-        "twxs.cmake"
+        // Editor Config. Helps maintain consistent coding styles.
+        "editorconfig.editorconfig",
+        // Task Explorer. Helps to run and manage tasks from within the file browser pane.
+        "actboy168.tasks",
+        // Markdown All in One. Provides markdown formatting for the readme files.
+        "yzhang.markdown-all-in-one"
       ],
       "settings" : {
         "terminal.integrated.shell.linux": "/bin/bash"
