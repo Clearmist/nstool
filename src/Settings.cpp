@@ -1,6 +1,7 @@
 #include "Settings.h"
 #include "types.h"
 #include "version.h"
+#include "build_date.h"
 #include "util.h"
 
 #include <tc/cli.h>
@@ -613,6 +614,12 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 			usage_text();
 			throw tc::ArgumentException(mModuleLabel, "Help required.");
 		}
+
+		if (*itr == "-v" || *itr == "--v" || *itr == "--version" || *itr == "-version")
+		{
+			fmt::print("v{:d}.{:d}.{:d}\n", VER_MAJOR, VER_MINOR, VER_PATCH);
+			std::exit(0);
+		}
 	}
 
 	// save input file
@@ -795,8 +802,8 @@ void nstool::SettingsInitializer::determine_filetype()
 
 void nstool::SettingsInitializer::usage_text() const
 {
-	fmt::print("{:s} v{:d}.{:d}.{:d} (C) {:s}\n", APP_NAME, VER_MAJOR, VER_MINOR, VER_PATCH, AUTHORS);
-	fmt::print("Built: {:s} {:s}\n\n", __TIME__, __DATE__);
+	fmt::print("{:s} v{:d}.{:d}.{:d} Copyright {:s}\n", APP_NAME, VER_MAJOR, VER_MINOR, VER_PATCH, AUTHORS);
+	fmt::print("Built: {:s} {:s}\n\n", BUILD_DATE_ISO().c_str(), __TIME__);
 	fmt::print("Usage: {:s} [options... ] <file>\n", BIN_NAME);
 	fmt::print("\n  General Options:\n");
 	fmt::print("      -d, --dev       Use devkit keyset.\n");

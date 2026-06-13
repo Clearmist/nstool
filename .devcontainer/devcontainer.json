@@ -1,0 +1,31 @@
+{
+  "name": "nstool Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/nstool",
+  "remoteUser": "vscode",
+  "postCreateCommand": "git submodule update --init --recursive || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // C/C++ Extension. Provides C/C++ language support.
+        "ms-vscode.cpptools",
+        // Editor Config. Helps maintain consistent coding styles.
+        "editorconfig.editorconfig",
+        // Fast tasks. Helps to run and manage tasks from within the file browser pane.
+        "batyan-soft.fast-tasks"
+      ],
+      "settings" : {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      }
+    }
+  },
+  "containerEnv": {
+    "ROOT_PROJECT_NAME": "nstool",
+    "ROOT_PROJECT_PATH": "/workspaces/nstool"
+  },
+  "mounts": [],
+  "forwardPorts": []
+}
