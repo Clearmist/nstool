@@ -1,0 +1,130 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build nstool (Linux)",
+      "type": "shell",
+      "command": "mkdir -p build/cmake && cd build/cmake && rm -f CMakeCache.txt && cmake ../.. -DCMAKE_BUILD_TYPE=Release && cmake --build . -j$(nproc)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Build nstool (Windows)",
+      "type": "shell",
+      "command": "mkdir -p build/cmake && cd build/cmake && rm -f CMakeCache.txt && cmake ../.. -DCMAKE_TOOLCHAIN_FILE=mingw-w64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release && cmake --build . -j$(nproc)",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Build nstool (macOS)",
+      "type": "shell",
+      "command": "mkdir -p build/cmake && cd build/cmake && rm -f CMakeCache.txt && cmake ../.. -DCMAKE_BUILD_TYPE=Release -DPLATFORM_NAME=macos && cmake --build . -j$(sysctl -n hw.ncpu)",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Clean All",
+      "dependsOn": [
+        "Clean Cache",
+        "Clean Binaries"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean Cache",
+      "type": "shell",
+      "command": "rm -rf build/cmake/CMakeCache.txt build/cmake/CMakeFiles build/cmake/Makefile build/cmake/cmake_install.cmake build/cmake/deps",
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Clean Binaries",
+      "type": "shell",
+      "command": "rm -rf bin/ deps/*/bin/",
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Build Solution",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\.vscode\\build-nstool.ps1"
+      ]
+    },
+    {
+      "label": "Clean Solution",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\.vscode\\clean-nstool.ps1"
+      ]
+    }
+  ]
+}

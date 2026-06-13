@@ -1,0 +1,6 @@
+{
+  "recommendations": [
+    // Required for running in a devcontainer and using the recommended build instructions.
+    "ms-vscode-remote.remote-containers"
+  ]
+}

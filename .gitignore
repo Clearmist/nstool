@@ -4,7 +4,6 @@ data/*
 *.a
 *.so.*
 .DS_Store
-.vscode/*
 
 # CMake build directory
 build/cmake/
