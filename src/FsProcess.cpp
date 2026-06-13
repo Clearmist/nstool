@@ -1,4 +1,5 @@
 #include "FsProcess.h"
+#include "Report.hpp"
 #include "util.h"
 
 #include <memory>
@@ -9,14 +10,12 @@ nstool::FsProcess::FsProcess() :
 	mModuleLabel("nstool::FsProcess"),
 	mInputFs(),
 	mFsFormatName(),
-	mShowFsInfo(false),
 	mProperties(),
 	mShowFsTree(false),
 	mFsRootLabel(),
 	mExtractJobs(),
 	mDataCache(0x10000)
 {
-
 }
 
 void nstool::FsProcess::process()
@@ -26,20 +25,26 @@ void nstool::FsProcess::process()
 		throw tc::InvalidOperationException(mModuleLabel, "No input filesystem");
 	}
 
-	if (mShowFsInfo)
+	Report& r = get_report();
+
+	// Show the file system type.
+	r.text(fmt::format("[{:s}]", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info"));
+	r.set("data.format", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info");
+
+	// Show the file system properties. These are set in GameCardProcess, PfsProcess, and RomfsProcess.
+	for (auto itr = mProperties.begin(); itr != mProperties.end(); itr++)
 	{
-		fmt::print("[{:s}]\n", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info");
-		for (auto itr = mProperties.begin(); itr != mProperties.end(); itr++)
-		{
-			fmt::print("  {:s}\n", *itr);
-		}
+		r.text(fmt::format("  {:s}", *itr));
 	}
+
+	// Merge the various properties and their values into the data object.
+	r.merge("data", getProperties());
 
 	if (mShowFsTree)
 	{
 		printFs();
 	}
-	
+
 	if (mExtractJobs.empty() == false)
 	{
 		extractFs();
@@ -54,11 +59,6 @@ void nstool::FsProcess::setInputFileSystem(const std::shared_ptr<tc::io::IFileSy
 void nstool::FsProcess::setFsFormatName(const std::string& fs_format_name)
 {
 	mFsFormatName = fs_format_name;
-}
-
-void nstool::FsProcess::setShowFsInfo(bool show_fs_info)
-{
-	mShowFsInfo = show_fs_info;
 }
 
 void nstool::FsProcess::setFsProperties(const std::vector<std::string>& properties)
@@ -83,13 +83,18 @@ void nstool::FsProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& ex
 
 void nstool::FsProcess::printFs()
 {
-	fmt::print("[{:s}/Tree]\n", (mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem"));
+	Report& r = get_report();
+
+	r.text(fmt::format("[{:s}/Tree]", (mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem")));
+
 	visitDir(tc::io::Path("/"), tc::io::Path("/"), false, true);
 }
 
 void nstool::FsProcess::extractFs()
 {
-	fmt::print("[{:s}/Extract]\n", (mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem"));
+	Report& r = get_report();
+
+	r.text(fmt::format("[{:s}/Extract]", (mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem")));
 
 	for (auto itr = mExtractJobs.begin(); itr != mExtractJobs.end(); itr++)
 	{
@@ -97,8 +102,6 @@ void nstool::FsProcess::extractFs()
 		if (itr->virtual_path == tc::io::Path("/"))
 		{
 			visitDir(tc::io::Path("/"), itr->extract_path, true, false);
-
-			//fmt::print("Root Dir Virtual Path: \"{:s}\"\n", itr->virtual_path.to_string());
 
 			// root directory extract successful, continue to next job
 			continue;
@@ -108,8 +111,6 @@ void nstool::FsProcess::extractFs()
 		try {
 			std::shared_ptr<tc::io::IStream> file_stream;
 			mInputFs->openFile(itr->virtual_path, tc::io::FileMode::Open, tc::io::FileAccess::Read, file_stream);
-
-			//fmt::print("Valid File Path: \"{:s}\"\n", itr->virtual_path.to_string());
 
 			// the output path for this file will depend on the user specified extract path
 			std::shared_ptr<tc::io::IFileSystem> local_fs = std::make_shared<tc::io::LocalFileSystem>(tc::io::LocalFileSystem());
@@ -124,12 +125,14 @@ void nstool::FsProcess::extractFs()
 
 				tc::io::Path file_extract_path = itr->extract_path + itr->virtual_path.back();
 
-				fmt::print("Saving {:s}...\n", file_extract_path.to_string());
+				r.text(fmt::format("Saving {:s}...", file_extract_path.to_string()));
+				r.push("events", nlohmann::json{
+					{"severity", "info"},
+					{"message", fmt::format("Extracting directory {:s}", file_extract_path.to_string())}
+				});
 
 				writeStreamToFile(file_stream, itr->extract_path + itr->virtual_path.back(), mDataCache);
-
 				continue;
-
 			} catch (tc::io::DirectoryNotFoundException&) {
 				// acceptable exception, just means directory didn't exist
 			}
@@ -142,7 +145,7 @@ void nstool::FsProcess::extractFs()
 				// get path to parent directory
 				tc::io::Path parent_dir_path = itr->extract_path;
 
-				// replace final path element with the current directory alias 
+				// replace final path element with the current directory alias
 				parent_dir_path.pop_back(); // remove filename
 				parent_dir_path.push_back("."); // replace with the current dir name alias
 
@@ -150,18 +153,24 @@ void nstool::FsProcess::extractFs()
 				tc::io::sDirectoryListing dir_listing;
 				local_fs->getDirectoryListing(parent_dir_path, dir_listing);
 
-				fmt::print("Saving {:s} as {:s}...\n", itr->virtual_path.to_string(), itr->extract_path.to_string());
+				r.text(fmt::format("Saving {:s} as {:s}...", itr->virtual_path.to_string(), itr->extract_path.to_string()));
+				r.push("events", nlohmann::json{
+					{"severity", "info"},
+					{"message", fmt::format("Extracting {:s} as {:s}", itr->virtual_path.to_string(), itr->extract_path.to_string())}
+				});
 
 				writeStreamToFile(file_stream, itr->extract_path, mDataCache);
-
 				continue;
 			} catch (tc::io::DirectoryNotFoundException&) {
 				// acceptable exception, just means the parent directory didn't exist
 			}
 
-
 			// extract path could not be determined, inform the user and skip this job
-			fmt::print("[WARNING] Extract path was invalid, and was skipped: {:s}\n", itr->extract_path.to_string());
+			r.text(fmt::format("[WARNING] Extract path was invalid, and was skipped: {:s}", itr->extract_path.to_string()));
+			r.push("events", nlohmann::json{
+				{"severity", "warn"},
+				{"message", fmt::format("Extract path was invalid, and was skipped: {:s}", itr->extract_path.to_string())}
+			});
 			continue;
 		} catch (tc::io::FileNotFoundException&) {
 			// acceptable exception, just means file didn't exist
@@ -174,60 +183,72 @@ void nstool::FsProcess::extractFs()
 
 			visitDir(itr->virtual_path, itr->extract_path, true, false);
 
-			//fmt::print("Valid Directory Path: \"{:s}\"\n", itr->virtual_path.to_string());
-
 			// directory extract successful, continue to next job
 			continue;
-
 		} catch (tc::io::DirectoryNotFoundException&) {
 			// acceptable exception, just means directory didn't exist
 		}
 
-		fmt::print("[WARNING] Failed to extract virtual path: \"{:s}\"\n", itr->virtual_path.to_string());
+		r.text(fmt::format("[WARNING] Failed to extract virtual path: \"{:s}\"", itr->virtual_path.to_string()));
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", "Failed to extract virtual path: \"{:s}\"", itr->virtual_path.to_string()}
+		});
 	}
-	
 }
 
 void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path& l_path, bool extract_fs, bool print_fs)
 {
+	Report& r = get_report();
+
 	tc::io::LocalFileSystem local_fs;
 
 	// get listing for directory
 	tc::io::sDirectoryListing info;
 	mInputFs->getDirectoryListing(v_path, info);
 
+	std::string rootLabel = mFsRootLabel.isSet() ? mFsRootLabel.get() : "Root";
+	std::string prefixLabel = v_path.size() == 1 ? (rootLabel + ":") : (rootLabel + ":/" + v_path.back());
+
 	if (print_fs)
 	{
-		for (size_t i = 0; i < v_path.size(); i++)
-			fmt::print(" ");
+		std::string padded = std::string(v_path.size(), ' ') + "{:s}/";
 
-		fmt::print("{:s}/\n", ((v_path.size() == 1) ? (mFsRootLabel.isSet() ? (mFsRootLabel.get() + ":")  : "Root:") : v_path.back()));
+		r.text(fmt::format(padded, ((v_path.size() == 1) ? (rootLabel + ":") : v_path.back())));
 	}
+
 	if (extract_fs)
 	{
 		// create local dir
 		local_fs.createDirectory(l_path);
 	}
 
-	// iterate thru child files
+	// iterate through child files
 	size_t cache_read_len;
 	tc::io::Path out_path;
 	std::shared_ptr<tc::io::IStream> in_stream;
 	std::shared_ptr<tc::io::IStream> out_stream;
+
 	for (auto itr = info.file_list.begin(); itr != info.file_list.end(); itr++)
 	{
 		if (print_fs)
 		{
-			for (size_t i = 0; i < v_path.size(); i++)
-				fmt::print(" ");
-			fmt::print(" {:s}\n", *itr);
+			std::string padded = std::string(v_path.size(), ' ') + " {:s}";
+
+			r.text(fmt::format(padded, *itr));
+			r.push("data.tree", fmt::format("{}/{}", prefixLabel, *itr));
 		}
+
 		if (extract_fs)
 		{
 			// build out path
 			out_path = l_path + *itr;
 
-			fmt::print("Saving {:s}...\n", out_path.to_string());
+			r.text(fmt::format("Saving {:s}...", out_path.to_string()));
+			r.push("events", nlohmann::json{
+				{"severity", "info"},
+				{"message", fmt::format("Extracting to {:s}", out_path.to_string())}
+			});
 
 			// begin export
 			mInputFs->openFile(v_path + *itr, tc::io::FileMode::Open, tc::io::FileAccess::Read, in_stream);
@@ -235,12 +256,14 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 
 			in_stream->seek(0, tc::io::SeekOrigin::Begin);
 			out_stream->seek(0, tc::io::SeekOrigin::Begin);
+
 			for (int64_t remaining_data = in_stream->length(); remaining_data > 0;)
 			{
 				cache_read_len = in_stream->read(mDataCache.data(), mDataCache.size());
+
 				if (cache_read_len == 0)
 				{
-					throw tc::io::IOException(mModuleLabel, fmt::format("Failed to read from {:s}file.", (mFsFormatName.isSet() ? (mFsFormatName.get() + " ") : "")));
+					throw tc::io::IOException(mModuleLabel, fmt::format("Failed to read from {:s} file.", (mFsFormatName.isSet() ? (mFsFormatName.get() + " ") : "")));
 				}
 
 				out_stream->write(mDataCache.data(), cache_read_len);
@@ -250,7 +273,7 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 		}
 	}
 
-	// iterate thru child dirs
+	// iterate through child dirs
 	for (auto itr = info.dir_list.begin(); itr != info.dir_list.end(); itr++)
 	{
 		visitDir(v_path + *itr, l_path + *itr, extract_fs, print_fs);

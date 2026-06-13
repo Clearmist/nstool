@@ -12,7 +12,6 @@ nstool::SdkApiString::SdkApiString(ApiType type, const std::string& vender_name,
 	mVenderName(vender_name),
 	mModuleName(module_name)
 {
-
 }
 
 void nstool::SdkApiString::operator=(const SdkApiString& other)
@@ -56,11 +55,9 @@ void nstool::SdkApiString::resolveApiString(const std::string& full_str)
 {
 	std::stringstream list_stream(full_str);
 	std::string api_type, vender, module;
-
 	std::getline(list_stream, api_type, kSplitChar);
 	std::getline(list_stream, vender, kSplitChar);
 	std::getline(list_stream, module);
-
 
 	if (api_type == kSdkMiddleWareApiString)
 	{
@@ -87,7 +84,7 @@ void nstool::SdkApiString::resolveApiString(const std::string& full_str)
 	}
 	else
 	{
-		// TODO?
+		// TODO: I don't know.
 	}
 
 	mVenderName = vender;

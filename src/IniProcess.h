@@ -14,7 +14,6 @@ public:
 	void process();
 
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	void setKipExtractPath(const tc::io::Path& path);
@@ -24,9 +23,9 @@ private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
-	
+
 	tc::Optional<tc::io::Path> mKipExtractPath;
 
 	pie::hac::IniHeader mHdr;

@@ -39,7 +39,6 @@ struct Settings
 
 	struct Options
 	{
-		CliOutputMode cli_output_mode;
 		bool verify;
 		bool is_dev;
 		KeyBag keybag;
@@ -54,7 +53,7 @@ struct Settings
 	} code;
 
 	// Generic FS options
-	struct FsOptions 
+	struct FsOptions
 	{
 		bool show_fs_tree;
 		std::vector<ExtractJob> extract_jobs;
@@ -97,7 +96,6 @@ struct Settings
 		infile.filetype = FILE_TYPE_ERROR;
 		infile.path = tc::Optional<tc::io::Path>();
 
-		opt.cli_output_mode = CliOutputMode();
 		opt.verify = false;
 		opt.is_dev = false;
 		opt.keybag = KeyBag();
@@ -134,13 +132,13 @@ private:
 	bool mShowLayout;
 	bool mShowKeydata;
 	bool mVerbose;
+	bool mMachineReadable;
 
 	tc::Optional<tc::io::Path> mKeysetPath;
 	tc::Optional<tc::io::Path> mTitleKeysetPath;
 	tc::Optional<KeyBag::aes128_key_t> mNcaEncryptedContentKey;
 	tc::Optional<KeyBag::aes128_key_t> mNcaContentKey;
 	std::vector<tc::io::Path> mTikPathList;
-	//tc::Optional<tc::io::Path> mTikPath;
 	tc::Optional<tc::io::Path> mCertPath;
 
 	void loadKeyFile(tc::Optional<tc::io::Path>& keyfile_path, const std::string& keyfile_name, const std::string& cli_hint);

@@ -1,14 +1,12 @@
 #include "RomfsProcess.h"
 #include "util.h"
-
+#include "Report.hpp"
 #include <tc/io/VirtualFileSystem.h>
 #include <pietendo/hac/RomFsSnapshotGenerator.h>
-
 
 nstool::RomfsProcess::RomfsProcess() :
 	mModuleName("nstool::RomfsProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false),
 	mDirNum(0),
 	mFileNum(0),
@@ -25,6 +23,7 @@ void nstool::RomfsProcess::process()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -45,26 +44,9 @@ void nstool::RomfsProcess::process()
 		throw tc::ArgumentOutOfRangeException(mModuleName, "Corrupt RomFs: RomFsHeader is corrupted.");
 	}
 
-	/*
-	fmt::print("RomFsHeader:\n");
-	fmt::print(" > header_size = 0x{:04x}\n", mRomfsHeader.header_size.unwrap());
-	fmt::print(" > dir_hash_bucket\n");
-	fmt::print("   > offset =    0x{:04x}\n", mRomfsHeader.dir_hash_bucket.offset.unwrap());
-	fmt::print("   > size =      0x{:04x}\n", mRomfsHeader.dir_hash_bucket.size.unwrap());
-	fmt::print(" > dir_entry\n");
-	fmt::print("   > offset =    0x{:04x}\n", mRomfsHeader.dir_entry.offset.unwrap());
-	fmt::print("   > size =      0x{:04x}\n", mRomfsHeader.dir_entry.size.unwrap());
-	fmt::print(" > file_hash_bucket\n");
-	fmt::print("   > offset =    0x{:04x}\n", mRomfsHeader.file_hash_bucket.offset.unwrap())
-	fmt::print("   > size =      0x{:04x}\n", mRomfsHeader.file_hash_bucket.size.unwrap());
-	fmt::print(" > file_entry\n");
-	fmt::print("   > offset =    0x{:04x}\n", mRomfsHeader.file_entry.offset.unwrap());
-	fmt::print("   > size =      0x{:04x}\n", mRomfsHeader.file_entry.size.unwrap());
-	fmt::print(" > data_offset = 0x{:04x}\n", mRomfsHeader.data_offset.unwrap());
-	*/
-
 	// get dir entry ptr
 	tc::ByteData dir_entry_table = tc::ByteData();
+
 	if (mRomfsHeader.dir_entry.size.unwrap() > 0)
 	{
 		dir_entry_table = tc::ByteData(tc::io::IOUtil::castInt64ToSize(mRomfsHeader.dir_entry.size.unwrap()));
@@ -74,6 +56,7 @@ void nstool::RomfsProcess::process()
 
 	// get file entry ptr
 	tc::ByteData file_entry_table = tc::ByteData();
+
 	if (mRomfsHeader.file_entry.size.unwrap() > 0)
 	{
 		file_entry_table = tc::ByteData(tc::io::IOUtil::castInt64ToSize(mRomfsHeader.file_entry.size.unwrap()));
@@ -83,6 +66,7 @@ void nstool::RomfsProcess::process()
 
 	// count dir num
 	mDirNum = 0;
+
 	for (uint32_t v_addr = 0; size_t(v_addr) < dir_entry_table.size();)
 	{
 		uint32_t total_size = sizeof(pie::hac::sRomfsDirEntry) + align<uint32_t>(((pie::hac::sRomfsDirEntry*)(dir_entry_table.data() + v_addr))->name_size.unwrap(), 4);
@@ -98,6 +82,7 @@ void nstool::RomfsProcess::process()
 
 	// count file num
 	mFileNum = 0;
+
 	for (uint32_t v_addr = 0; size_t(v_addr) < file_entry_table.size();)
 	{
 		uint32_t total_size = sizeof(pie::hac::sRomfsFileEntry) + align<uint32_t>(((pie::hac::sRomfsFileEntry*)(file_entry_table.data() + v_addr))->name_size.unwrap(), 4);
@@ -113,9 +98,12 @@ void nstool::RomfsProcess::process()
 
 	// set properties for FsProcess
 	mFsProcess.setFsProperties({
-		fmt::format("DirNum:      {:d}", mDirNum), 
+		fmt::format("DirNum:      {:d}", mDirNum),
 		fmt::format("FileNum:     {:d}", mFileNum)
 	});
+
+	mFsProcess.setProperties("dirCount", mDirNum);
+	mFsProcess.setProperties("fileCount", mFileNum);
 
 	// process filesystem
 	mFsProcess.process();
@@ -124,12 +112,6 @@ void nstool::RomfsProcess::process()
 void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
-	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::RomfsProcess::setVerifyMode(bool verify)

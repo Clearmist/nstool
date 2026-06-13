@@ -1,8 +1,8 @@
+#include "Report.hpp"
 #include "Settings.h"
 #include "types.h"
-#include "version.h"
-#include "build_date.h"
 #include "util.h"
+#include "version.h"
 
 #include <tc/cli.h>
 #include <tc/os/Environment.h>
@@ -56,7 +56,7 @@ private:
 class DeprecatedOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	DeprecatedOptionHandler(const std::string& warn_message, const std::vector<std::string>& opts) : 
+	DeprecatedOptionHandler(const std::string& warn_message, const std::vector<std::string>& opts) :
 		mWarnMessage(warn_message),
 		mOptStrings(opts),
 		mOptRegex()
@@ -74,7 +74,14 @@ public:
 
 	void processOption(const std::string& option, const std::vector<std::string>& params)
 	{
-		fmt::print("[WARNING] Option \"{}\" is deprecated.{}{}\n", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage);
+		Report& r = get_report();
+
+		r.text(fmt::format("[WARNING] Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage));
+
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", fmt::format("Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage)}
+		});
 	}
 private:
 	std::string mWarnMessage;
@@ -85,7 +92,7 @@ private:
 class FlagOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	FlagOptionHandler(bool& flag, const std::vector<std::string>& opts) : 
+	FlagOptionHandler(bool& flag, const std::vector<std::string>& opts) :
 		mFlag(flag),
 		mOptStrings(opts),
 		mOptRegex()
@@ -119,7 +126,7 @@ private:
 class SingleParamStringOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamStringOptionHandler(tc::Optional<std::string>& param, const std::vector<std::string>& opts) : 
+	SingleParamStringOptionHandler(tc::Optional<std::string>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -153,7 +160,7 @@ private:
 class SingleParamPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamPathOptionHandler(tc::Optional<tc::io::Path>& param, const std::vector<std::string>& opts) : 
+	SingleParamPathOptionHandler(tc::Optional<tc::io::Path>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -187,7 +194,7 @@ private:
 class SingleParamSizetOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamSizetOptionHandler(size_t& param, const std::vector<std::string>& opts) : 
+	SingleParamSizetOptionHandler(size_t& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -264,7 +271,7 @@ private:
 class SingleParamPathArrayOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	SingleParamPathArrayOptionHandler(std::vector<tc::io::Path>& param, const std::vector<std::string>& opts) : 
+	SingleParamPathArrayOptionHandler(std::vector<tc::io::Path>& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -298,7 +305,7 @@ private:
 class FileTypeOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	FileTypeOptionHandler(nstool::Settings::FileType& param, const std::vector<std::string>& opts) : 
+	FileTypeOptionHandler(nstool::Settings::FileType& param, const std::vector<std::string>& opts) :
 		mParam(param),
 		mOptStrings(opts),
 		mOptRegex()
@@ -446,7 +453,7 @@ private:
 class ExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	ExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts) : 
+	ExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts) :
 		mJobs(jobs),
 		mOptStrings(opts),
 		mOptRegex()
@@ -471,7 +478,7 @@ public:
 		else if (params.size() == 2)
 		{
 			mJobs.push_back({tc::io::Path(params[0]), tc::io::Path(params[1])});
-		} 
+		}
 		else
 		{
 			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires parameters in the format \"[<internal path>] <extract path>\".", option));
@@ -486,7 +493,7 @@ private:
 class CustomExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
 public:
-	CustomExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts, const tc::io::Path& custom_path) : 
+	CustomExtractDataPathOptionHandler(std::vector<nstool::ExtractJob>& jobs, const std::vector<std::string>& opts, const tc::io::Path& custom_path) :
 		mJobs(jobs),
 		mOptStrings(opts),
 		mOptRegex(),
@@ -510,17 +517,26 @@ public:
 			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires a parameter.", option));
 		}
 
-		fmt::print("[WARNING] \"{:s} {:s}\" is deprecated. ", option, params[0]);
+		Report& r = get_report();
+
+		std::string message = fmt::format("\"{:s} {:s}\" is deprecated. ", option, params[0]);
+
 		// if custom path is root path, use the shortened version of -x
 		if (mCustomPath == tc::io::Path("/"))
 		{
-			fmt::print("Consider using \"-x {:s}\" instead.\n", params[0]);
+			message = message + fmt::format("Consider using \"-x {:s}\" instead.", params[0]);
 		}
 		else
 		{
-			fmt::print("Consider using \"-x {:s} {:s}\" instead.\n", mCustomPath.to_string(), params[0]);
+			message = message + fmt::format("Consider using \"-x {:s} {:s}\" instead.", mCustomPath.to_string(), params[0]);
 		}
-			
+
+		r.text("[WARNING] " + message);
+
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", message}
+		});
 
 		mJobs.push_back({mCustomPath, tc::io::Path(params[0])});
 	}
@@ -537,6 +553,7 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	mShowLayout(false),
 	mShowKeydata(false),
 	mVerbose(false),
+	mMachineReadable(false),
 	mNcaEncryptedContentKey(),
 	mNcaContentKey(),
 	mTikPathList(),
@@ -544,24 +561,33 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 {
 	// parse input arguments
 	parse_args(args);
-	if (infile.path.isNull())
-		throw tc::ArgumentException(mModuleLabel, "No input file was specified.");
 
-	// determine CLI output mode
-	opt.cli_output_mode.show_basic_info = true;
-	if (mVerbose)
-	{
-		opt.cli_output_mode.show_extended_info = true;
-		opt.cli_output_mode.show_layout = true;
-		opt.cli_output_mode.show_keydata = true;
+	if (infile.path.isNull()) {
+		throw tc::ArgumentException(mModuleLabel, "No input file was specified.");
 	}
-	if (mShowKeydata)
-	{
-		opt.cli_output_mode.show_keydata = true;
+
+	Report& r = get_report();
+
+	if (mVerbose) {
+		r.setShowExtendedInfo(true);
+		r.setShowLayout(true);
+		r.setShowKeydata(true);
 	}
-	if (mShowLayout)
-	{
-		opt.cli_output_mode.show_layout = true;
+
+	if (mShowKeydata) {
+		r.setShowKeydata(true);
+	}
+
+	if (mShowLayout) {
+		r.setShowLayout(true);
+	}
+
+	if (mMachineReadable) {
+		r.setShowExtendedInfo(true);
+		r.setShowLayout(true);
+		r.setShowMachineReadable(true);
+
+		fs.show_fs_tree = true;
 	}
 
 	// locate key file, if not specfied
@@ -569,9 +595,9 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	{
 		loadKeyFile(mKeysetPath, opt.is_dev ? "dev.keys" : "prod.keys", "Maybe specify it with \"-k <path>\"?\n");
 	}
+
 	// locate title key file, if not specfied
-	if (mTitleKeysetPath.isNull())
-	{
+	if (mTitleKeysetPath.isNull()) {
 		loadKeyFile(mTitleKeysetPath, "title.keys", "");
 	}
 
@@ -581,17 +607,15 @@ nstool::SettingsInitializer::SettingsInitializer(const std::vector<std::string>&
 	opt.keybag.fallback_content_key = mNcaContentKey;
 
 	// dump keys if requires
-	if (mShowKeydata) // but not opt.cli_output_mode.show_keydata, since this that enabled by toggling -v,--verbose, personally I don't think a summary of imported keydata should be included in verbose output.
-	{
+	if (mShowKeydata) {
 		dump_keys();
 	}
 
 	// determine filetype if not manually specified
-	if (infile.filetype == FILE_TYPE_ERROR)
-	{
+	if (infile.filetype == FILE_TYPE_ERROR) {
 		determine_filetype();
-		if (infile.filetype == FILE_TYPE_ERROR)
-		{
+
+		if (infile.filetype == FILE_TYPE_ERROR) {
 			throw tc::ArgumentException(mModuleLabel, "Input file type was undetermined.");
 		}
 	}
@@ -605,7 +629,7 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 		usage_text();
 		throw tc::ArgumentException(mModuleLabel, "Not enough arguments.");
 	}
-	
+
 	// detect request for help
 	for (auto itr = ++(args.begin()); itr != args.end(); itr++)
 	{
@@ -638,6 +662,7 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(mShowLayout, {"--showlayout"})));
 	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(mShowKeydata, { "--showkeys" })));
 	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(mVerbose, {"-v", "--verbose"})));
+	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(mMachineReadable, { "--json" })));
 	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(opt.verify, {"-y", "--verify"})));
 	opts.registerOptionHandler(std::shared_ptr<FlagOptionHandler>(new FlagOptionHandler(opt.is_dev, {"-d", "--dev"})));
 
@@ -646,7 +671,6 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 
 	// get user-provided keydata
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(mKeysetPath, {"-k", "--keyset"})));
-	//opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(mTitleKeysetPath, {"--titlekeyset"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamAesKeyOptionHandler>(new SingleParamAesKeyOptionHandler(mNcaEncryptedContentKey, {"--titlekey"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamAesKeyOptionHandler>(new SingleParamAesKeyOptionHandler(mNcaContentKey, {"--contentkey", "--bodykey"})));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathArrayOptionHandler>(new SingleParamPathArrayOptionHandler(mTikPathList, {"--tik"})));
@@ -678,20 +702,17 @@ void nstool::SettingsInitializer::parse_args(const std::vector<std::string>& arg
 
 	// kip options
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(kip.extract_path, { "--kipdir" })));
-	
+
 	// aset options
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(aset.icon_extract_path, { "--icon" })));
 	opts.registerOptionHandler(std::shared_ptr<SingleParamPathOptionHandler>(new SingleParamPathOptionHandler(aset.nacp_extract_path, { "--nacp" })));
 
-	
 	// process option
 	opts.processOptions(args, 1, args.size() - 2);
 }
 
 void nstool::SettingsInitializer::determine_filetype()
 {
-	//fmt::print("infile path = \"{}\"\n", infile.path.get().to_string());
-	
 	auto file = tc::io::StreamSource(std::make_shared<tc::io::FileStream>(tc::io::FileStream(infile.path.get(), tc::io::FileMode::Open, tc::io::FileAccess::Read)));
 
 	auto raw_data = file.pullData(0, 0x5000);
@@ -805,15 +826,16 @@ void nstool::SettingsInitializer::usage_text() const
 	fmt::print("{:s} v{:d}.{:d}.{:d} Copyright {:s}\n", APP_NAME, VER_MAJOR, VER_MINOR, VER_PATCH, AUTHORS);
 	fmt::print("Built: {:s} {:s}\n\n", BUILD_DATE_ISO().c_str(), __TIME__);
 	fmt::print("Usage: {:s} [options... ] <file>\n", BIN_NAME);
-	fmt::print("\n  General Options:\n");
+	fmt::print("\n  General options:\n");
 	fmt::print("      -d, --dev       Use devkit keyset.\n");
 	fmt::print("      -k, --keyset    Specify keyset file.\n");
 	fmt::print("      -t, --type      Specify input file type. [xci, pfs, romfs, nca, meta, cnmt, nso, nro, ini, kip, nacp, aset, cert, tik]\n");
 	fmt::print("      -y, --verify    Verify file.\n");
-	fmt::print("\n  Output Options:\n");
+	fmt::print("\n  Output options:\n");
 	fmt::print("      --showkeys      Show keys generated.\n");
 	fmt::print("      --showlayout    Show layout metadata.\n");
 	fmt::print("      -v, --verbose   Verbose output.\n");
+	fmt::print("      --json          Converts output to machine readable JSON. Automatically turns on all other output options.\n");
 	fmt::print("\n  PFS0/HFS0 (PartitionFs), RomFs, NSP (Nintendo Submission Package)\n");
 	fmt::print("    {:s} [--fstree] [-x [<virtual path>] <out path>] <file>\n", BIN_NAME);
 	fmt::print("      --fstree        Print filesystem tree.\n");
@@ -857,100 +879,121 @@ void nstool::SettingsInitializer::usage_text() const
 
 void nstool::SettingsInitializer::dump_keys() const
 {
-	fmt::print("[KeyConfiguration]\n");
-	fmt::print("  NCA Keys:\n");
+	Report& r = get_report();
+
+	r.text("[KeyConfiguration]", Report::TextType::Keydata);
+	r.text("  NCA Keys:", Report::TextType::Keydata);
+
 	for (auto itr = opt.keybag.nca_header_sign0_key.begin(); itr != opt.keybag.nca_header_sign0_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Header0-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Header0-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
+
 	for (auto itr = opt.keybag.acid_sign_key.begin(); itr != opt.keybag.acid_sign_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Acid-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Acid-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
+
 	if (opt.keybag.nca_header_key.isSet())
 	{
-		fmt::print("    Header-EncryptionKey:\n");
-		fmt::print("      Key0: {:s}\n", tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[0].data(), opt.keybag.nca_header_key.get()[0].size(), true, ""));
-		fmt::print("      Key1: {:s}\n", tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[1].data(), opt.keybag.nca_header_key.get()[1].size(), true, ""));
+		r.text("    Header-EncryptionKey:", Report::TextType::Keydata);
+		r.text(fmt::format("      Key0: {:s}", tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[0].data(), opt.keybag.nca_header_key.get()[0].size(), true, "")), Report::TextType::Keydata);
+		r.text(fmt::format("      Key1: {:s}", tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[1].data(), opt.keybag.nca_header_key.get()[1].size(), true, "")), Report::TextType::Keydata);
 	}
+
 	std::vector<std::string> kaek_label = {"Application", "Ocean", "System"};
+
 	for (size_t kaek_index = 0; kaek_index < opt.keybag.nca_key_area_encryption_key.size(); kaek_index++)
 	{
 		for (auto itr = opt.keybag.nca_key_area_encryption_key[kaek_index].begin(); itr != opt.keybag.nca_key_area_encryption_key[kaek_index].end(); itr++)
 		{
-			fmt::print("    KeyAreaEncryptionKey-{:s}-{:02x}:\n      {:s}\n", kaek_label[kaek_index], itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+			r.text(fmt::format("    KeyAreaEncryptionKey-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 		}
 	}
+
 	for (size_t kaek_index = 0; kaek_index < opt.keybag.nca_key_area_encryption_key_hw.size(); kaek_index++)
 	{
 		for (auto itr = opt.keybag.nca_key_area_encryption_key_hw[kaek_index].begin(); itr != opt.keybag.nca_key_area_encryption_key_hw[kaek_index].end(); itr++)
 		{
-			fmt::print("    KeyAreaEncryptionKeyHw-{:s}-{:02x}:\n      {:s}\n", kaek_label[kaek_index], itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+			r.text(fmt::format("    KeyAreaEncryptionKeyHw-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 		}
 	}
-	fmt::print("  NRR Keys:\n");
+
+	r.text("  NRR Keys:", Report::TextType::Keydata);
+
 	for (auto itr = opt.keybag.nrr_certificate_sign_key.begin(); itr != opt.keybag.nrr_certificate_sign_key.end(); itr++)
 	{
-		dump_rsa_key(itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
 	}
-	fmt::print("  XCI Keys:\n");
+
+	r.text("  XCI Keys:", Report::TextType::Keydata);
+
 	if (opt.keybag.xci_header_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
+
 	for (auto itr = opt.keybag.xci_header_key.begin(); itr != opt.keybag.xci_header_key.end(); itr++)
 	{
-		fmt::print("    ExtendedHeader-EncryptionKey-{:02x}:\n      {:s}\n", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+		r.text(fmt::format("    ExtendedHeader-EncryptionKey-{:02x}:\n      {:s}", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 	}
+
 	if (opt.keybag.xci_cert_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.xci_cert_sign_key.get(), fmt::format("CERT-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.xci_cert_sign_key.get(), fmt::format("CERT-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
 
-	fmt::print("  Package1 Keys:\n");
+	r.text("  Package1 Keys:", Report::TextType::Keydata);
+
 	for (auto itr = opt.keybag.pkg1_key.begin(); itr != opt.keybag.pkg1_key.end(); itr++)
 	{
-		fmt::print("    EncryptionKey-{:02x}:\n      {:s}\n", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+		r.text(fmt::format("    EncryptionKey-{:02x}:\n      {:s}", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 	}
 
-	fmt::print("  Package2 Keys:\n");
+	r.text("  Package2 Keys:", Report::TextType::Keydata);
+
 	if (opt.keybag.pkg2_sign_key.isSet())
 	{
-		dump_rsa_key(opt.keybag.pkg2_sign_key.get(), fmt::format("Header-SignatureKey"), 4, opt.cli_output_mode.show_extended_info);
+		dump_rsa_key(opt.keybag.pkg2_sign_key.get(), fmt::format("Header-SignatureKey"), 4, r.getShowExtendedInfo());
 	}
+
 	for (auto itr = opt.keybag.pkg2_key.begin(); itr != opt.keybag.pkg2_key.end(); itr++)
 	{
-		fmt::print("    EncryptionKey-{:02x}:\n      {:s}\n", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+		r.text(fmt::format("    EncryptionKey-{:02x}:\n      {:s}", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 	}
 
-	fmt::print("  ETicket Keys:\n");
+	r.text("  ETicket Keys:", Report::TextType::Keydata);
+
 	for (auto itr = opt.keybag.etik_common_key.begin(); itr != opt.keybag.etik_common_key.end(); itr++)
 	{
-		fmt::print("    CommonKey-{:02x}:\n      {:s}\n", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, ""));
+		r.text(fmt::format("    CommonKey-{:02x}:\n      {:s}", itr->first, tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")), Report::TextType::Keydata);
 	}
 
-	fmt::print("  BroadOn Signer Profiles:\n");
+	r.text("  BroadOn Signer Profiles:", Report::TextType::Keydata);
+
 	for (auto itr = opt.keybag.broadon_signer.begin(); itr != opt.keybag.broadon_signer.end(); itr++)
 	{
-		fmt::print("    {:s}:\n", itr->first);
-		fmt::print("      SignType: ");
+		r.text(fmt::format("    {:s}:", itr->first), Report::TextType::Keydata);
+		r.text("      SignType: ", Report::TextType::Keydata);
+
 		switch(itr->second.key_type) {
 			case pie::hac::es::sign::SIGN_ALGO_RSA2048:
-				fmt::print("RSA-2048\n");
+				r.text("RSA-2048", Report::TextType::Keydata);
 				break;
 			case pie::hac::es::sign::SIGN_ALGO_RSA4096:
-				fmt::print("RSA-4096\n");
+				r.text("RSA-4096", Report::TextType::Keydata);
 				break;
 			case pie::hac::es::sign::SIGN_ALGO_ECDSA240:
-				fmt::print("ECDSA-240\n");
+				r.text("ECDSA-240", Report::TextType::Keydata);
 				break;
 			default:
-				fmt::print("Unknown\n");
+				r.text("Unknown", Report::TextType::Keydata);
 		}
+
 		switch(itr->second.key_type) {
 			case pie::hac::es::sign::SIGN_ALGO_RSA2048:
 			case pie::hac::es::sign::SIGN_ALGO_RSA4096:
-				dump_rsa_key(itr->second.rsa_key, "RsaKey", 6, opt.cli_output_mode.show_extended_info);
+				dump_rsa_key(itr->second.rsa_key, "RsaKey", 6, r.getShowExtendedInfo());
 				break;
 			case pie::hac::es::sign::SIGN_ALGO_ECDSA240:
 			default:
@@ -964,34 +1007,39 @@ void nstool::SettingsInitializer::dump_rsa_key(const KeyBag::rsa_key_t& key, con
 	std::string indent_str;
 
 	indent_str.clear();
+
+	Report& r = get_report();
+
 	for (size_t i = 0; i < indent; i++)
 	{
 		indent_str += " ";
 	}
 
-	fmt::print("{:s}{:s}:\n", indent_str, label);
+	r.text(fmt::format("{:s}{:s}:", indent_str, label), Report::TextType::Keydata);
+
 	if (key.n.size() > 0)
 	{
 		if (expanded_key_data)
 		{
-			fmt::print("{:s}  Modulus:\n", indent_str);
-			fmt::print("{:s}    {:s}", indent_str, tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.n.data(), key.n.size(), true, "", 0x10, indent + 4, false));
+			r.text(fmt::format("{:s}  Modulus:", indent_str), Report::TextType::Keydata);
+			r.text(fmt::format("{:s}    {:s}", indent_str, tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.n.data(), key.n.size(), true, "", 0x10, indent + 4, false)), Report::TextType::Keydata);
 		}
 		else
 		{
-			fmt::print("{:s}  Modulus: {:s}\n", indent_str, getTruncatedBytesString(key.n.data(), key.n.size()));
+			r.text(fmt::format("{:s}  Modulus: {:s}", indent_str, getTruncatedBytesString(key.n.data(), key.n.size())), Report::TextType::Keydata);
 		}
 	}
+
 	if (key.d.size() > 0)
 	{
 		if (expanded_key_data)
 		{
-			fmt::print("{:s}  Private Exponent:\n", indent_str);
-			fmt::print("{:s}    {:s}", indent_str, tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.d.data(), key.d.size(), true, "", 0x10, indent + 4, false));
+			r.text(fmt::format("{:s}  Private Exponent:", indent_str), Report::TextType::Keydata);
+			r.text(fmt::format("{:s}    {:s}", indent_str, tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.d.data(), key.d.size(), true, "", 0x10, indent + 4, false)), Report::TextType::Keydata);
 		}
 		else
 		{
-			fmt::print("{:s}  Private Exponent: {:s}\n", indent_str, getTruncatedBytesString(key.d.data(), key.d.size()));
+			r.text(fmt::format("{:s}  Private Exponent: {:s}", indent_str, getTruncatedBytesString(key.d.data(), key.d.size())), Report::TextType::Keydata);
 		}
 	}
 }
@@ -999,6 +1047,9 @@ void nstool::SettingsInitializer::dump_rsa_key(const KeyBag::rsa_key_t& key, con
 void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfile_path, const std::string& keyfile_name, const std::string& cli_hint)
 {
 	std::string home_path_str;
+
+	Report& r = get_report();
+
 	if (tc::os::getEnvVar("HOME", home_path_str) || tc::os::getEnvVar("USERPROFILE", home_path_str))
 	{
 		tc::io::Path tmp_path = tc::io::Path(home_path_str);
@@ -1007,19 +1058,27 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path>& keyfil
 
 		try {
 			tc::io::FileStream test = tc::io::FileStream(tmp_path, tc::io::FileMode::Open, tc::io::FileAccess::Read);
-			
+
 			keyfile_path = tmp_path;
 		}
 		catch (tc::io::FileNotFoundException&) {
-			fmt::print("[WARNING] Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint);
+			r.push("events", nlohmann::json{
+				{"severity", "warn"},
+				{"message", fmt::format("Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}
+			});
+
+			r.text(fmt::format("[WARNING] Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint));
 		}
 	}
 	else {
-		fmt::print("[WARNING] Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint);
-	}
-	
-}
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", fmt::format("Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}
+		});
 
+		r.text(fmt::format("[WARNING] Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint));
+	}
+}
 
 bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData& sample) const
 {
@@ -1027,16 +1086,22 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 	{
 		return false;
 	}
-	
+
 	if (opt.keybag.nca_header_key.isNull())
 	{
-		fmt::print("[WARNING] Failed to load NCA Header Key.\n");
+		Report& r = get_report();
+
+		r.push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", "Failed to load NCA Header Key."}
+		});
+
+		r.text("[WARNING] Failed to load NCA Header Key.");
+
 		return false;
 	}
 
 	pie::hac::detail::aes128_xtskey_t key = opt.keybag.nca_header_key.get();
-
-	//fmt::print("NCA header key: {} {}\n", tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[0].data(), opt.keybag.nca_header_key.get()[0].size(), true, ""), tc::cli::FormatUtil::formatBytesAsString(opt.keybag.nca_header_key.get()[1].data(), opt.keybag.nca_header_key.get()[1].size(), true, ""));
 
 	// init aes-xts
 	tc::crypto::Aes128XtsEncryptor enc;
@@ -1046,12 +1111,6 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 	byte_t raw_hdr[pie::hac::nca::kSectorSize];
 	enc.decrypt(raw_hdr, sample.data() + pie::hac::ContentArchiveUtil::sectorToOffset(1), pie::hac::nca::kSectorSize, 1);
 	pie::hac::sContentArchiveHeader* hdr = (pie::hac::sContentArchiveHeader*)(raw_hdr);
-
-	/*
-	fmt::print("NCA Header Raw:\n");
-	fmt::print("{:s}\n", tc::cli::FormatUtil::formatBytesAsHxdHexString(sample.data() + pie::hac::ContentArchiveUtil::sectorToOffset(1), pie::hac::nca::kSectorSize));
-	fmt::print("{:s}\n", tc::cli::FormatUtil::formatBytesAsHxdHexString(raw_hdr, pie::hac::nca::kSectorSize));
-	*/
 
 	if (hdr->st_magic.unwrap() != pie::hac::nca::kNca2StructMagic && hdr->st_magic.unwrap() != pie::hac::nca::kNca3StructMagic)
 	{
@@ -1064,14 +1123,18 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteData& sample) const
 {
 	if (sample.size() < sizeof(pie::hac::sContentMetaHeader))
+	{
 		return false;
+	}
 
 	const pie::hac::sContentMetaHeader* data = (const pie::hac::sContentMetaHeader*)sample.data();
 
 	size_t minimum_size = sizeof(pie::hac::sContentMetaHeader) + data->exhdr_size.unwrap() + data->content_count.unwrap() * sizeof(pie::hac::sContentInfo) + data->content_meta_count.unwrap() * sizeof(pie::hac::sContentMetaInfo) + pie::hac::cnmt::kDigestLen;
 
 	if (sample.size() < minimum_size)
+	{
 		return false;
+	}
 
 	// include exthdr/data check if applicable
 	if (data->exhdr_size.unwrap() > 0)
@@ -1079,28 +1142,40 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
 		if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_Application)
 		{
 			const pie::hac::sApplicationMetaExtendedHeader* meta = (const pie::hac::sApplicationMetaExtendedHeader*)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
+
 			if ((meta->patch_id.unwrap() & data->id.unwrap()) != data->id.unwrap())
+			{
 				return false;
+			}
 		}
 		else if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_Patch)
 		{
 			const pie::hac::sPatchMetaExtendedHeader* meta = (const pie::hac::sPatchMetaExtendedHeader*)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
+
 			if ((meta->application_id.unwrap() & data->id.unwrap()) != meta->application_id.unwrap())
+			{
 				return false;
+			}
 
 			minimum_size += meta->extended_data_size.unwrap();
 		}
 		else if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_AddOnContent)
 		{
 			const pie::hac::sAddOnContentMetaExtendedHeader* meta = (const pie::hac::sAddOnContentMetaExtendedHeader*)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
+
 			if ((meta->application_id.unwrap() & data->id.unwrap()) != meta->application_id.unwrap())
+			{
 				return false;
+			}
 		}
 		else if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_Delta)
 		{
 			const pie::hac::sDeltaMetaExtendedHeader* meta = (const pie::hac::sDeltaMetaExtendedHeader*)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
+
 			if ((meta->application_id.unwrap() & data->id.unwrap()) != meta->application_id.unwrap())
+			{
 				return false;
+			}
 
 			minimum_size += meta->extended_data_size.unwrap();
 		}
@@ -1113,7 +1188,9 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
 	}
 
 	if (sample.size() != minimum_size)
+	{
 		return false;
+	}
 
 	return true;
 }
@@ -1121,24 +1198,36 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
 bool nstool::SettingsInitializer::determineValidNacpFromSample(const tc::ByteData& sample) const
 {
 	if (sample.size() != sizeof(pie::hac::sApplicationControlProperty))
+	{
 		return false;
+	}
 
 	const pie::hac::sApplicationControlProperty* data = (const pie::hac::sApplicationControlProperty*)sample.data();
 
 	if (data->logo_type > (byte_t)pie::hac::nacp::LogoType_Nintendo)
+	{
 		return false;
+	}
 
 	if (data->display_version[0] == 0)
+	{
 		return false;
+	}
 
 	if (data->user_account_save_data_size.unwrap() == 0 && data->user_account_save_data_journal_size.unwrap() != 0)
+	{
 		return false;
+	}
 
 	if (data->user_account_save_data_journal_size.unwrap() == 0 && data->user_account_save_data_size.unwrap() != 0)
+	{
 		return false;
+	}
 
 	if (*((uint32_t*)(&data->supported_language_flag)) == 0)
+	{
 		return false;
+	}
 
 	return true;
 }
@@ -1157,10 +1246,14 @@ bool nstool::SettingsInitializer::determineValidEsCertFromSample(const tc::ByteD
 	}
 
 	if (sign.isLittleEndian() == true)
+	{
 		return false;
+	}
 
 	if (sign.getSignType() != pie::hac::es::sign::SIGN_ID_RSA4096_SHA256 && sign.getSignType() != pie::hac::es::sign::SIGN_ID_RSA2048_SHA256 && sign.getSignType() != pie::hac::es::sign::SIGN_ID_ECDSA240_SHA256)
+	{
 		return false;
+	}
 
 	return true;
 }
@@ -1179,16 +1272,21 @@ bool nstool::SettingsInitializer::determineValidEsTikFromSample(const tc::ByteDa
 	}
 
 	if (sign.isLittleEndian() == false)
+	{
 		return false;
+	}
 
 	if (sign.getSignType() != pie::hac::es::sign::SIGN_ID_RSA2048_SHA256)
+	{
 		return false;
+	}
 
 	const pie::hac::es::sTicketBody_v2* body = (const pie::hac::es::sTicketBody_v2*)(sample.data() + sign.getBytes().size());
 
-	if ((body->issuer.decode().substr(0, 5) == "Root-"
-		&& body->issuer.decode().substr(16, 2) == "XS") == false)
+	if ((body->issuer.decode().substr(0, 5) == "Root-" && body->issuer.decode().substr(16, 2) == "XS") == false)
+	{
 		return false;
+	}
 
 	return true;
 }

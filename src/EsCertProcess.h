@@ -16,7 +16,6 @@ public:
 
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setKeyCfg(const KeyBag& keycfg);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 private:
@@ -24,7 +23,7 @@ private:
 
 	std::shared_ptr<tc::io::IStream> mFile;
 	KeyBag mKeyCfg;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 
 	std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> mCert;

@@ -185,6 +185,7 @@
     <ClCompile Include="..\..\..\src\NsoProcess.cpp" />
     <ClCompile Include="..\..\..\src\PfsProcess.cpp" />
     <ClCompile Include="..\..\..\src\PkiValidator.cpp" />
+    <ClCompile Include="..\..\..\src\Report.cpp" />
     <ClCompile Include="..\..\..\src\RoMetadataProcess.cpp" />
     <ClCompile Include="..\..\..\src\RomfsProcess.cpp" />
     <ClCompile Include="..\..\..\src\SdkApiString.cpp" />

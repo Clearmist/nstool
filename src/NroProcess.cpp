@@ -1,9 +1,9 @@
 #include "NroProcess.h"
+#include "Report.hpp"
 
 nstool::NroProcess::NroProcess() :
 	mModuleName("nstool::NroProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false)
 {
 }
@@ -13,23 +13,18 @@ void nstool::NroProcess::process()
 	importHeader();
 	importCodeSegments();
 
-	if (mCliOutputMode.show_basic_info)
-		displayHeader();
+	displayHeader();
 
 	processRoMeta();
 
-	if (mIsHomebrewNro)
+	if (mIsHomebrewNro) {
 		mAssetProc.process();
+	}
 }
 
 void nstool::NroProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::NroProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::NroProcess::setVerifyMode(bool verify)
@@ -83,6 +78,7 @@ void nstool::NroProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -106,15 +102,16 @@ void nstool::NroProcess::importHeader()
 	pie::hac::sNroHeader* raw_hdr = (pie::hac::sNroHeader*)scratch.data();
 
 	int64_t file_size = mFile->length();
+
 	if (((tc::bn::le64<uint64_t>*)raw_hdr->reserved_0.data())->unwrap() == pie::hac::nro::kNroHomebrewStructMagic && file_size > int64_t(mHdr.getNroSize()))
 	{
 		mIsHomebrewNro = true;
 		mAssetProc.setInputFile(std::make_shared<tc::io::SubStream>(tc::io::SubStream(mFile, int64_t(mHdr.getNroSize()), file_size - int64_t(mHdr.getNroSize()))));
-		mAssetProc.setCliOutputMode(mCliOutputMode);
 		mAssetProc.setVerifyMode(mVerify);
 	}
-	else
+	else {
 		mIsHomebrewNro = false;
+	}
 }
 
 void nstool::NroProcess::importCodeSegments()
@@ -143,36 +140,76 @@ void nstool::NroProcess::importCodeSegments()
 
 void nstool::NroProcess::displayHeader()
 {
-	fmt::print("[NRO Header]\n");
-	fmt::print("  RoCrt:       \n");
-	fmt::print("    EntryPoint: 0x{:x}\n", mHdr.getRoCrtEntryPoint());
-	fmt::print("    ModOffset:  0x{:x}\n", mHdr.getRoCrtModOffset());
-	fmt::print("  ModuleId:    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, ""));
-	fmt::print("  NroSize:     0x{:x}\n", mHdr.getNroSize());
-	fmt::print("  Program Sections:\n");
-	fmt::print("     .text:\n");
-	fmt::print("      Offset:     0x{:x}\n", mHdr.getTextInfo().memory_offset);
-	fmt::print("      Size:       0x{:x}\n", mHdr.getTextInfo().size);
-	fmt::print("    .ro:\n");
-	fmt::print("      Offset:     0x{:x}\n", mHdr.getRoInfo().memory_offset);
-	fmt::print("      Size:       0x{:x}\n", mHdr.getRoInfo().size);
-	if (mCliOutputMode.show_extended_info)
-	{
-		fmt::print("    .api_info:\n");
-		fmt::print("      Offset:     0x{:x}\n", mHdr.getRoEmbeddedInfo().memory_offset);
-		fmt::print("      Size:       0x{:x}\n", mHdr.getRoEmbeddedInfo().size);
-		fmt::print("    .dynstr:\n");
-		fmt::print("      Offset:     0x{:x}\n", mHdr.getRoDynStrInfo().memory_offset);
-		fmt::print("      Size:       0x{:x}\n", mHdr.getRoDynStrInfo().size);
-		fmt::print("    .dynsym:\n");
-		fmt::print("      Offset:     0x{:x}\n", mHdr.getRoDynSymInfo().memory_offset);
-		fmt::print("      Size:       0x{:x}\n", mHdr.getRoDynSymInfo().size);
-	}                                                                
-	fmt::print("    .data:\n");
-	fmt::print("      Offset:     0x{:x}\n", mHdr.getDataInfo().memory_offset);
-	fmt::print("      Size:       0x{:x}\n", mHdr.getDataInfo().size);
-	fmt::print("    .bss:\n");
-	fmt::print("      Size:       0x{:x}\n", mHdr.getBssSize());
+	Report& r = get_report();
+
+	r.text("[NRO Header]");
+	r.text("  RoCrt:");
+	r.text(fmt::format("    EntryPoint: 0x{:x}", mHdr.getRoCrtEntryPoint()));
+	r.text(fmt::format("    ModOffset:  0x{:x}", mHdr.getRoCrtModOffset()));
+	r.text(fmt::format("  ModuleId:    {:s}", tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, "")));
+	r.text(fmt::format("  NroSize:     0x{:x}", mHdr.getNroSize()));
+	r.text("  Program Sections:");
+	r.text("     .text:");
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getTextInfo().memory_offset));
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getTextInfo().size));
+	r.text("    .ro:");
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getRoInfo().memory_offset));
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getRoInfo().size));
+	r.text("    .api_info:", Report::TextType::Extended);
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getRoEmbeddedInfo().memory_offset), Report::TextType::Extended);
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getRoEmbeddedInfo().size), Report::TextType::Extended);
+	r.text("    .dynstr:", Report::TextType::Extended);
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getRoDynStrInfo().memory_offset), Report::TextType::Extended);
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getRoDynStrInfo().size), Report::TextType::Extended);
+	r.text("    .dynsym:", Report::TextType::Extended);
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getRoDynSymInfo().memory_offset), Report::TextType::Extended);
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getRoDynSymInfo().size), Report::TextType::Extended);
+	r.text("    .data:");
+	r.text(fmt::format("      Offset:     0x{:x}", mHdr.getDataInfo().memory_offset));
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getDataInfo().size));
+	r.text("    .bss:");
+	r.text(fmt::format("      Size:       0x{:x}", mHdr.getBssSize()));
+
+	r.set("data.nroHeader.roCrt", nlohmann::json{
+		{"entryPoint", fmt::format("0x{:x}", mHdr.getRoCrtEntryPoint())},
+		{"modOffset", fmt::format("0x{:x}", mHdr.getRoCrtModOffset())},
+		{"moduleId", tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, "")},
+		{"nroSize", fmt::format("0x{:x}", mHdr.getNroSize())}
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "text"},
+		{"offset", fmt::format("0x{:x}", mHdr.getTextInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getTextInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "ro"},
+		{"offset", fmt::format("0x{:x}", mHdr.getRoInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getRoInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "api_info"},
+		{"offset", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "dynstr"},
+		{"offset", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "dynsym"},
+		{"offset", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "data"},
+		{"offset", fmt::format("0x{:x}", mHdr.getDataInfo().memory_offset)},
+		{"size", fmt::format("0x{:x}", mHdr.getDataInfo().size)},
+	});
+	r.push("data.nroHeader.programSections", nlohmann::json{
+		{"name", "bss"},
+		{"size", fmt::format("0x{:x}", mHdr.getBssSize())},
+	});
 }
 
 void nstool::NroProcess::processRoMeta()
@@ -184,7 +221,6 @@ void nstool::NroProcess::processRoMeta()
 		mRoMeta.setDynSym(mHdr.getRoDynSymInfo().memory_offset, mHdr.getRoDynSymInfo().size);
 		mRoMeta.setDynStr(mHdr.getRoDynStrInfo().memory_offset, mHdr.getRoDynStrInfo().size);
 		mRoMeta.setRoBinary(mRoBlob);
-		mRoMeta.setCliOutputMode(mCliOutputMode);
 		mRoMeta.process();
 	}
 }

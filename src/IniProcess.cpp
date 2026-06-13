@@ -1,12 +1,11 @@
 #include "IniProcess.h"
-
 #include "util.h"
 #include "KipProcess.h"
+#include "Report.hpp"
 
 nstool::IniProcess::IniProcess() :
 	mModuleName("nstool::IniProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false),
 	mKipExtractPath()
 {
@@ -16,11 +15,10 @@ void nstool::IniProcess::process()
 {
 	importHeader();
 	importKipList();
-	if (mCliOutputMode.show_basic_info)
-	{
-		displayHeader();
-		displayKipList();
-	}
+
+	displayHeader();
+	displayKipList();
+
 	if (mKipExtractPath.isSet())
 	{
 		extractKipList();
@@ -30,11 +28,6 @@ void nstool::IniProcess::process()
 void nstool::IniProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
-}
-
-void nstool::IniProcess::setCliOutputMode(CliOutputMode type)
-{
-	mCliOutputMode = type;
 }
 
 void nstool::IniProcess::setVerifyMode(bool verify)
@@ -53,6 +46,7 @@ void nstool::IniProcess::importHeader()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
@@ -87,7 +81,7 @@ void nstool::IniProcess::importKipList()
 	{
 		mFile->seek(kip_pos, tc::io::SeekOrigin::Begin);
 		mFile->read((byte_t*)&hdr_raw, sizeof(hdr_raw));
-		hdr.fromBytes((byte_t*)&hdr_raw, sizeof(hdr_raw));		
+		hdr.fromBytes((byte_t*)&hdr_raw, sizeof(hdr_raw));
 		kip_size = getKipSizeFromHeader(hdr);
 		mKipList.push_back({hdr, std::make_shared<tc::io::SubStream>(tc::io::SubStream(mFile, kip_pos, kip_size))});
 		kip_pos += kip_size;
@@ -96,9 +90,14 @@ void nstool::IniProcess::importKipList()
 
 void nstool::IniProcess::displayHeader()
 {
-	fmt::print("[INI Header]\n");
-	fmt::print("  Size:         0x{:x}\n", mHdr.getSize());
-	fmt::print("  KIP Num:      {:d}\n", mHdr.getKipNum());
+	Report& r = get_report();
+
+	r.text("[INI Header]");
+	r.text(fmt::format("  Size:         0x{:x}", mHdr.getSize()));
+	r.text(fmt::format("  KIP Num:      {:d}", mHdr.getKipNum()));
+
+	r.set("data.iniHeader.size", fmt::format("0x{:x}", mHdr.getSize()));
+	r.set("data.iniHeader.kipNumber", mHdr.getKipNum());
 }
 
 void nstool::IniProcess::displayKipList()
@@ -108,9 +107,7 @@ void nstool::IniProcess::displayKipList()
 		KipProcess obj;
 
 		obj.setInputFile(itr->stream);
-		obj.setCliOutputMode(mCliOutputMode);
 		obj.setVerifyMode(mVerify);
-
 		obj.process();
 	}
 }
@@ -123,25 +120,31 @@ void nstool::IniProcess::extractKipList()
 	// make extract dir
 	tc::io::LocalFileSystem local_fs;
 	local_fs.createDirectory(mKipExtractPath.get());
-	
+
 	// out path for extracted KIP
 	tc::io::Path out_path;
 
 	// extract KIPs
 	for (auto itr = mKipList.begin(); itr != mKipList.end(); itr++)
 	{
+		Report& r = get_report();
+
 		out_path = mKipExtractPath.get();
 		out_path += fmt::format("{:s}.kip", itr->hdr.getName());
 
-		if (mCliOutputMode.show_basic_info)
-			fmt::print("Saving {:s}...\n", out_path.to_string());
+		r.text(fmt::format("Saving {:s}...", out_path.to_string()));
+
+		r.push("events", nlohmann::json{
+			{"severity", "info"},
+			{"message", fmt::format("Extracting to {:s}", out_path.to_string())}
+		});
 
 		writeStreamToFile(itr->stream, out_path, cache);
 	}
 }
 
 int64_t nstool::IniProcess::getKipSizeFromHeader(const pie::hac::KernelInitialProcessHeader& hdr) const
-{	
+{
 	// the order of elements in a KIP are sequential, there are no file offsets
 	return int64_t(sizeof(pie::hac::sKipHeader)) + int64_t(hdr.getTextSegmentInfo().file_layout.size + hdr.getRoSegmentInfo().file_layout.size + hdr.getDataSegmentInfo().file_layout.size);
 }

@@ -19,10 +19,8 @@ public:
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setKeyCfg(const KeyBag& keycfg);
-	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 	void setBaseNcaPath(const tc::Optional<tc::io::Path>& nca_path);
-
 
 	// fs specific
 	void setShowFsTree(bool show_fs_tree);
@@ -39,7 +37,7 @@ private:
 	// user options
 	std::shared_ptr<tc::io::IStream> mFile;
 	KeyBag mKeyCfg;
-	CliOutputMode mCliOutputMode;
+
 	bool mVerify;
 	tc::Optional<tc::io::Path> mBaseNcaPath;
 
@@ -121,7 +119,7 @@ private:
 		// sparse metadata
 		SparseInfo sparse_info;
 	};
-	
+
 	std::array<sPartitionInfo, pie::hac::nca::kPartitionNum> mPartitions;
 
 	void importHeader();

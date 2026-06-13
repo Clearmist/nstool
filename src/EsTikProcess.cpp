@@ -1,12 +1,12 @@
 #include "EsTikProcess.h"
 #include "PkiValidator.h"
+#include "Report.hpp"
 
 #include <pietendo/hac/es/SignUtils.h>
 
 nstool::EsTikProcess::EsTikProcess() :
 	mModuleName("nstool::EsTikProcess"),
 	mFile(),
-	mCliOutputMode(true, false, false, false),
 	mVerify(false)
 {
 }
@@ -15,11 +15,11 @@ void nstool::EsTikProcess::process()
 {
 	importTicket();
 
-	if (mVerify)
+	if (mVerify) {
 		verifyTicket();
+	}
 
-	if (mCliOutputMode.show_basic_info)
-		displayTicket();
+	displayTicket();
 }
 
 void nstool::EsTikProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
@@ -37,11 +37,6 @@ void nstool::EsTikProcess::setCertificateChain(const std::vector<pie::hac::es::S
 	mCerts = certs;
 }
 
-void nstool::EsTikProcess::setCliOutputMode(CliOutputMode mode)
-{
-	mCliOutputMode = mode;
-}
-
 void nstool::EsTikProcess::setVerifyMode(bool verify)
 {
 	mVerify = verify;
@@ -53,13 +48,15 @@ void nstool::EsTikProcess::importTicket()
 	{
 		throw tc::Exception(mModuleName, "No file reader set.");
 	}
+
 	if (mFile->canRead() == false || mFile->canSeek() == false)
 	{
 		throw tc::NotSupportedException(mModuleName, "Input stream requires read/seek permissions.");
 	}
 
-	// check if file_size is greater than 20MB, don't import.
+	// check if file_size is greater than 20MB. Don't import large files.
 	size_t file_size = tc::io::IOUtil::castInt64ToSize(mFile->length());
+
 	if (file_size > (0x100000 * 20))
 	{
 		throw tc::Exception(mModuleName, "File too large.");
@@ -90,7 +87,7 @@ void nstool::EsTikProcess::verifyTicket()
 		break;
 	}
 
-	try 
+	try
 	{
 		pki_validator.setKeyCfg(mKeyCfg);
 		pki_validator.addCertificates(mCerts);
@@ -98,73 +95,112 @@ void nstool::EsTikProcess::verifyTicket()
 	}
 	catch (const tc::Exception& e)
 	{
-		fmt::print("[WARNING] Ticket signature could not be validated ({:s})\n", e.error());
+		get_report().text(fmt::format("[WARNING] Ticket signature could not be validated ({:s})", e.error()));
+
+		get_report().push("events", nlohmann::json{
+			{"severity", "warn"},
+			{"message", fmt::format("Ticket signature could not be validated ({:s})", e.error())}
+		});
 	}
 }
 
 void nstool::EsTikProcess::displayTicket()
 {
-	const pie::hac::es::TicketBody_V2& body = mTik.getBody();	
+	Report& r = get_report();
 
-	fmt::print("[ES Ticket]\n");
-	fmt::print("  SignType:         {:s}", getSignTypeStr(mTik.getSignature().getSignType()));
-	if (mCliOutputMode.show_extended_info)
-		fmt::print(" (0x{:x})", (uint32_t)mTik.getSignature().getSignType());
-	fmt::print("\n");
+	const pie::hac::es::TicketBody_V2& body = mTik.getBody();
 
-	fmt::print("  Issuer:           {:s}\n", body.getIssuer());
-	fmt::print("  Title Key:\n");
-	fmt::print("    EncMode:        {:s}\n", getTitleKeyPersonalisationStr(body.getTitleKeyEncType()));
-	fmt::print("    KeyGeneration:  {:d}\n", (uint32_t)body.getCommonKeyId());
+	r.text("[ES Ticket]");
+	r.text(fmt::format("  SignType:         {:s}", getSignTypeStr(mTik.getSignature().getSignType())));
+	r.text(fmt::format("  SignType hex:     0x{:x}", (uint32_t)mTik.getSignature().getSignType()), Report::TextType::Extended);
+	r.text(fmt::format("  Issuer:           {:s}", body.getIssuer()));
+	r.text("  Title Key:");
+	r.text(fmt::format("    EncMode:        {:s}", getTitleKeyPersonalisationStr(body.getTitleKeyEncType())));
+	r.text(fmt::format("    KeyGeneration:  {:d}", (uint32_t)body.getCommonKeyId()));
+
+	r.set("data.esTicket.signType", nlohmann::json{
+		{"string", getSignTypeStr(mTik.getSignature().getSignType())},
+		{"int", (uint32_t)mTik.getSignature().getSignType()}
+	});
+	r.set("data.esTicket.issuer", body.getIssuer());
+	r.set("data.esTicket.titleKey", nlohmann::json{
+		{"encodingMode", getTitleKeyPersonalisationStr(body.getTitleKeyEncType())},
+		{"keyGeneration", (uint32_t)body.getCommonKeyId()}
+	});
+
 	if (body.getTitleKeyEncType() == pie::hac::es::ticket::RSA2048)
 	{
-		fmt::print("    Data:\n");
-		fmt::print("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false));
+		r.text("    Data:");
+		r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false)));
+
+		r.set("data.esTicket.titleKey.data", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false));
 	}
 	else if (body.getTitleKeyEncType() == pie::hac::es::ticket::AES128_CBC)
 	{
-		fmt::print("    Data:\n");
-		fmt::print("      {:s}\n", tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, ""));
+		r.text("    Data:");
+		r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, "")));
+
+		r.set("data.esTicket.titleKey.data", tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, ""));
 	}
 	else
 	{
-		fmt::print("    Data:           <cannot display>\n");
+		r.text("    Data:           <cannot display>");
+
+		r.set("data.esTicket.titleKey.data", "<cannot display>");
 	}
-	fmt::print("  Version:          {:s} (v{:d})\n", getTitleVersionStr(body.getTicketVersion()), body.getTicketVersion());
-	fmt::print("  License Type:     {:s}\n", getLicenseTypeStr(body.getLicenseType())); 
-	if (body.getPropertyFlags().size() > 0 || mCliOutputMode.show_extended_info)
+
+	r.text(fmt::format("  Version:          {:s} (v{:d})", getTitleVersionStr(body.getTicketVersion()), body.getTicketVersion()));
+	r.text(fmt::format("  License Type:     {:s}", getLicenseTypeStr(body.getLicenseType())));
+
+	r.set("data.esTicket.version", nlohmann::json{
+		{"string", getTitleVersionStr(body.getTicketVersion())},
+		{"int", body.getTicketVersion()}
+	});
+	r.set("data.esTicket.licenseType", getLicenseTypeStr(body.getLicenseType()));
+
+	if (body.getPropertyFlags().size() > 0)
 	{
 		pie::hac::es::sTicketBody_v2* raw_body = (pie::hac::es::sTicketBody_v2*)body.getBytes().data();
-		fmt::print("  PropertyMask:     0x{:04x}\n", ((tc::bn::le16<uint16_t>*)&raw_body->property_mask)->unwrap());
+
+		r.text(fmt::format("  PropertyMask:     0x{:04x}", ((tc::bn::le16<uint16_t>*)&raw_body->property_mask)->unwrap()), Report::TextType::Extended);
+
+		r.set("data.esTicket.propertyMask", fmt::format("0x{:04x}", ((tc::bn::le16<uint16_t>*)&raw_body->property_mask)->unwrap()));
+
 		for (size_t i = 0; i < body.getPropertyFlags().size(); i++)
 		{
-			fmt::print("    {:s}\n", getPropertyFlagStr(body.getPropertyFlags()[i]));
+			r.text(fmt::format("    {:s}", getPropertyFlagStr(body.getPropertyFlags()[i])), Report::TextType::Extended);
+
+			r.push("data.esTicket.propertyFlags", getPropertyFlagStr(body.getPropertyFlags()[i]));
 		}
 	}
-	if (mCliOutputMode.show_extended_info)
-	{
-		fmt::print("  Reserved Region:\n");
-		fmt::print("    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, ""));
-	}
-	
-	if (body.getTicketId() != 0 || mCliOutputMode.show_extended_info)
-		fmt::print("  TicketId:         0x{:016x}\n", body.getTicketId());
-	
-	if (body.getDeviceId() != 0 || mCliOutputMode.show_extended_info)
-		fmt::print("  DeviceId:         0x{:016x}\n", body.getDeviceId());
-	
-	fmt::print("  RightsId:         \n");
-	fmt::print("    {:s}\n", tc::cli::FormatUtil::formatBytesAsString(body.getRightsId(), 16, true, ""));
 
-	fmt::print("  SectionTotalSize:       0x{:x}\n", body.getSectionTotalSize());
-	fmt::print("  SectionHeaderOffset:    0x{:x}\n", body.getSectionHeaderOffset());
-	fmt::print("  SectionNum:             0x{:x}\n", body.getSectionNum());
-	fmt::print("  SectionEntrySize:       0x{:x}\n", body.getSectionEntrySize());
+	r.text("  Reserved Region:", Report::TextType::Extended);
+	r.text(fmt::format("    {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, "")), Report::TextType::Extended);
+	r.text(fmt::format("  TicketId:         0x{:016x}", body.getTicketId()), Report::TextType::Extended);
+	r.text(fmt::format("  DeviceId:         0x{:016x}", body.getDeviceId()), Report::TextType::Extended);
+	r.text("  RightsId:");
+	r.text(fmt::format("    {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getRightsId(), 16, true, "")));
+	r.text(fmt::format("  SectionTotalSize:       0x{:x}", body.getSectionTotalSize()));
+	r.text(fmt::format("  SectionHeaderOffset:    0x{:x}", body.getSectionHeaderOffset()));
+	r.text(fmt::format("  SectionNum:             0x{:x}", body.getSectionNum()));
+	r.text(fmt::format("  SectionEntrySize:       0x{:x}", body.getSectionEntrySize()));
+
+	r.set("data.esTicket.reservedRegion", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, ""));
+	r.set("data.esTicket.ticketId", fmt::format("0x{:016x}", body.getTicketId()));
+	r.set("data.esTicket.deviceId", fmt::format("0x{:016x}", body.getDeviceId()));
+	r.set("data.esTicket.rightsId", tc::cli::FormatUtil::formatBytesAsString(body.getRightsId(), 16, true, ""));
+	r.set("data.esTicket.section", nlohmann::json{
+		{"totalSize", fmt::format("0x{:x}", body.getSectionTotalSize())},
+		{"headerOffset", fmt::format("0x{:x}", body.getSectionHeaderOffset())},
+		{"number", fmt::format("0x{:x}", body.getSectionNum())},
+		{"entrySize", fmt::format("0x{:x}", body.getSectionEntrySize())}
+	});
 }
 
 std::string nstool::EsTikProcess::getSignTypeStr(uint32_t type) const
 {
 	std::string str;
+
 	switch(type)
 	{
 	case (pie::hac::es::sign::SIGN_ID_RSA4096_SHA1):
@@ -189,12 +225,14 @@ std::string nstool::EsTikProcess::getSignTypeStr(uint32_t type) const
 		str = "Unknown";
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getTitleKeyPersonalisationStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::AES128_CBC):
@@ -207,12 +245,14 @@ std::string nstool::EsTikProcess::getTitleKeyPersonalisationStr(byte_t flag) con
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getLicenseTypeStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::LICENSE_PERMANENT):
@@ -237,12 +277,14 @@ std::string nstool::EsTikProcess::getLicenseTypeStr(byte_t flag) const
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 
 std::string nstool::EsTikProcess::getPropertyFlagStr(byte_t flag) const
 {
 	std::string str;
+
 	switch(flag)
 	{
 	case (pie::hac::es::ticket::FLAG_PRE_INSTALL):
@@ -267,6 +309,7 @@ std::string nstool::EsTikProcess::getPropertyFlagStr(byte_t flag) const
 		str = fmt::format("Unknown ({:d})", flag);
 		break;
 	}
+
 	return str;
 }
 
