@@ -12,13 +12,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Platform detection
-if(WIN32)
-    set(PLATFORM_NAME "win32")
-elseif(APPLE)
-    set(PLATFORM_NAME "macos")
-else()
-    set(PLATFORM_NAME "linux")
+# Platform detection (allow override from -DPLATFORM_NAME=...)
+if(NOT DEFINED PLATFORM_NAME)
+    if(WIN32)
+        set(PLATFORM_NAME "win32")
+    elseif(APPLE)
+        set(PLATFORM_NAME "macos")
+    else()
+        set(PLATFORM_NAME "linux")
+    endif()
 endif()
 
 # Output directories - use PROJECT_SOURCE_DIR/bin instead of CMAKE_BINARY_DIR

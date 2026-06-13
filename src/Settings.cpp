@@ -813,7 +813,9 @@ void nstool::SettingsInitializer::determine_filetype()
 
 void nstool::SettingsInitializer::usage_text() const
 {
-    fmt::print("{:s} v{:d}.{:d}.{:d} Copyright {:s}\n", APP_NAME, VER_MAJOR, VER_MINOR, VER_PATCH, AUTHORS);
+    fmt::print("{:s} v{:d}.{:d}.{:d}\n", APP_NAME, VER_MAJOR, VER_MINOR, VER_PATCH);
+    fmt::print("Copyright {:s}\n", COPYRIGHT);
+    fmt::print("Contributors: {:s}\n", CONTRIBUTORS);
     fmt::print("Built: {:s} {:s}\n\n", BUILD_DATE_ISO().c_str(), __TIME__);
     fmt::print("Usage: {:s} [options... ] <file>\n", BIN_NAME);
     fmt::print("\n  General options:\n");
