@@ -12,6 +12,7 @@ nstool::FsProcess::FsProcess() :
 	mFsFormatName(),
 	mProperties(),
 	mShowFsTree(false),
+	mOutputFile(),
 	mFsRootLabel(),
 	mExtractJobs(),
 	mDataCache(0x10000)
@@ -81,6 +82,11 @@ void nstool::FsProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& ex
 	mExtractJobs = extract_jobs;
 }
 
+void nstool::FsProcess::setExtractFile(std::string outputFile)
+{
+	mOutputFile = outputFile;
+}
+
 void nstool::FsProcess::printFs()
 {
 	Report& r = get_report();
@@ -125,11 +131,7 @@ void nstool::FsProcess::extractFs()
 
 				tc::io::Path file_extract_path = itr->extract_path + itr->virtual_path.back();
 
-				r.text(fmt::format("Saving {:s}...", file_extract_path.to_string()));
-				r.push("events", nlohmann::json{
-					{"severity", "info"},
-					{"message", fmt::format("Extracting directory {:s}", file_extract_path.to_string())}
-				});
+				fmt::print("Extracting file to {:s}...\n", file_extract_path.to_string());
 
 				writeStreamToFile(file_stream, itr->extract_path + itr->virtual_path.back(), mDataCache);
 				continue;
@@ -195,6 +197,7 @@ void nstool::FsProcess::extractFs()
 			{"message", "Failed to extract virtual path: \"{:s}\"", itr->virtual_path.to_string()}
 		});
 	}
+
 }
 
 void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path& l_path, bool extract_fs, bool print_fs)
@@ -231,6 +234,9 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 
 	for (auto itr = info.file_list.begin(); itr != info.file_list.end(); itr++)
 	{
+		// build out path
+        out_path = l_path + *itr;
+
 		if (print_fs)
 		{
 			std::string padded = std::string(v_path.size(), ' ') + " {:s}";
@@ -238,17 +244,9 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 			r.text(fmt::format(padded, *itr));
 			r.push("data.tree", fmt::format("{}/{}", prefixLabel, *itr));
 		}
-
-		if (extract_fs)
+		if (extract_fs && (mOutputFile == "" || (mOutputFile == *itr)))
 		{
-			// build out path
-			out_path = l_path + *itr;
-
-			r.text(fmt::format("Saving {:s}...", out_path.to_string()));
-			r.push("events", nlohmann::json{
-				{"severity", "info"},
-				{"message", fmt::format("Extracting to {:s}", out_path.to_string())}
-			});
+			fmt::print("Saving {:s}...\n", out_path.to_string());
 
 			// begin export
 			mInputFs->openFile(v_path + *itr, tc::io::FileMode::Open, tc::io::FileAccess::Read, in_stream);
@@ -273,9 +271,12 @@ void nstool::FsProcess::visitDir(const tc::io::Path& v_path, const tc::io::Path&
 		}
 	}
 
-	// iterate through child dirs
+	// iterate through child directories
 	for (auto itr = info.dir_list.begin(); itr != info.dir_list.end(); itr++)
 	{
-		visitDir(v_path + *itr, l_path + *itr, extract_fs, print_fs);
+		// When traversing each directory append the directory to the local path only if we're not looking to extract a single file.
+        const tc::io::Path localPath = mOutputFile == "" ? l_path + *itr : l_path;
+
+		visitDir(v_path + *itr, localPath, extract_fs, print_fs);
 	}
 }

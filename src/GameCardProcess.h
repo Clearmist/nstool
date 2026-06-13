@@ -16,6 +16,7 @@ public:
 
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
+	void setOutputFile(const std::string& file);
 	void setKeyCfg(const KeyBag& keycfg);
 	void setVerifyMode(bool verify);
 
@@ -28,6 +29,7 @@ private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
+	std::string mOutputFile;
 	KeyBag mKeyCfg;
 
 	bool mVerify;

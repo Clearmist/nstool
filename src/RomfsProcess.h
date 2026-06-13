@@ -15,6 +15,8 @@ public:
 
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
+	void setOutputFile(const std::string& file);
+	void setCliOutputMode(CliOutputMode type);
 	void setVerifyMode(bool verify);
 
 	// fs specific
@@ -27,7 +29,8 @@ private:
 	std::string mModuleName;
 
 	std::shared_ptr<tc::io::IStream> mFile;
-
+	std::string mOutputFile;
+	CliOutputMode mCliOutputMode;
 	bool mVerify;
 
 	pie::hac::sRomfsHeader mRomfsHeader;

@@ -48,6 +48,11 @@ void nstool::NcaProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& fi
 	mFile = file;
 }
 
+void nstool::NcaProcess::setOutputFile(const std::string& file)
+{
+	mOutputFile = file;
+}
+
 void nstool::NcaProcess::setBaseNcaPath(const tc::Optional<tc::io::Path>& nca_path)
 {
 	mBaseNcaPath = nca_path;
@@ -76,6 +81,7 @@ void nstool::NcaProcess::setFsRootLabel(const std::string& root_label)
 void nstool::NcaProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs)
 {
 	mFsProcess.setExtractJobs(extract_jobs);
+	mFsProcess.setExtractFile(mOutputFile);
 }
 
 const std::shared_ptr<tc::io::IFileSystem>& nstool::NcaProcess::getFileSystem() const
@@ -219,7 +225,7 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
 		}
 	}
 
-	if (mContentKey.aes_ctr.isSet())
+	if (mCliOutputMode.show_keydata)
 	{
 		r.text("[NCA Content Key]", Report::TextType::Keydata);
 		r.text(fmt::format("  AES-CTR Key: {:s}", tc::cli::FormatUtil::formatBytesAsString(mContentKey.aes_ctr.get().data(), mContentKey.aes_ctr.get().size(), true, "")), Report::TextType::Keydata);
@@ -446,6 +452,7 @@ void nstool::NcaProcess::validateNcaSignatures()
 		});
 	}
 
+
 	// validate signature[1]
 	if (mHdr.getContentType() == pie::hac::nca::ContentType_Program)
 	{
@@ -536,7 +543,7 @@ void nstool::NcaProcess::displayHeader()
 		r.set("data.ncaHeader.rightsId", tc::cli::FormatUtil::formatBytesAsString(mHdr.getRightsId().data(), mHdr.getRightsId().size(), true, ""));
 	}
 
-	if (mContentKey.kak_list.size() > 0)
+	if (mContentKey.kak_list.size() > 0 && mCliOutputMode.show_keydata)
 	{
 		r.text("  Key Area:", Report::TextType::Keydata);
 		r.text("    <--------------------------------------------------------------------------->", Report::TextType::Keydata);
@@ -548,13 +555,8 @@ void nstool::NcaProcess::displayHeader()
 			std::string enc_key = tc::cli::FormatUtil::formatBytesAsString(mContentKey.kak_list[i].enc.data(), mContentKey.kak_list[i].enc.size(), true, "");
 			std::string dec_key = mContentKey.kak_list[i].decrypted ? tc::cli::FormatUtil::formatBytesAsString(mContentKey.kak_list[i].dec.data(), mContentKey.kak_list[i].dec.size(), true, "") : "<unable to decrypt>";
 
-			r.text(fmt::format("    | {:3d} | {:32s} | {:32s} |", mContentKey.kak_list[i].index, enc_key, dec_key), Report::TextType::Keydata);
+			fmt::print("    | {:3d} | {:32s} | {:32s} |\n", mContentKey.kak_list[i].index, enc_key, dec_key);
 
-			r.push("data.ncaHeader.keyArea", nlohmann::json {
-				{"idx", fmt::format("{:3d}", mContentKey.kak_list[i].index)},
-				{"encryptedKey", fmt::format("{:32s}", enc_key)},
-				{"decryptedKey", fmt::format("{:32s}", dec_key)}
-			});
 		}
 
 		r.text("    <--------------------------------------------------------------------------->", Report::TextType::Keydata);

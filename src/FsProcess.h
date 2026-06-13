@@ -21,17 +21,7 @@ public:
 	void setShowFsTree(bool show_fs_tree);
 	void setFsRootLabel(const std::string& root_label);
 	void setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs);
-
-	// Add or overwrite a property
-    void setProperties(const std::string& name, const nlohmann::json& value)
-    {
-        properties_[name] = value;
-    }
-
-	const nlohmann::json& getProperties() const
-    {
-        return properties_;
-    }
+	void setExtractFile(std::string outputFile);
 private:
 	std::string mModuleLabel;
 
@@ -47,6 +37,7 @@ private:
 
 	// extract jobs
 	std::vector<nstool::ExtractJob> mExtractJobs;
+	std::string mOutputFile;
 
 	// cache for file extract
 	tc::ByteData mDataCache;

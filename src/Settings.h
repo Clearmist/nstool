@@ -37,6 +37,11 @@ struct Settings
 		tc::Optional<tc::io::Path> path;
 	} infile;
 
+	struct OutputFileOptions
+	{
+		std::string filename;
+	} outfile;
+
 	struct Options
 	{
 		bool verify;
@@ -96,6 +101,9 @@ struct Settings
 		infile.filetype = FILE_TYPE_ERROR;
 		infile.path = tc::Optional<tc::io::Path>();
 
+		outfile.filename = "";
+
+		opt.cli_output_mode = CliOutputMode();
 		opt.verify = false;
 		opt.is_dev = false;
 		opt.keybag = KeyBag();

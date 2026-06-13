@@ -71,17 +71,23 @@ void nstool::PfsProcess::process()
 		fmt::format("FileNum:     {:d}", mPfs.getFileList().size())
 	});
 
-	mFsProcess.setProperties("type", nlohmann::json{
-		{"string", pie::hac::PartitionFsUtil::getFsTypeAsString(mPfs.getFsType())},
-		{"int", mPfs.getFsType()}
-	});
-	mFsProcess.setProperties("fileCount", mPfs.getFileList().size());
 	mFsProcess.process();
 }
 
 void nstool::PfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& file)
 {
 	mFile = file;
+}
+
+void nstool::PfsProcess::setOutputFile(const std::string& file)
+{
+	mOutputFile = file;
+}
+
+void nstool::PfsProcess::setCliOutputMode(CliOutputMode type)
+{
+	mCliOutputMode = type;
+	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::PfsProcess::setVerifyMode(bool verify)
@@ -102,6 +108,7 @@ void nstool::PfsProcess::setFsRootLabel(const std::string& root_label)
 void nstool::PfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs)
 {
 	mFsProcess.setExtractJobs(extract_jobs);
+	mFsProcess.setExtractFile(mOutputFile);
 }
 
 const pie::hac::PartitionFsHeader& nstool::PfsProcess::getPfsHeader() const
@@ -119,6 +126,12 @@ size_t nstool::PfsProcess::determineHeaderSize(const pie::hac::sPfsHeader* hdr)
 	size_t fileEntrySize = 0;
 
 	if (hdr->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic) {
+        fileEntrySize = sizeof(pie::hac::sPfsFile);
+    } else {
+        fileEntrySize = sizeof(pie::hac::sHashedPfsFile);
+    }
+
+	if (hdr->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic)
 		fileEntrySize = sizeof(pie::hac::sPfsFile);
 	}
 	else {
