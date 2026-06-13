@@ -11,13 +11,15 @@
     "vscode": {
       "extensions": [
         // C/C++ Extension. Provides C/C++ language support.
-        "ms-vscode.cpptools",
+        "llvm-vs-code-extensions.vscode-clangd",
         // Editor Config. Helps maintain consistent coding styles.
         "editorconfig.editorconfig",
         // Fast tasks. Helps to run and manage tasks from within the file browser pane.
-        "batyan-soft.fast-tasks"
+        "batyan-soft.fast-tasks",
+        // Formatter.
+        "xaver.clang-format"
       ],
-      "settings" : {
+      "settings": {
         "terminal.integrated.shell.linux": "/bin/bash"
       }
     }

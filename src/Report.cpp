@@ -1,20 +1,22 @@
 #include "Report.hpp"
-#include <sstream>
 #include <ostream>
+#include <sstream>
 
 // -------------------------------
 // Helpers
 // -------------------------------
 
 // Creates nested JSON objects for the given path.
-static nlohmann::json& ensure_path(nlohmann::json& root, const std::string& path)
+static nlohmann::json &ensure_path(nlohmann::json &root, const std::string &path)
 {
     std::stringstream ss(path);
     std::string segment;
-    nlohmann::json* current = &root;
+    nlohmann::json *current = &root;
 
-    while (std::getline(ss, segment, '.')) {
-        if (segment.empty()) {
+    while (std::getline(ss, segment, '.'))
+    {
+        if (segment.empty())
+        {
             continue;
         }
 
@@ -26,15 +28,17 @@ static nlohmann::json& ensure_path(nlohmann::json& root, const std::string& path
 }
 
 // Creates (or converts) the node at path into an array.
-static nlohmann::json& ensure_array_path(nlohmann::json& root, const std::string& path)
+static nlohmann::json &ensure_array_path(nlohmann::json &root, const std::string &path)
 {
-    nlohmann::json& node = ensure_path(root, path);
+    nlohmann::json &node = ensure_path(root, path);
 
-    if (node.is_null()) {
+    if (node.is_null())
+    {
         // Nothing there yet: make it an empty array.
         node = nlohmann::json::array();
     }
-    else if (!node.is_array()) {
+    else if (!node.is_array())
+    {
         // Something is there but it's not an array: wrap it into an array.
         nlohmann::json old = node;
         node = nlohmann::json::array();
@@ -44,17 +48,20 @@ static nlohmann::json& ensure_array_path(nlohmann::json& root, const std::string
     return node;
 }
 
-void Report::add_json_internal(const std::string& path, const nlohmann::json& value)
+void Report::add_json_internal(const std::string &path, const nlohmann::json &value)
 {
-    nlohmann::json& node = ensure_path(root_, path);
+    nlohmann::json &node = ensure_path(root_, path);
 
-    if (node.is_null()) {
+    if (node.is_null())
+    {
         node = value;
     }
-    else if (node.is_object() && value.is_object()) {
+    else if (node.is_object() && value.is_object())
+    {
         node.update(value);
     }
-    else {
+    else
+    {
         node = value;
     }
 }
@@ -63,9 +70,9 @@ void Report::add_json_internal(const std::string& path, const nlohmann::json& va
 // JSON "push" functions (arrays)
 // -------------------------------
 
-void Report::push_json_internal(const std::string& path, const nlohmann::json& value)
+void Report::push_json_internal(const std::string &path, const nlohmann::json &value)
 {
-    nlohmann::json& node = ensure_array_path(root_, path);
+    nlohmann::json &node = ensure_array_path(root_, path);
     node.push_back(value);
 }
 
@@ -73,7 +80,7 @@ void Report::push_json_internal(const std::string& path, const nlohmann::json& v
 // TEXT "set"
 // -------------------------------
 
-void Report::text(const std::string& line, TextType type)
+void Report::text(const std::string &line, TextType type)
 {
     TextEntry entry;
     entry.line = line;
@@ -81,16 +88,18 @@ void Report::text(const std::string& line, TextType type)
     text_lines_.push_back(std::move(entry));
 }
 
-void Report::merge(const std::string& path, const nlohmann::json& value)
+void Report::merge(const std::string &path, const nlohmann::json &value)
 {
-    nlohmann::json& node = ensure_path(root_, path);
+    nlohmann::json &node = ensure_path(root_, path);
 
-    if (!node.is_object()) {
+    if (!node.is_object())
+    {
         // Convert whatever is there into an empty object.
         node = nlohmann::json::object();
     }
 
-    if (value.is_object()) {
+    if (value.is_object())
+    {
         node.update(value);
     }
 }
@@ -99,31 +108,38 @@ void Report::merge(const std::string& path, const nlohmann::json& value)
 // Output
 // -------------------------------
 
-void Report::write_text(std::ostream& os) const
+void Report::write_text(std::ostream &os) const
 {
-    if (text_lines_.empty()) {
+    if (text_lines_.empty())
+    {
         return;
     }
 
-    for (const auto& entry : text_lines_) {
-        switch (entry.type) {
+    for (const auto &entry : text_lines_)
+    {
+        switch (entry.type)
+        {
         case TextType::Basic:
-            if (showBasicInfo) {
+            if (showBasicInfo)
+            {
                 os << entry.line << "\n";
             }
             break;
         case TextType::Extended:
-            if (showExtendedInfo) {
+            if (showExtendedInfo)
+            {
                 os << entry.line << "\n";
             }
             break;
         case TextType::Layout:
-            if (showLayout) {
+            if (showLayout)
+            {
                 os << entry.line << "\n";
             }
             break;
         case TextType::Keydata:
-            if (showKeydata) {
+            if (showKeydata)
+            {
                 os << entry.line << "\n";
             }
             break;
@@ -131,17 +147,20 @@ void Report::write_text(std::ostream& os) const
     }
 }
 
-void Report::write_json(std::ostream& os) const
+void Report::write_json(std::ostream &os) const
 {
     // Dumping root_ will print "null" if it is empty.
     os << root_.dump(2) << "\n";
 }
 
-void Report::write(std::ostream& os) const
+void Report::write(std::ostream &os) const
 {
-    if (showMachineReadable) {
+    if (showMachineReadable)
+    {
         write_json(os);
-    } else {
+    }
+    else
+    {
         write_text(os);
     }
 }
@@ -150,7 +169,7 @@ void Report::write(std::ostream& os) const
 // Singleton
 // -------------------------------
 
-Report& get_report()
+Report &get_report()
 {
     static Report instance;
 

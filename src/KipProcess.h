@@ -3,34 +3,36 @@
 
 #include <pietendo/hac/KernelInitialProcessHeader.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class KipProcess
 {
-public:
-	KipProcess();
+  public:
+    KipProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
-private:
-	std::string mModuleName;
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	std::shared_ptr<tc::io::IStream> mFile;
+  private:
+    std::string mModuleName;
 
-	bool mVerify;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	pie::hac::KernelInitialProcessHeader mHdr;
-	tc::ByteData mTextBlob, mRoBlob, mDataBlob;
+    bool mVerify;
 
-	void importHeader();
-	void importCodeSegments();
-	size_t decompressData(const byte_t* src, size_t src_len, byte_t* dst, size_t dst_capacity);
-	void displayHeader();
-	void displayKernelCap(const pie::hac::KernelCapabilityControl& kern);
+    pie::hac::KernelInitialProcessHeader mHdr;
+    tc::ByteData mTextBlob, mRoBlob, mDataBlob;
 
-	std::string formatMappingAsString(const pie::hac::MemoryMappingHandler::sMemoryMapping& map) const;
+    void importHeader();
+    void importCodeSegments();
+    size_t decompressData(const byte_t *src, size_t src_len, byte_t *dst, size_t dst_capacity);
+    void displayHeader();
+    void displayKernelCap(const pie::hac::KernelCapabilityControl &kern);
+
+    std::string formatMappingAsString(const pie::hac::MemoryMappingHandler::sMemoryMapping &map) const;
 };
 
-}
+} // namespace nstool

@@ -4,45 +4,47 @@
 #include <pietendo/hac/IniHeader.h>
 #include <pietendo/hac/KernelInitialProcessHeader.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class IniProcess
 {
-public:
-	IniProcess();
+  public:
+    IniProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	void setKipExtractPath(const tc::io::Path& path);
-private:
-	const size_t kCacheSize = 0x10000;
+    void setKipExtractPath(const tc::io::Path &path);
 
-	std::string mModuleName;
+  private:
+    const size_t kCacheSize = 0x10000;
 
-	std::shared_ptr<tc::io::IStream> mFile;
+    std::string mModuleName;
 
-	bool mVerify;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	tc::Optional<tc::io::Path> mKipExtractPath;
+    bool mVerify;
 
-	pie::hac::IniHeader mHdr;
-	struct InnerKipInfo
-	{
-		pie::hac::KernelInitialProcessHeader hdr;
-		std::shared_ptr<tc::io::IStream> stream;
-	};
-	std::vector<InnerKipInfo> mKipList;
+    tc::Optional<tc::io::Path> mKipExtractPath;
 
-	void importHeader();
-	void importKipList();
-	void displayHeader();
-	void displayKipList();
-	void extractKipList();
+    pie::hac::IniHeader mHdr;
+    struct InnerKipInfo
+    {
+        pie::hac::KernelInitialProcessHeader hdr;
+        std::shared_ptr<tc::io::IStream> stream;
+    };
+    std::vector<InnerKipInfo> mKipList;
 
-	int64_t getKipSizeFromHeader(const pie::hac::KernelInitialProcessHeader& hdr) const;
+    void importHeader();
+    void importKipList();
+    void displayHeader();
+    void displayKipList();
+    void extractKipList();
+
+    int64_t getKipSizeFromHeader(const pie::hac::KernelInitialProcessHeader &hdr) const;
 };
 
-}
+} // namespace nstool

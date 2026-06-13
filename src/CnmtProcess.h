@@ -3,33 +3,36 @@
 
 #include <pietendo/hac/ContentMeta.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class CnmtProcess
 {
-public:
-	CnmtProcess();
+  public:
+    CnmtProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	const pie::hac::ContentMeta& getContentMeta() const;
-private:
-	std::string mModuleName;
+    const pie::hac::ContentMeta &getContentMeta() const;
 
-	std::shared_ptr<tc::io::IStream> mFile;
+  private:
+    std::string mModuleName;
 
-	bool mVerify;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	pie::hac::ContentMeta mCnmt;
+    bool mVerify;
 
-	void importCnmt();
-	void displayCnmt();
+    pie::hac::ContentMeta mCnmt;
 
-	void displayContentMetaInfo(const pie::hac::ContentMetaInfo& content_meta_info, const std::string& prefix);
-	void displayContentMetaInfoList(const std::vector<pie::hac::ContentMetaInfo>& content_meta_info_list, const std::string& prefix);
+    void importCnmt();
+    void displayCnmt();
+
+    void displayContentMetaInfo(const pie::hac::ContentMetaInfo &content_meta_info, const std::string &prefix);
+    void displayContentMetaInfoList(const std::vector<pie::hac::ContentMetaInfo> &content_meta_info_list,
+                                    const std::string &prefix);
 };
 
-}
+} // namespace nstool

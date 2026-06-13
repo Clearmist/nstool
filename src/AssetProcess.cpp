@@ -22,7 +22,10 @@ void nstool::AssetProcess::setNacpExtractPath(const tc::io::Path &path) { mNacpE
 
 void nstool::AssetProcess::setRomfsShowFsTree(bool show_fs_tree) { mRomfs.setShowFsTree(show_fs_tree); }
 
-void nstool::AssetProcess::setRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs) { mRomfs.setExtractJobs(extract_jobs); }
+void nstool::AssetProcess::setRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
+{
+    mRomfs.setExtractJobs(extract_jobs);
+}
 
 void nstool::AssetProcess::importHeader()
 {
@@ -82,7 +85,8 @@ void nstool::AssetProcess::processSections()
             writeSubStreamToFile(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size, mNacpExtractPath.get());
         }
 
-        mNacp.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size));
+        mNacp.setInputFile(
+            std::make_shared<tc::io::SubStream>(mFile, mHdr.getNacpInfo().offset, mHdr.getNacpInfo().size));
         mNacp.setVerifyMode(mVerify);
 
         mNacp.process();
@@ -95,7 +99,8 @@ void nstool::AssetProcess::processSections()
             throw tc::Exception(mModuleName, "ASET geometry for romfs beyond file size");
         }
 
-        mRomfs.setInputFile(std::make_shared<tc::io::SubStream>(mFile, mHdr.getRomfsInfo().offset, mHdr.getRomfsInfo().size));
+        mRomfs.setInputFile(
+            std::make_shared<tc::io::SubStream>(mFile, mHdr.getRomfsInfo().offset, mHdr.getRomfsInfo().size));
         mRomfs.setVerifyMode(mVerify);
 
         mRomfs.process();

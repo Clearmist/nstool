@@ -1,60 +1,57 @@
 #pragma once
+#include "../deps/json/json.hpp"
+#include "types.h"
+#include <string>
 #include <tc/Optional.h>
 #include <tc/io.h>
-#include <string>
-#include "types.h"
-#include "../deps/json/json.hpp"
 
 namespace nstool
 {
 
 class FsProcess
 {
-public:
-	FsProcess();
+  public:
+    FsProcess();
 
-	void process();
+    void process();
 
-	void setInputFileSystem(const std::shared_ptr<tc::io::IFileSystem>& input_fs);
-	void setFsFormatName(const std::string& fs_format_name);
-	void setFsProperties(const std::vector<std::string>& properties);
-	template <typename T>
-	void setProperties(const std::string& key, const T& value)
-	{
-		properties_[key] = value;
-	}
-	void setShowFsInfo(bool show_fs_info);
-	void setShowFsTree(bool show_fs_tree);
-	void setFsRootLabel(const std::string& root_label);
-	void setExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs);
-	void setExtractFile(std::string outputFile);
-private:
-	std::string mModuleLabel;
+    void setInputFileSystem(const std::shared_ptr<tc::io::IFileSystem> &input_fs);
+    void setFsFormatName(const std::string &fs_format_name);
+    void setFsProperties(const std::vector<std::string> &properties);
+    template <typename T> void setProperties(const std::string &key, const T &value) { properties_[key] = value; }
+    void setShowFsInfo(bool show_fs_info);
+    void setShowFsTree(bool show_fs_tree);
+    void setFsRootLabel(const std::string &root_label);
+    void setExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs);
+    void setExtractFile(std::string outputFile);
 
-	std::shared_ptr<tc::io::IFileSystem> mInputFs;
+  private:
+    std::string mModuleLabel;
 
-	// fs info
-	tc::Optional<std::string> mFsFormatName;
-	std::vector<std::string> mProperties;
-	bool mShowFsInfo;
+    std::shared_ptr<tc::io::IFileSystem> mInputFs;
 
-	// fs tree
-	bool mShowFsTree;
-	tc::Optional<std::string> mFsRootLabel;
+    // fs info
+    tc::Optional<std::string> mFsFormatName;
+    std::vector<std::string> mProperties;
+    bool mShowFsInfo;
 
-	// extract jobs
-	std::vector<nstool::ExtractJob> mExtractJobs;
-	std::string mOutputFile;
+    // fs tree
+    bool mShowFsTree;
+    tc::Optional<std::string> mFsRootLabel;
 
-	// cache for file extract
-	tc::ByteData mDataCache;
+    // extract jobs
+    std::vector<nstool::ExtractJob> mExtractJobs;
+    std::string mOutputFile;
 
-	void printFs();
-	void extractFs();
+    // cache for file extract
+    tc::ByteData mDataCache;
 
-	void visitDir(const tc::io::Path& v_path, const tc::io::Path& l_path, bool extract_fs, bool print_fs);
+    void printFs();
+    void extractFs();
 
-	nlohmann::json properties_;
+    void visitDir(const tc::io::Path &v_path, const tc::io::Path &l_path, bool extract_fs, bool print_fs);
+
+    nlohmann::json properties_;
 };
 
-}
+} // namespace nstool

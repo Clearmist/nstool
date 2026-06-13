@@ -3,31 +3,32 @@
 
 #include <pietendo/hac/ApplicationControlProperty.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class NacpProcess
 {
-public:
-	NacpProcess();
+  public:
+    NacpProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	const pie::hac::ApplicationControlProperty& getApplicationControlProperty() const;
+    const pie::hac::ApplicationControlProperty &getApplicationControlProperty() const;
 
-private:
-	std::string mModuleName;
+  private:
+    std::string mModuleName;
 
-	std::shared_ptr<tc::io::IStream> mFile;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	bool mVerify;
+    bool mVerify;
 
-	pie::hac::ApplicationControlProperty mNacp;
+    pie::hac::ApplicationControlProperty mNacp;
 
-	void importNacp();
-	void displayNacp();
+    void importNacp();
+    void displayNacp();
 };
 
-}
+} // namespace nstool

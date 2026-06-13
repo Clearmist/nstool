@@ -1,41 +1,42 @@
 #pragma once
-#include "types.h"
 #include "KeyBag.h"
+#include "types.h"
 
-#include <pietendo/hac/es/SignedData.h>
 #include <pietendo/hac/es/CertificateBody.h>
+#include <pietendo/hac/es/SignedData.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class EsCertProcess
 {
-public:
-	EsCertProcess();
+  public:
+    EsCertProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setKeyCfg(const KeyBag& keycfg);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setKeyCfg(const KeyBag &keycfg);
+    void setVerifyMode(bool verify);
 
-private:
-	std::string mModuleName;
+  private:
+    std::string mModuleName;
 
-	std::shared_ptr<tc::io::IStream> mFile;
-	KeyBag mKeyCfg;
+    std::shared_ptr<tc::io::IStream> mFile;
+    KeyBag mKeyCfg;
 
-	bool mVerify;
+    bool mVerify;
 
-	std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> mCert;
+    std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> mCert;
 
-	void importCerts();
-	void validateCerts();
-	void displayCerts();
-	void displayCert(const pie::hac::es::SignedData<pie::hac::es::CertificateBody>& cert);
+    void importCerts();
+    void validateCerts();
+    void displayCerts();
+    void displayCert(const pie::hac::es::SignedData<pie::hac::es::CertificateBody> &cert);
 
-	std::string getSignTypeStr(pie::hac::es::sign::SignatureId type) const;
-	std::string getEndiannessStr(bool isLittleEndian) const;
-	std::string getPublicKeyTypeStr(pie::hac::es::cert::PublicKeyType type) const;
+    std::string getSignTypeStr(pie::hac::es::sign::SignatureId type) const;
+    std::string getEndiannessStr(bool isLittleEndian) const;
+    std::string getPublicKeyTypeStr(pie::hac::es::cert::PublicKeyType type) const;
 };
 
-}
+} // namespace nstool

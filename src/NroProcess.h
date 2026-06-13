@@ -1,50 +1,52 @@
 #pragma once
-#include "types.h"
-#include "RoMetadataProcess.h"
 #include "AssetProcess.h"
+#include "RoMetadataProcess.h"
+#include "types.h"
 
 #include <pietendo/hac/NroHeader.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class NroProcess
 {
-public:
-	NroProcess();
+  public:
+    NroProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	void setIs64BitInstruction(bool flag);
-	void setListApi(bool listApi);
-	void setListSymbols(bool listSymbols);
+    void setIs64BitInstruction(bool flag);
+    void setListApi(bool listApi);
+    void setListSymbols(bool listSymbols);
 
-	// for homebrew NROs with Asset blobs appended
-	void setAssetIconExtractPath(const tc::io::Path& path);
-	void setAssetNacpExtractPath(const tc::io::Path& path);
-	void setAssetRomfsShowFsTree(bool show_fs_tree);
-	void setAssetRomfsExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs);
+    // for homebrew NROs with Asset blobs appended
+    void setAssetIconExtractPath(const tc::io::Path &path);
+    void setAssetNacpExtractPath(const tc::io::Path &path);
+    void setAssetRomfsShowFsTree(bool show_fs_tree);
+    void setAssetRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs);
 
-	const nstool::RoMetadataProcess& getRoMetadataProcess() const;
-private:
-	std::string mModuleName;
+    const nstool::RoMetadataProcess &getRoMetadataProcess() const;
 
-	std::shared_ptr<tc::io::IStream> mFile;
+  private:
+    std::string mModuleName;
 
-	bool mVerify;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	pie::hac::NroHeader mHdr;
-	tc::ByteData mTextBlob, mRoBlob, mDataBlob;
-	nstool::RoMetadataProcess mRoMeta;
-	bool mIsHomebrewNro;
-	nstool::AssetProcess mAssetProc;
+    bool mVerify;
 
-	void importHeader();
-	void importCodeSegments();
-	void displayHeader();
-	void processRoMeta();
+    pie::hac::NroHeader mHdr;
+    tc::ByteData mTextBlob, mRoBlob, mDataBlob;
+    nstool::RoMetadataProcess mRoMeta;
+    bool mIsHomebrewNro;
+    nstool::AssetProcess mAssetProc;
+
+    void importHeader();
+    void importCodeSegments();
+    void displayHeader();
+    void processRoMeta();
 };
 
-}
+} // namespace nstool

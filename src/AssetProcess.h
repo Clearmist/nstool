@@ -1,44 +1,46 @@
 #pragma once
-#include "types.h"
 #include "NacpProcess.h"
 #include "RomfsProcess.h"
+#include "types.h"
 
 #include <pietendo/hac/AssetHeader.h>
 
-namespace nstool {
+namespace nstool
+{
 
 class AssetProcess
 {
-public:
-	AssetProcess();
+  public:
+    AssetProcess();
 
-	void process();
+    void process();
 
-	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
-	void setVerifyMode(bool verify);
+    void setInputFile(const std::shared_ptr<tc::io::IStream> &file);
+    void setVerifyMode(bool verify);
 
-	void setIconExtractPath(const tc::io::Path& path);
-	void setNacpExtractPath(const tc::io::Path& path);
+    void setIconExtractPath(const tc::io::Path &path);
+    void setNacpExtractPath(const tc::io::Path &path);
 
-	void setRomfsShowFsTree(bool show_fs_tree);
-	void setRomfsExtractJobs(const std::vector<nstool::ExtractJob>& extract_jobs);
-private:
-	std::string mModuleName;
+    void setRomfsShowFsTree(bool show_fs_tree);
+    void setRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs);
 
-	std::shared_ptr<tc::io::IStream> mFile;
+  private:
+    std::string mModuleName;
 
-	bool mVerify;
+    std::shared_ptr<tc::io::IStream> mFile;
 
-	tc::Optional<tc::io::Path> mIconExtractPath;
-	tc::Optional<tc::io::Path> mNacpExtractPath;
+    bool mVerify;
 
-	pie::hac::AssetHeader mHdr;
-	NacpProcess mNacp;
-	RomfsProcess mRomfs;
+    tc::Optional<tc::io::Path> mIconExtractPath;
+    tc::Optional<tc::io::Path> mNacpExtractPath;
 
-	void importHeader();
-	void processSections();
-	void displayHeader();
+    pie::hac::AssetHeader mHdr;
+    NacpProcess mNacp;
+    RomfsProcess mRomfs;
+
+    void importHeader();
+    void processSections();
+    void displayHeader();
 };
 
-}
+} // namespace nstool
