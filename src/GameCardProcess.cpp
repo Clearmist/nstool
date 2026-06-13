@@ -12,6 +12,7 @@
 nstool::GameCardProcess::GameCardProcess() :
 	mModuleName("nstool::GameCardProcess"),
 	mFile(),
+	mCliOutputMode(),
 	mVerify(false),
 	mIsTrueSdkXci(false),
 	mIsSdkXciEncrypted(false),
@@ -46,6 +47,12 @@ void nstool::GameCardProcess::setInputFile(const std::shared_ptr<tc::io::IStream
 void nstool::GameCardProcess::setOutputFile(const std::string& file)
 {
 	mOutputFile = file;
+}
+
+void nstool::GameCardProcess::setCliOutputMode(CliOutputMode type)
+{
+	mCliOutputMode = type;
+	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::GameCardProcess::setKeyCfg(const KeyBag& keycfg)
@@ -216,6 +223,7 @@ void nstool::GameCardProcess::displayHeader()
 	}
 
 	std::string partitionFsHash = trimTrailingNewline(tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(mHdr.getPartitionFsHash().data(), mHdr.getPartitionFsHash().size(), true, "", 0x10, 6, false));
+	std::vector<std::string> lines;
 
 	r.text("  PartitionFs Header:");
 	r.text(fmt::format("    Offset:               0x{:x}", mHdr.getPartitionFsAddress()), Report::TextType::Layout);

@@ -14,7 +14,11 @@
 nstool::NcaProcess::NcaProcess() :
 	mModuleName("nstool::NcaProcess"),
 	mFile(),
+	mOutputFile(),
+	mCliOutputMode(),
+	mKeyCfg(),
 	mVerify(false),
+	mBaseNcaPath(),
 	mFileSystem(),
 	mFsProcess()
 {
@@ -51,6 +55,12 @@ void nstool::NcaProcess::setInputFile(const std::shared_ptr<tc::io::IStream>& fi
 void nstool::NcaProcess::setOutputFile(const std::string& file)
 {
 	mOutputFile = file;
+}
+
+void nstool::NcaProcess::setCliOutputMode(CliOutputMode type)
+{
+	mCliOutputMode = type;
+	mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
 void nstool::NcaProcess::setBaseNcaPath(const tc::Optional<tc::io::Path>& nca_path)

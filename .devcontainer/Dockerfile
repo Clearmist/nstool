@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mingw-w64 \
     gcc \
     g++ \
+    clang-format \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Create workspace directory

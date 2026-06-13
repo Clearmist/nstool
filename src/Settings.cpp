@@ -1,5 +1,6 @@
 #include "Report.hpp"
 #include "Settings.h"
+#include "build_date.h"
 #include "types.h"
 #include "util.h"
 #include "version.h"
@@ -550,8 +551,6 @@ public:
 		{
 			throw tc::ArgumentOutOfRangeException(fmt::format("Option \"{:s}\" requires a parameter.", option));
 		}
-
-		Report& r = get_report();
 
 		std::string message = fmt::format("\"{:s} {:s}\" is deprecated. ", option, params[0]);
 

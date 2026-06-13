@@ -44,6 +44,7 @@ struct Settings
 
 	struct Options
 	{
+		CliOutputMode cli_output_mode;
 		bool verify;
 		bool is_dev;
 		KeyBag keybag;

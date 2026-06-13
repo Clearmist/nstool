@@ -19,6 +19,7 @@ public:
 	// generic
 	void setInputFile(const std::shared_ptr<tc::io::IStream>& file);
 	void setOutputFile(const std::string& file);
+	void setCliOutputMode(CliOutputMode type);
 	void setKeyCfg(const KeyBag& keycfg);
 	void setVerifyMode(bool verify);
 	void setBaseNcaPath(const tc::Optional<tc::io::Path>& nca_path);
@@ -38,6 +39,7 @@ private:
 	// user options
 	std::shared_ptr<tc::io::IStream> mFile;
 	std::string mOutputFile;
+	CliOutputMode mCliOutputMode;
 	KeyBag mKeyCfg;
 
 	bool mVerify;

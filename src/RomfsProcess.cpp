@@ -7,6 +7,7 @@
 nstool::RomfsProcess::RomfsProcess() :
 	mModuleName("nstool::RomfsProcess"),
 	mFile(),
+	mCliOutputMode(),
 	mVerify(false),
 	mDirNum(0),
 	mFileNum(0),

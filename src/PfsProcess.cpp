@@ -9,6 +9,7 @@
 nstool::PfsProcess::PfsProcess() :
 	mModuleName("nstool::PfsProcess"),
 	mFile(),
+	mCliOutputMode(),
 	mVerify(false),
 	mPfs(),
 	mFileSystem(),
@@ -126,12 +127,6 @@ size_t nstool::PfsProcess::determineHeaderSize(const pie::hac::sPfsHeader* hdr)
 	size_t fileEntrySize = 0;
 
 	if (hdr->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic) {
-        fileEntrySize = sizeof(pie::hac::sPfsFile);
-    } else {
-        fileEntrySize = sizeof(pie::hac::sHashedPfsFile);
-    }
-
-	if (hdr->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic)
 		fileEntrySize = sizeof(pie::hac::sPfsFile);
 	}
 	else {

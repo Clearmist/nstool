@@ -11,10 +11,11 @@ nstool::FsProcess::FsProcess() :
 	mInputFs(),
 	mFsFormatName(),
 	mProperties(),
+	mShowFsInfo(true),
 	mShowFsTree(false),
-	mOutputFile(),
 	mFsRootLabel(),
 	mExtractJobs(),
+	mOutputFile(),
 	mDataCache(0x10000)
 {
 }
@@ -28,18 +29,21 @@ void nstool::FsProcess::process()
 
 	Report& r = get_report();
 
-	// Show the file system type.
-	r.text(fmt::format("[{:s}]", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info"));
-	r.set("data.format", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info");
-
-	// Show the file system properties. These are set in GameCardProcess, PfsProcess, and RomfsProcess.
-	for (auto itr = mProperties.begin(); itr != mProperties.end(); itr++)
+	if (mShowFsInfo)
 	{
-		r.text(fmt::format("  {:s}", *itr));
-	}
+		// Show the file system type.
+		r.text(fmt::format("[{:s}]", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info"));
+		r.set("data.format", mFsFormatName.isSet() ? mFsFormatName.get() : "FileSystem/Info");
 
-	// Merge the various properties and their values into the data object.
-	r.merge("data", getProperties());
+		// Show the file system properties. These are set in GameCardProcess, PfsProcess, and RomfsProcess.
+		for (auto itr = mProperties.begin(); itr != mProperties.end(); itr++)
+		{
+			r.text(fmt::format("  {:s}", *itr));
+		}
+
+		// Merge the various properties and their values into the data object.
+		r.merge("data", properties_);
+	}
 
 	if (mShowFsTree)
 	{
@@ -65,6 +69,11 @@ void nstool::FsProcess::setFsFormatName(const std::string& fs_format_name)
 void nstool::FsProcess::setFsProperties(const std::vector<std::string>& properties)
 {
 	mProperties = properties;
+}
+
+void nstool::FsProcess::setShowFsInfo(bool show_fs_info)
+{
+	mShowFsInfo = show_fs_info;
 }
 
 void nstool::FsProcess::setShowFsTree(bool show_fs_tree)
