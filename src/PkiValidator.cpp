@@ -4,7 +4,10 @@
 #include <pietendo/hac/es/SignUtils.h>
 #include <tc/crypto.h>
 
-nstool::PkiValidator::PkiValidator() : mModuleName("nstool::PkiValidator") { clearCertificates(); }
+nstool::PkiValidator::PkiValidator() : mModuleName("nstool::PkiValidator")
+{
+    clearCertificates();
+}
 
 void nstool::PkiValidator::setKeyCfg(const KeyBag &keycfg)
 {
@@ -56,20 +59,21 @@ void nstool::PkiValidator::addCertificate(const pie::hac::es::SignedData<pie::ha
         case (pie::hac::es::sign::HASH_ALGO_SHA1):
 
             cert_hash = tc::ByteData(tc::crypto::Sha1Generator::kHashSize);
-            tc::crypto::GenerateSha1Hash(cert_hash.data(), cert.getBody().getBytes().data(),
-                                         cert.getBody().getBytes().size());
+            tc::crypto::GenerateSha1Hash(
+                cert_hash.data(), cert.getBody().getBytes().data(), cert.getBody().getBytes().size());
             break;
         case (pie::hac::es::sign::HASH_ALGO_SHA256):
             cert_hash = tc::ByteData(tc::crypto::Sha2256Generator::kHashSize);
-            tc::crypto::GenerateSha2256Hash(cert_hash.data(), cert.getBody().getBytes().data(),
-                                            cert.getBody().getBytes().size());
+            tc::crypto::GenerateSha2256Hash(
+                cert_hash.data(), cert.getBody().getBytes().data(), cert.getBody().getBytes().size());
             break;
         default:
             throw tc::Exception(mModuleName, "Unrecognised hash type");
         }
 
-        validateSignature(cert.getBody().getIssuer(), cert.getSignature().getSignType(),
-                          cert.getSignature().getSignature(), cert_hash);
+        validateSignature(
+            cert.getBody().getIssuer(), cert.getSignature().getSignType(), cert.getSignature().getSignature(),
+            cert_hash);
 
         mCertificateBank.push_back(cert);
     }
@@ -79,10 +83,16 @@ void nstool::PkiValidator::addCertificate(const pie::hac::es::SignedData<pie::ha
     }
 }
 
-void nstool::PkiValidator::clearCertificates() { mCertificateBank.clear(); }
+void nstool::PkiValidator::clearCertificates()
+{
+    mCertificateBank.clear();
+}
 
-void nstool::PkiValidator::validateSignature(const std::string &issuer, pie::hac::es::sign::SignatureId signature_id,
-                                             const tc::ByteData &signature, const tc::ByteData &hash) const
+void nstool::PkiValidator::validateSignature(
+    const std::string &issuer,
+    pie::hac::es::sign::SignatureId signature_id,
+    const tc::ByteData &signature,
+    const tc::ByteData &hash) const
 {
     pie::hac::es::sign::SignatureAlgo sign_algo = pie::hac::es::sign::getSignatureAlgo(signature_id);
 
@@ -105,8 +115,8 @@ void nstool::PkiValidator::validateSignature(const std::string &issuer, pie::hac
 
         if (sign_algo != itr->second.key_type)
         {
-            throw tc::Exception(mModuleName,
-                                fmt::format("Public key for issuer \"{:s}\" cannot verify this signature.", issuer));
+            throw tc::Exception(
+                mModuleName, fmt::format("Public key for issuer \"{:s}\" cannot verify this signature.", issuer));
         }
 
         if (sign_algo == pie::hac::es::sign::SIGN_ALGO_ECDSA240)
@@ -130,8 +140,8 @@ void nstool::PkiValidator::validateSignature(const std::string &issuer, pie::hac
         {
             rsa_key = issuer_cert.getRsa2048PublicKey();
         }
-        else if (issuer_pubk_type == pie::hac::es::cert::ECDSA240 &&
-                 sign_algo == pie::hac::es::sign::SIGN_ALGO_ECDSA240)
+        else if (
+            issuer_pubk_type == pie::hac::es::cert::ECDSA240 && sign_algo == pie::hac::es::sign::SIGN_ALGO_ECDSA240)
         {
             // ecc_key = issuer_cert.getEcdsa240PublicKey();
             throw tc::Exception(mModuleName, "ECDSA signatures are not supported");
@@ -171,14 +181,14 @@ void nstool::PkiValidator::validateSignature(const std::string &issuer, pie::hac
     }
 }
 
-void nstool::PkiValidator::makeCertIdent(const pie::hac::es::SignedData<pie::hac::es::CertificateBody> &cert,
-                                         std::string &ident) const
+void nstool::PkiValidator::makeCertIdent(
+    const pie::hac::es::SignedData<pie::hac::es::CertificateBody> &cert, std::string &ident) const
 {
     makeCertIdent(cert.getBody().getIssuer(), cert.getBody().getSubject(), ident);
 }
 
-void nstool::PkiValidator::makeCertIdent(const std::string &issuer, const std::string &subject,
-                                         std::string &ident) const
+void nstool::PkiValidator::makeCertIdent(
+    const std::string &issuer, const std::string &subject, std::string &ident) const
 {
     ident = issuer + pie::hac::es::sign::kIdentDelimiter + subject;
     ident = ident.substr(0, std::min<size_t>(ident.length(), 64));

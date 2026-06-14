@@ -18,8 +18,11 @@ class PkiValidator
     void addCertificate(const pie::hac::es::SignedData<pie::hac::es::CertificateBody> &cert);
     void clearCertificates();
 
-    void validateSignature(const std::string &issuer, pie::hac::es::sign::SignatureId signature_id,
-                           const tc::ByteData &signature, const tc::ByteData &hash) const;
+    void validateSignature(
+        const std::string &issuer,
+        pie::hac::es::sign::SignatureId signature_id,
+        const tc::ByteData &signature,
+        const tc::ByteData &hash) const;
 
   private:
     std::string mModuleName;

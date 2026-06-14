@@ -19,11 +19,20 @@ void nstool::EsCertProcess::process()
     displayCerts();
 }
 
-void nstool::EsCertProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::EsCertProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::EsCertProcess::setKeyCfg(const KeyBag &keycfg) { mKeyCfg = keycfg; }
+void nstool::EsCertProcess::setKeyCfg(const KeyBag &keycfg)
+{
+    mKeyCfg = keycfg;
+}
 
-void nstool::EsCertProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::EsCertProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
 void nstool::EsCertProcess::importCerts()
 {
@@ -93,109 +102,144 @@ void nstool::EsCertProcess::displayCert(const pie::hac::es::SignedData<pie::hac:
 
     r.text("[ES Certificate]");
     r.text(fmt::format("  SignType       {:s}", getSignTypeStr(cert.getSignature().getSignType())));
-    r.text(fmt::format(" (0x{:x}) ({:s})", (uint32_t)cert.getSignature().getSignType(),
-                       getEndiannessStr(cert.getSignature().isLittleEndian())),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format(
+            " (0x{:x}) ({:s})", (uint32_t)cert.getSignature().getSignType(),
+            getEndiannessStr(cert.getSignature().isLittleEndian())),
+        Report::TextType::Extended);
     r.text(fmt::format("  Issuer:        {:s}", cert.getBody().getIssuer()));
     r.text(fmt::format("  Subject:       {:s}", cert.getBody().getSubject()));
     r.text(fmt::format("  PublicKeyType: {:s}", getPublicKeyTypeStr(cert.getBody().getPublicKeyType())));
     r.text(fmt::format(" ({:d})", (uint32_t)cert.getBody().getPublicKeyType()), Report::TextType::Extended);
     r.text(fmt::format("  CertID:        0x{:x}", cert.getBody().getCertId()));
 
-    r.set("data.esCertificate.signType",
-          nlohmann::json{{"string", getSignTypeStr(cert.getSignature().getSignType())},
-                         {"hex", fmt::format("0x{:x}", (uint32_t)cert.getSignature().getSignType())}});
+    r.set(
+        "data.esCertificate.signType",
+        nlohmann::json{
+            {"string", getSignTypeStr(cert.getSignature().getSignType())},
+            {"hex", fmt::format("0x{:x}", (uint32_t)cert.getSignature().getSignType())}});
     r.set("data.esCertificate.endianness", getEndiannessStr(cert.getSignature().isLittleEndian()));
     r.set("data.esCertificate.issuer", cert.getBody().getIssuer());
     r.set("data.esCertificate.subject", cert.getBody().getSubject());
-    r.set("data.esCertificate.publicKeyType",
-          nlohmann::json{{"string", getPublicKeyTypeStr(cert.getBody().getPublicKeyType())},
-                         {"int", (uint32_t)cert.getBody().getPublicKeyType()}});
+    r.set(
+        "data.esCertificate.publicKeyType", nlohmann::json{
+                                                {"string", getPublicKeyTypeStr(cert.getBody().getPublicKeyType())},
+                                                {"int", (uint32_t)cert.getBody().getPublicKeyType()}});
     r.set("data.esCertificate.certId", fmt::format("0x{:x}", cert.getBody().getCertId()));
 
     if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::RSA4096)
     {
         r.text("  PublicKey:");
         r.text("    Modulus:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getRsa4096PublicKey().n.data(),
-                                                                 cert.getBody().getRsa4096PublicKey().n.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getRsa4096PublicKey().n.data(), cert.getBody().getRsa4096PublicKey().n.size())));
         r.text("    Public Exponent:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getRsa4096PublicKey().e.data(),
-                                                                 cert.getBody().getRsa4096PublicKey().e.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getRsa4096PublicKey().e.data(), cert.getBody().getRsa4096PublicKey().e.size())));
 
         r.text("    Modulus (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa4096PublicKey().n.data(),
-                                             cert.getBody().getRsa4096PublicKey().n.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getRsa4096PublicKey().n.data(),
+                                  cert.getBody().getRsa4096PublicKey().n.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
         r.text("    Public Exponent (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa4096PublicKey().e.data(),
-                                             cert.getBody().getRsa4096PublicKey().e.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getRsa4096PublicKey().e.data(),
+                                  cert.getBody().getRsa4096PublicKey().e.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
 
-        r.set("data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                            cert.getBody().getRsa4096PublicKey().n.data(),
-                                            cert.getBody().getRsa4096PublicKey().n.size(), true, "", 0x10, 6, false));
-        r.set("data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa4096PublicKey().e.data(),
-                                             cert.getBody().getRsa4096PublicKey().e.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                          cert.getBody().getRsa4096PublicKey().n.data(),
+                                          cert.getBody().getRsa4096PublicKey().n.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                           cert.getBody().getRsa4096PublicKey().e.data(),
+                                           cert.getBody().getRsa4096PublicKey().e.size(), true, "", 0x10, 6, false));
     }
     else if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::RSA2048)
     {
         r.text("  PublicKey:");
         r.text("    Modulus:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getRsa2048PublicKey().n.data(),
-                                                                 cert.getBody().getRsa2048PublicKey().n.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getRsa2048PublicKey().n.data(), cert.getBody().getRsa2048PublicKey().n.size())));
         r.text("    Public Exponent:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getRsa2048PublicKey().e.data(),
-                                                                 cert.getBody().getRsa2048PublicKey().e.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getRsa2048PublicKey().e.data(), cert.getBody().getRsa2048PublicKey().e.size())));
 
         r.text("    Modulus (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa2048PublicKey().n.data(),
-                                             cert.getBody().getRsa2048PublicKey().n.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getRsa2048PublicKey().n.data(),
+                                  cert.getBody().getRsa2048PublicKey().n.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
         r.text("    Public Exponent (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa2048PublicKey().e.data(),
-                                             cert.getBody().getRsa2048PublicKey().e.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getRsa2048PublicKey().e.data(),
+                                  cert.getBody().getRsa2048PublicKey().e.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
 
-        r.set("data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                            cert.getBody().getRsa2048PublicKey().n.data(),
-                                            cert.getBody().getRsa2048PublicKey().n.size(), true, "", 0x10, 6, false));
-        r.set("data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getRsa2048PublicKey().e.data(),
-                                             cert.getBody().getRsa2048PublicKey().e.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                          cert.getBody().getRsa2048PublicKey().n.data(),
+                                          cert.getBody().getRsa2048PublicKey().n.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                           cert.getBody().getRsa2048PublicKey().e.data(),
+                                           cert.getBody().getRsa2048PublicKey().e.size(), true, "", 0x10, 6, false));
     }
     else if (cert.getBody().getPublicKeyType() == pie::hac::es::cert::ECDSA240)
     {
         r.text("  PublicKey:");
         r.text("    Modulus:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getEcdsa240PublicKey().r.data(),
-                                                                 cert.getBody().getEcdsa240PublicKey().r.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getEcdsa240PublicKey().r.data(), cert.getBody().getEcdsa240PublicKey().r.size())));
         r.text("    Public Exponent:");
-        r.text(fmt::format("      {:s}", getTruncatedBytesString(cert.getBody().getEcdsa240PublicKey().s.data(),
-                                                                 cert.getBody().getEcdsa240PublicKey().s.size())));
+        r.text(fmt::format(
+            "      {:s}",
+            getTruncatedBytesString(
+                cert.getBody().getEcdsa240PublicKey().s.data(), cert.getBody().getEcdsa240PublicKey().s.size())));
 
         r.text("    Modulus (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getEcdsa240PublicKey().r.data(),
-                                             cert.getBody().getEcdsa240PublicKey().r.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getEcdsa240PublicKey().r.data(),
+                                  cert.getBody().getEcdsa240PublicKey().r.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
         r.text("    Public Exponent (extended):", Report::TextType::Extended);
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getEcdsa240PublicKey().s.data(),
-                                             cert.getBody().getEcdsa240PublicKey().s.size(), true, "", 0x10, 6, false)),
-               Report::TextType::Extended);
+        r.text(
+            fmt::format(
+                "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                  cert.getBody().getEcdsa240PublicKey().s.data(),
+                                  cert.getBody().getEcdsa240PublicKey().s.size(), true, "", 0x10, 6, false)),
+            Report::TextType::Extended);
 
-        r.set("data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                            cert.getBody().getEcdsa240PublicKey().r.data(),
-                                            cert.getBody().getEcdsa240PublicKey().r.size(), true, "", 0x10, 6, false));
-        r.set("data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             cert.getBody().getEcdsa240PublicKey().s.data(),
-                                             cert.getBody().getEcdsa240PublicKey().s.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.modulus", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                          cert.getBody().getEcdsa240PublicKey().r.data(),
+                                          cert.getBody().getEcdsa240PublicKey().r.size(), true, "", 0x10, 6, false));
+        r.set(
+            "data.publicKey.exponent", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                           cert.getBody().getEcdsa240PublicKey().s.data(),
+                                           cert.getBody().getEcdsa240PublicKey().s.size(), true, "", 0x10, 6, false));
     }
 }
 

@@ -2,17 +2,23 @@
 
 nstool::ElfSymbolParser::ElfSymbolParser() : mModuleName("nstool::ElfSymbolParser"), mSymbolList() {}
 
-void nstool::ElfSymbolParser::operator=(const ElfSymbolParser &other) { mSymbolList = other.mSymbolList; }
+void nstool::ElfSymbolParser::operator=(const ElfSymbolParser &other)
+{
+    mSymbolList = other.mSymbolList;
+}
 
 bool nstool::ElfSymbolParser::operator==(const ElfSymbolParser &other) const
 {
     return mSymbolList == other.mSymbolList;
 }
 
-bool nstool::ElfSymbolParser::operator!=(const ElfSymbolParser &other) const { return !(*this == other); }
+bool nstool::ElfSymbolParser::operator!=(const ElfSymbolParser &other) const
+{
+    return !(*this == other);
+}
 
-void nstool::ElfSymbolParser::parseData(const byte_t *dyn_sym, size_t dyn_sym_size, const byte_t *dyn_str,
-                                        size_t dyn_str_size, bool is64Bit)
+void nstool::ElfSymbolParser::parseData(
+    const byte_t *dyn_sym, size_t dyn_sym_size, const byte_t *dyn_str, size_t dyn_str_size, bool is64Bit)
 {
     size_t dynSymSize = is64Bit ? sizeof(Elf64_Sym) : sizeof(Elf32_Sym);
 

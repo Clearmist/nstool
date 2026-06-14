@@ -108,9 +108,15 @@ void nstool::RomfsProcess::process()
     mFsProcess.process();
 }
 
-void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::RomfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::RomfsProcess::setOutputFile(const std::string &file) { mOutputFile = file; }
+void nstool::RomfsProcess::setOutputFile(const std::string &file)
+{
+    mOutputFile = file;
+}
 
 void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
 {
@@ -118,9 +124,15 @@ void nstool::RomfsProcess::setCliOutputMode(CliOutputMode type)
     mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
-void nstool::RomfsProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::RomfsProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::RomfsProcess::setFsRootLabel(const std::string &root_label) { mFsProcess.setFsRootLabel(root_label); }
+void nstool::RomfsProcess::setFsRootLabel(const std::string &root_label)
+{
+    mFsProcess.setFsRootLabel(root_label);
+}
 
 void nstool::RomfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
 {
@@ -128,4 +140,7 @@ void nstool::RomfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob> 
     mFsProcess.setExtractFile(mOutputFile);
 }
 
-void nstool::RomfsProcess::setShowFsTree(bool list_fs) { mFsProcess.setShowFsTree(list_fs); }
+void nstool::RomfsProcess::setShowFsTree(bool list_fs)
+{
+    mFsProcess.setShowFsTree(list_fs);
+}

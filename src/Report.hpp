@@ -44,17 +44,47 @@ class Report
     void write(std::ostream &os) const;
 
     // Setting output options.
-    void setShowBasicInfo(bool v) { showBasicInfo = v; }
-    void setShowExtendedInfo(bool v) { showExtendedInfo = v; }
-    void setShowLayout(bool v) { showLayout = v; }
-    void setShowKeydata(bool v) { showKeydata = v; }
-    void setShowMachineReadable(bool v) { showMachineReadable = v; }
+    void setShowBasicInfo(bool v)
+    {
+        showBasicInfo = v;
+    }
+    void setShowExtendedInfo(bool v)
+    {
+        showExtendedInfo = v;
+    }
+    void setShowLayout(bool v)
+    {
+        showLayout = v;
+    }
+    void setShowKeydata(bool v)
+    {
+        showKeydata = v;
+    }
+    void setShowMachineReadable(bool v)
+    {
+        showMachineReadable = v;
+    }
 
-    bool getShowBasicInfo() const { return showBasicInfo; }
-    bool getShowExtendedInfo() const { return showExtendedInfo; }
-    bool getShowLayout() const { return showLayout; }
-    bool getShowKeydata() const { return showKeydata; }
-    bool getShowMachineReadable() const { return showMachineReadable; }
+    bool getShowBasicInfo() const
+    {
+        return showBasicInfo;
+    }
+    bool getShowExtendedInfo() const
+    {
+        return showExtendedInfo;
+    }
+    bool getShowLayout() const
+    {
+        return showLayout;
+    }
+    bool getShowKeydata() const
+    {
+        return showKeydata;
+    }
+    bool getShowMachineReadable() const
+    {
+        return showMachineReadable;
+    }
 
   private:
     // For JSON mode.

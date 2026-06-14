@@ -71,9 +71,15 @@ void nstool::PfsProcess::process()
     mFsProcess.process();
 }
 
-void nstool::PfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::PfsProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::PfsProcess::setOutputFile(const std::string &file) { mOutputFile = file; }
+void nstool::PfsProcess::setOutputFile(const std::string &file)
+{
+    mOutputFile = file;
+}
 
 void nstool::PfsProcess::setCliOutputMode(CliOutputMode type)
 {
@@ -81,11 +87,20 @@ void nstool::PfsProcess::setCliOutputMode(CliOutputMode type)
     mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
-void nstool::PfsProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::PfsProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::PfsProcess::setShowFsTree(bool show_fs_tree) { mFsProcess.setShowFsTree(show_fs_tree); }
+void nstool::PfsProcess::setShowFsTree(bool show_fs_tree)
+{
+    mFsProcess.setShowFsTree(show_fs_tree);
+}
 
-void nstool::PfsProcess::setFsRootLabel(const std::string &root_label) { mFsProcess.setFsRootLabel(root_label); }
+void nstool::PfsProcess::setFsRootLabel(const std::string &root_label)
+{
+    mFsProcess.setFsRootLabel(root_label);
+}
 
 void nstool::PfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
 {
@@ -93,9 +108,15 @@ void nstool::PfsProcess::setExtractJobs(const std::vector<nstool::ExtractJob> &e
     mFsProcess.setExtractFile(mOutputFile);
 }
 
-const pie::hac::PartitionFsHeader &nstool::PfsProcess::getPfsHeader() const { return mPfs; }
+const pie::hac::PartitionFsHeader &nstool::PfsProcess::getPfsHeader() const
+{
+    return mPfs;
+}
 
-const std::shared_ptr<tc::io::IFileSystem> &nstool::PfsProcess::getFileSystem() const { return mFileSystem; }
+const std::shared_ptr<tc::io::IFileSystem> &nstool::PfsProcess::getFileSystem() const
+{
+    return mFileSystem;
+}
 
 size_t nstool::PfsProcess::determineHeaderSize(const pie::hac::sPfsHeader *hdr)
 {

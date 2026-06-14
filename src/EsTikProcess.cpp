@@ -18,9 +18,15 @@ void nstool::EsTikProcess::process()
     displayTicket();
 }
 
-void nstool::EsTikProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::EsTikProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::EsTikProcess::setKeyCfg(const KeyBag &keycfg) { mKeyCfg = keycfg; }
+void nstool::EsTikProcess::setKeyCfg(const KeyBag &keycfg)
+{
+    mKeyCfg = keycfg;
+}
 
 void nstool::EsTikProcess::setCertificateChain(
     const std::vector<pie::hac::es::SignedData<pie::hac::es::CertificateBody>> &certs)
@@ -28,7 +34,10 @@ void nstool::EsTikProcess::setCertificateChain(
     mCerts = certs;
 }
 
-void nstool::EsTikProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::EsTikProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
 void nstool::EsTikProcess::importTicket()
 {
@@ -67,13 +76,13 @@ void nstool::EsTikProcess::verifyTicket()
     {
     case (pie::hac::es::sign::HASH_ALGO_SHA1):
         tik_hash = tc::ByteData(tc::crypto::Sha1Generator::kHashSize);
-        tc::crypto::GenerateSha1Hash(tik_hash.data(), mTik.getBody().getBytes().data(),
-                                     mTik.getBody().getBytes().size());
+        tc::crypto::GenerateSha1Hash(
+            tik_hash.data(), mTik.getBody().getBytes().data(), mTik.getBody().getBytes().size());
         break;
     case (pie::hac::es::sign::HASH_ALGO_SHA256):
         tik_hash = tc::ByteData(tc::crypto::Sha2256Generator::kHashSize);
-        tc::crypto::GenerateSha2256Hash(tik_hash.data(), mTik.getBody().getBytes().data(),
-                                        mTik.getBody().getBytes().size());
+        tc::crypto::GenerateSha2256Hash(
+            tik_hash.data(), mTik.getBody().getBytes().data(), mTik.getBody().getBytes().size());
         break;
     }
 
@@ -81,17 +90,18 @@ void nstool::EsTikProcess::verifyTicket()
     {
         pki_validator.setKeyCfg(mKeyCfg);
         pki_validator.addCertificates(mCerts);
-        pki_validator.validateSignature(mTik.getBody().getIssuer(), mTik.getSignature().getSignType(),
-                                        mTik.getSignature().getSignature(), tik_hash);
+        pki_validator.validateSignature(
+            mTik.getBody().getIssuer(), mTik.getSignature().getSignType(), mTik.getSignature().getSignature(),
+            tik_hash);
     }
     catch (const tc::Exception &e)
     {
         get_report().text(fmt::format("[WARNING] Ticket signature could not be validated ({:s})", e.error()));
 
         get_report().push(
-            "events",
-            nlohmann::json{{"severity", "warn"},
-                           {"message", fmt::format("Ticket signature could not be validated ({:s})", e.error())}});
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format("Ticket signature could not be validated ({:s})", e.error())}});
     }
 }
 
@@ -103,28 +113,34 @@ void nstool::EsTikProcess::displayTicket()
 
     r.text("[ES Ticket]");
     r.text(fmt::format("  SignType:         {:s}", getSignTypeStr(mTik.getSignature().getSignType())));
-    r.text(fmt::format("  SignType hex:     0x{:x}", (uint32_t)mTik.getSignature().getSignType()),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format("  SignType hex:     0x{:x}", (uint32_t)mTik.getSignature().getSignType()),
+        Report::TextType::Extended);
     r.text(fmt::format("  Issuer:           {:s}", body.getIssuer()));
     r.text("  Title Key:");
     r.text(fmt::format("    EncMode:        {:s}", getTitleKeyPersonalisationStr(body.getTitleKeyEncType())));
     r.text(fmt::format("    KeyGeneration:  {:d}", (uint32_t)body.getCommonKeyId()));
 
-    r.set("data.esTicket.signType", nlohmann::json{{"string", getSignTypeStr(mTik.getSignature().getSignType())},
-                                                   {"int", (uint32_t)mTik.getSignature().getSignType()}});
+    r.set(
+        "data.esTicket.signType", nlohmann::json{
+                                      {"string", getSignTypeStr(mTik.getSignature().getSignType())},
+                                      {"int", (uint32_t)mTik.getSignature().getSignType()}});
     r.set("data.esTicket.issuer", body.getIssuer());
-    r.set("data.esTicket.titleKey",
-          nlohmann::json{{"encodingMode", getTitleKeyPersonalisationStr(body.getTitleKeyEncType())},
-                         {"keyGeneration", (uint32_t)body.getCommonKeyId()}});
+    r.set(
+        "data.esTicket.titleKey", nlohmann::json{
+                                      {"encodingMode", getTitleKeyPersonalisationStr(body.getTitleKeyEncType())},
+                                      {"keyGeneration", (uint32_t)body.getCommonKeyId()}});
 
     if (body.getTitleKeyEncType() == pie::hac::es::ticket::RSA2048)
     {
         r.text("    Data:");
-        r.text(fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                             body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false)));
+        r.text(fmt::format(
+            "      {:s}", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                              body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false)));
 
-        r.set("data.esTicket.titleKey.data", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
-                                                 body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false));
+        r.set(
+            "data.esTicket.titleKey.data", tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                                               body.getEncTitleKey(), 0x100, true, "", 0x10, 6, false));
     }
     else if (body.getTitleKeyEncType() == pie::hac::es::ticket::AES128_CBC)
     {
@@ -132,8 +148,9 @@ void nstool::EsTikProcess::displayTicket()
         r.text(
             fmt::format("      {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, "")));
 
-        r.set("data.esTicket.titleKey.data",
-              tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, ""));
+        r.set(
+            "data.esTicket.titleKey.data",
+            tc::cli::FormatUtil::formatBytesAsString(body.getEncTitleKey(), 0x10, true, ""));
     }
     else
     {
@@ -142,12 +159,13 @@ void nstool::EsTikProcess::displayTicket()
         r.set("data.esTicket.titleKey.data", "<cannot display>");
     }
 
-    r.text(fmt::format("  Version:          {:s} (v{:d})", getTitleVersionStr(body.getTicketVersion()),
-                       body.getTicketVersion()));
+    r.text(fmt::format(
+        "  Version:          {:s} (v{:d})", getTitleVersionStr(body.getTicketVersion()), body.getTicketVersion()));
     r.text(fmt::format("  License Type:     {:s}", getLicenseTypeStr(body.getLicenseType())));
 
-    r.set("data.esTicket.version",
-          nlohmann::json{{"string", getTitleVersionStr(body.getTicketVersion())}, {"int", body.getTicketVersion()}});
+    r.set(
+        "data.esTicket.version",
+        nlohmann::json{{"string", getTitleVersionStr(body.getTicketVersion())}, {"int", body.getTicketVersion()}});
     r.set("data.esTicket.licenseType", getLicenseTypeStr(body.getLicenseType()));
 
     if (body.getPropertyFlags().size() > 0)
@@ -158,8 +176,9 @@ void nstool::EsTikProcess::displayTicket()
             fmt::format("  PropertyMask:     0x{:04x}", ((tc::bn::le16<uint16_t> *)&raw_body->property_mask)->unwrap()),
             Report::TextType::Extended);
 
-        r.set("data.esTicket.propertyMask",
-              fmt::format("0x{:04x}", ((tc::bn::le16<uint16_t> *)&raw_body->property_mask)->unwrap()));
+        r.set(
+            "data.esTicket.propertyMask",
+            fmt::format("0x{:04x}", ((tc::bn::le16<uint16_t> *)&raw_body->property_mask)->unwrap()));
 
         for (size_t i = 0; i < body.getPropertyFlags().size(); i++)
         {
@@ -170,8 +189,9 @@ void nstool::EsTikProcess::displayTicket()
     }
 
     r.text("  Reserved Region:", Report::TextType::Extended);
-    r.text(fmt::format("    {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, "")),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format("    {:s}", tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, "")),
+        Report::TextType::Extended);
     r.text(fmt::format("  TicketId:         0x{:016x}", body.getTicketId()), Report::TextType::Extended);
     r.text(fmt::format("  DeviceId:         0x{:016x}", body.getDeviceId()), Report::TextType::Extended);
     r.text("  RightsId:");
@@ -181,16 +201,18 @@ void nstool::EsTikProcess::displayTicket()
     r.text(fmt::format("  SectionNum:             0x{:x}", body.getSectionNum()));
     r.text(fmt::format("  SectionEntrySize:       0x{:x}", body.getSectionEntrySize()));
 
-    r.set("data.esTicket.reservedRegion",
-          tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, ""));
+    r.set(
+        "data.esTicket.reservedRegion",
+        tc::cli::FormatUtil::formatBytesAsString(body.getReservedRegion(), 8, true, ""));
     r.set("data.esTicket.ticketId", fmt::format("0x{:016x}", body.getTicketId()));
     r.set("data.esTicket.deviceId", fmt::format("0x{:016x}", body.getDeviceId()));
     r.set("data.esTicket.rightsId", tc::cli::FormatUtil::formatBytesAsString(body.getRightsId(), 16, true, ""));
-    r.set("data.esTicket.section",
-          nlohmann::json{{"totalSize", fmt::format("0x{:x}", body.getSectionTotalSize())},
-                         {"headerOffset", fmt::format("0x{:x}", body.getSectionHeaderOffset())},
-                         {"number", fmt::format("0x{:x}", body.getSectionNum())},
-                         {"entrySize", fmt::format("0x{:x}", body.getSectionEntrySize())}});
+    r.set(
+        "data.esTicket.section", nlohmann::json{
+                                     {"totalSize", fmt::format("0x{:x}", body.getSectionTotalSize())},
+                                     {"headerOffset", fmt::format("0x{:x}", body.getSectionHeaderOffset())},
+                                     {"number", fmt::format("0x{:x}", body.getSectionNum())},
+                                     {"entrySize", fmt::format("0x{:x}", body.getSectionEntrySize())}});
 }
 
 std::string nstool::EsTikProcess::getSignTypeStr(uint32_t type) const

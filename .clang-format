@@ -1,5 +1,9 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 ColumnLimit: 120
+
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
+AlignAfterOpenBracket: AlwaysBreak
+BinPackParameters: false
 BreakBeforeBraces: Allman

@@ -31,8 +31,8 @@ class CnmtProcess
     void displayCnmt();
 
     void displayContentMetaInfo(const pie::hac::ContentMetaInfo &content_meta_info, const std::string &prefix);
-    void displayContentMetaInfoList(const std::vector<pie::hac::ContentMetaInfo> &content_meta_info_list,
-                                    const std::string &prefix);
+    void displayContentMetaInfoList(
+        const std::vector<pie::hac::ContentMetaInfo> &content_meta_info_list, const std::string &prefix);
 };
 
 } // namespace nstool

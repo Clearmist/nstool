@@ -1,6 +1,5 @@
 #include "AssetProcess.h"
 #include "Report.hpp"
-
 #include "util.h"
 
 nstool::AssetProcess::AssetProcess() : mModuleName("nstool::AssetProcess"), mFile(), mVerify(false) {}
@@ -12,15 +11,30 @@ void nstool::AssetProcess::process()
     processSections();
 }
 
-void nstool::AssetProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::AssetProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::AssetProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::AssetProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::AssetProcess::setIconExtractPath(const tc::io::Path &path) { mIconExtractPath = path; }
+void nstool::AssetProcess::setIconExtractPath(const tc::io::Path &path)
+{
+    mIconExtractPath = path;
+}
 
-void nstool::AssetProcess::setNacpExtractPath(const tc::io::Path &path) { mNacpExtractPath = path; }
+void nstool::AssetProcess::setNacpExtractPath(const tc::io::Path &path)
+{
+    mNacpExtractPath = path;
+}
 
-void nstool::AssetProcess::setRomfsShowFsTree(bool show_fs_tree) { mRomfs.setShowFsTree(show_fs_tree); }
+void nstool::AssetProcess::setRomfsShowFsTree(bool show_fs_tree)
+{
+    mRomfs.setShowFsTree(show_fs_tree);
+}
 
 void nstool::AssetProcess::setRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
 {

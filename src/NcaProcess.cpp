@@ -41,9 +41,15 @@ void nstool::NcaProcess::process()
     processPartitions();
 }
 
-void nstool::NcaProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::NcaProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::NcaProcess::setOutputFile(const std::string &file) { mOutputFile = file; }
+void nstool::NcaProcess::setOutputFile(const std::string &file)
+{
+    mOutputFile = file;
+}
 
 void nstool::NcaProcess::setCliOutputMode(CliOutputMode type)
 {
@@ -51,15 +57,30 @@ void nstool::NcaProcess::setCliOutputMode(CliOutputMode type)
     mFsProcess.setShowFsInfo(mCliOutputMode.show_basic_info);
 }
 
-void nstool::NcaProcess::setBaseNcaPath(const tc::Optional<tc::io::Path> &nca_path) { mBaseNcaPath = nca_path; }
+void nstool::NcaProcess::setBaseNcaPath(const tc::Optional<tc::io::Path> &nca_path)
+{
+    mBaseNcaPath = nca_path;
+}
 
-void nstool::NcaProcess::setKeyCfg(const KeyBag &keycfg) { mKeyCfg = keycfg; }
+void nstool::NcaProcess::setKeyCfg(const KeyBag &keycfg)
+{
+    mKeyCfg = keycfg;
+}
 
-void nstool::NcaProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::NcaProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::NcaProcess::setShowFsTree(bool show_fs_tree) { mFsProcess.setShowFsTree(show_fs_tree); }
+void nstool::NcaProcess::setShowFsTree(bool show_fs_tree)
+{
+    mFsProcess.setShowFsTree(show_fs_tree);
+}
 
-void nstool::NcaProcess::setFsRootLabel(const std::string &root_label) { mFsProcess.setFsRootLabel(root_label); }
+void nstool::NcaProcess::setFsRootLabel(const std::string &root_label)
+{
+    mFsProcess.setFsRootLabel(root_label);
+}
 
 void nstool::NcaProcess::setExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
 {
@@ -67,7 +88,10 @@ void nstool::NcaProcess::setExtractJobs(const std::vector<nstool::ExtractJob> &e
     mFsProcess.setExtractFile(mOutputFile);
 }
 
-const std::shared_ptr<tc::io::IFileSystem> &nstool::NcaProcess::getFileSystem() const { return mFileSystem; }
+const std::shared_ptr<tc::io::IFileSystem> &nstool::NcaProcess::getFileSystem() const
+{
+    return mFileSystem;
+}
 
 void nstool::NcaProcess::importHeader()
 {
@@ -96,12 +120,12 @@ void nstool::NcaProcess::importHeader()
         throw tc::Exception(mModuleName, "Failed to decrypt NCA header. (nca_header_key could not be loaded)");
     }
 
-    pie::hac::ContentArchiveUtil::decryptContentArchiveHeader((byte_t *)&mHdrBlock, (byte_t *)&mHdrBlock,
-                                                              mKeyCfg.nca_header_key.get());
+    pie::hac::ContentArchiveUtil::decryptContentArchiveHeader(
+        (byte_t *)&mHdrBlock, (byte_t *)&mHdrBlock, mKeyCfg.nca_header_key.get());
 
     // generate header hash
-    tc::crypto::GenerateSha2256Hash(mHdrHash.data(), (byte_t *)&mHdrBlock.header,
-                                    sizeof(pie::hac::sContentArchiveHeader));
+    tc::crypto::GenerateSha2256Hash(
+        mHdrHash.data(), (byte_t *)&mHdrBlock.header, sizeof(pie::hac::sContentArchiveHeader));
 
     // proccess main header
     mHdr.fromBytes((byte_t *)&mHdrBlock.header, sizeof(pie::hac::sContentArchiveHeader));
@@ -135,13 +159,15 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
                              mKeyCfg.nca_key_area_encryption_key[keak_index].end())
             {
                 kak.decrypted = true;
-                pie::hac::AesKeygen::generateKey(kak.dec.data(), kak.enc.data(),
-                                                 mKeyCfg.nca_key_area_encryption_key[keak_index][masterkey_rev].data());
+                pie::hac::AesKeygen::generateKey(
+                    kak.dec.data(), kak.enc.data(),
+                    mKeyCfg.nca_key_area_encryption_key[keak_index][masterkey_rev].data());
             }
             // key[KeyBankIndex_AesCtrHw]
-            else if (i == pie::hac::nca::KeyBankIndex_AesCtrHw &&
-                     mKeyCfg.nca_key_area_encryption_key_hw[keak_index].find(masterkey_rev) !=
-                         mKeyCfg.nca_key_area_encryption_key_hw[keak_index].end())
+            else if (
+                i == pie::hac::nca::KeyBankIndex_AesCtrHw &&
+                mKeyCfg.nca_key_area_encryption_key_hw[keak_index].find(masterkey_rev) !=
+                    mKeyCfg.nca_key_area_encryption_key_hw[keak_index].end())
             {
                 kak.decrypted = true;
                 pie::hac::AesKeygen::generateKey(
@@ -178,8 +204,8 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
             tmp_key = mKeyCfg.external_enc_content_keys[mHdr.getRightsId()];
             if (mKeyCfg.etik_common_key.find(masterkey_rev) != mKeyCfg.etik_common_key.end())
             {
-                pie::hac::AesKeygen::generateKey(tmp_key.data(), tmp_key.data(),
-                                                 mKeyCfg.etik_common_key[masterkey_rev].data());
+                pie::hac::AesKeygen::generateKey(
+                    tmp_key.data(), tmp_key.data(), mKeyCfg.etik_common_key[masterkey_rev].data());
                 mContentKey.aes_ctr = tmp_key;
             }
         }
@@ -188,8 +214,8 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
             tmp_key = mKeyCfg.fallback_enc_content_key.get();
             if (mKeyCfg.etik_common_key.find(masterkey_rev) != mKeyCfg.etik_common_key.end())
             {
-                pie::hac::AesKeygen::generateKey(tmp_key.data(), tmp_key.data(),
-                                                 mKeyCfg.etik_common_key[masterkey_rev].data());
+                pie::hac::AesKeygen::generateKey(
+                    tmp_key.data(), tmp_key.data(), mKeyCfg.etik_common_key[masterkey_rev].data());
                 mContentKey.aes_ctr = tmp_key;
             }
         }
@@ -219,14 +245,17 @@ void nstool::NcaProcess::generateNcaBodyEncryptionKeys()
     if (mCliOutputMode.show_keydata)
     {
         r.text("[NCA Content Key]", Report::TextType::Keydata);
-        r.text(fmt::format("  AES-CTR Key: {:s}",
-                           tc::cli::FormatUtil::formatBytesAsString(mContentKey.aes_ctr.get().data(),
-                                                                    mContentKey.aes_ctr.get().size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "  AES-CTR Key: {:s}",
+                tc::cli::FormatUtil::formatBytesAsString(
+                    mContentKey.aes_ctr.get().data(), mContentKey.aes_ctr.get().size(), true, "")),
+            Report::TextType::Keydata);
 
-        r.set("data.ncaContentKey.aesctrKey",
-              tc::cli::FormatUtil::formatBytesAsString(mContentKey.aes_ctr.get().data(),
-                                                       mContentKey.aes_ctr.get().size(), true, ""));
+        r.set(
+            "data.ncaContentKey.aesctrKey",
+            tc::cli::FormatUtil::formatBytesAsString(
+                mContentKey.aes_ctr.get().data(), mContentKey.aes_ctr.get().size(), true, ""));
     }
 }
 
@@ -266,9 +295,9 @@ void nstool::NcaProcess::generatePartitionConfiguration()
 
         // validate header hash
         pie::hac::detail::sha256_hash_t fs_header_hash;
-        tc::crypto::GenerateSha2256Hash(fs_header_hash.data(),
-                                        (const byte_t *)&mHdrBlock.fs_header[partition.header_index],
-                                        sizeof(pie::hac::sContentArchiveFsHeader));
+        tc::crypto::GenerateSha2256Hash(
+            fs_header_hash.data(), (const byte_t *)&mHdrBlock.fs_header[partition.header_index],
+            sizeof(pie::hac::sContentArchiveFsHeader));
 
         if (fs_header_hash != partition.fs_header_hash)
         {
@@ -277,8 +306,10 @@ void nstool::NcaProcess::generatePartitionConfiguration()
 
         if (fs_header.version.unwrap() != pie::hac::nca::kDefaultFsHeaderVersion)
         {
-            throw tc::Exception(mModuleName, fmt::format("NCA FS Header [{:d}] Version({:d}): UNSUPPORTED",
-                                                         partition.header_index, fs_header.version.unwrap()));
+            throw tc::Exception(
+                mModuleName, fmt::format(
+                                 "NCA FS Header [{:d}] Version({:d}): UNSUPPORTED", partition.header_index,
+                                 fs_header.version.unwrap()));
         }
 
         // setup AES-CTR
@@ -384,16 +415,16 @@ void nstool::NcaProcess::generatePartitionConfiguration()
                 else if (info.enc_type == pie::hac::nca::EncryptionType_AesXts)
                 {
                     throw tc::Exception(
-                        mModuleName,
-                        fmt::format("EncryptionType({:s}): UNSUPPORTED",
-                                    pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)));
+                        mModuleName, fmt::format(
+                                         "EncryptionType({:s}): UNSUPPORTED",
+                                         pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)));
                 }
                 else
                 {
                     throw tc::Exception(
-                        mModuleName,
-                        fmt::format("EncryptionType({:s}): UNKNOWN",
-                                    pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)));
+                        mModuleName, fmt::format(
+                                         "EncryptionType({:s}): UNKNOWN",
+                                         pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)));
                 }
             }
 
@@ -413,9 +444,10 @@ void nstool::NcaProcess::generatePartitionConfiguration()
                     pie::hac::HierarchicalIntegrityStream(info.decrypt_reader, info.hierarchicalintegrity_hdr));
                 break;
             default:
-                throw tc::Exception(mModuleName,
-                                    fmt::format("HashType({:s}): UNKNOWN",
-                                                pie::hac::ContentArchiveUtil::getHashTypeAsString(info.hash_type)));
+                throw tc::Exception(
+                    mModuleName,
+                    fmt::format(
+                        "HashType({:s}): UNKNOWN", pie::hac::ContentArchiveUtil::getHashTypeAsString(info.hash_type)));
             }
 
             // filter out unrecognised format types
@@ -432,9 +464,10 @@ void nstool::NcaProcess::generatePartitionConfiguration()
                     std::make_shared<tc::io::VirtualFileSystem>(tc::io::VirtualFileSystem(info.fs_snapshot));
                 break;
             default:
-                throw tc::Exception(mModuleName,
-                                    fmt::format("FormatType({:s}): UNKNOWN",
-                                                pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)));
+                throw tc::Exception(
+                    mModuleName, fmt::format(
+                                     "FormatType({:s}): UNKNOWN",
+                                     pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)));
             }
         }
         catch (const tc::Exception &e)
@@ -451,9 +484,9 @@ void nstool::NcaProcess::validateNcaSignatures()
     // validate signature[0]
     if (mKeyCfg.nca_header_sign0_key.find(mHdr.getSignatureKeyGeneration()) != mKeyCfg.nca_header_sign0_key.end())
     {
-        if (tc::crypto::VerifyRsa2048PssSha2256(mHdrBlock.signature_main.data(), mHdrHash.data(),
-                                                mKeyCfg.nca_header_sign0_key[mHdr.getSignatureKeyGeneration()]) ==
-            false)
+        if (tc::crypto::VerifyRsa2048PssSha2256(
+                mHdrBlock.signature_main.data(), mHdrHash.data(),
+                mKeyCfg.nca_header_sign0_key[mHdr.getSignatureKeyGeneration()]) == false)
         {
             r.text("[WARNING] NCA Header Main Signature: FAIL");
 
@@ -464,8 +497,10 @@ void nstool::NcaProcess::validateNcaSignatures()
     {
         r.text("[WARNING] NCA Header Main Signature: FAIL (could not load header key)");
 
-        r.push("events", nlohmann::json{{"severity", "warn"},
-                                        {"message", "NCA Header Main Signature: FAIL (could not load header key)."}});
+        r.push(
+            "events",
+            nlohmann::json{
+                {"severity", "warn"}, {"message", "NCA Header Main Signature: FAIL (could not load header key)."}});
     }
 
     // validate signature[1]
@@ -517,9 +552,10 @@ void nstool::NcaProcess::validateNcaSignatures()
         {
             r.text(fmt::format("[WARNING] NCA Header ACID Signature: FAIL ({:s})", e.error()));
 
-            r.push("events",
-                   nlohmann::json{{"severity", "warn"},
-                                  {"message", fmt::format("NCA Header ACID Signature: FAIL ({:s})", e.error())}});
+            r.push(
+                "events", nlohmann::json{
+                              {"severity", "warn"},
+                              {"message", fmt::format("NCA Header ACID Signature: FAIL ({:s})", e.error())}});
         }
     }
 }
@@ -529,77 +565,91 @@ void nstool::NcaProcess::displayHeader()
     Report &r = get_report();
 
     r.text("[NCA Header]");
-    r.text(fmt::format("  Format Type:     {:s}", pie::hac::ContentArchiveUtil::getFormatHeaderVersionAsString(
-                                                      (pie::hac::nca::HeaderFormatVersion)mHdr.getFormatVersion())));
-    r.text(fmt::format("  Dist. Type:      {:s}",
-                       pie::hac::ContentArchiveUtil::getDistributionTypeAsString(mHdr.getDistributionType())));
-    r.text(fmt::format("  Content Type:    {:s}",
-                       pie::hac::ContentArchiveUtil::getContentTypeAsString(mHdr.getContentType())));
+    r.text(fmt::format(
+        "  Format Type:     {:s}", pie::hac::ContentArchiveUtil::getFormatHeaderVersionAsString(
+                                       (pie::hac::nca::HeaderFormatVersion)mHdr.getFormatVersion())));
+    r.text(fmt::format(
+        "  Dist. Type:      {:s}",
+        pie::hac::ContentArchiveUtil::getDistributionTypeAsString(mHdr.getDistributionType())));
+    r.text(fmt::format(
+        "  Content Type:    {:s}", pie::hac::ContentArchiveUtil::getContentTypeAsString(mHdr.getContentType())));
     r.text(fmt::format("  Key Generation:  {:d}", mHdr.getKeyGeneration()));
     r.text(fmt::format("  Sig. Generation: {:d}", mHdr.getSignatureKeyGeneration()));
-    r.text(fmt::format("  Kaek Index:      {:s} ({:d})",
-                       pie::hac::ContentArchiveUtil::getKeyAreaEncryptionKeyIndexAsString(
-                           (pie::hac::nca::KeyAreaEncryptionKeyIndex)mHdr.getKeyAreaEncryptionKeyIndex()),
-                       mHdr.getKeyAreaEncryptionKeyIndex()));
+    r.text(fmt::format(
+        "  Kaek Index:      {:s} ({:d})",
+        pie::hac::ContentArchiveUtil::getKeyAreaEncryptionKeyIndexAsString(
+            (pie::hac::nca::KeyAreaEncryptionKeyIndex)mHdr.getKeyAreaEncryptionKeyIndex()),
+        mHdr.getKeyAreaEncryptionKeyIndex()));
     r.text(fmt::format("  Size:            0x{:x}", mHdr.getContentSize()));
     r.text(fmt::format("  ProgID:          0x{:016x}", mHdr.getProgramId()));
     r.text(fmt::format("  Content Index:   {:d}", mHdr.getContentIndex()));
-    r.text(fmt::format("  SdkAddon Ver.:   {:s} (v{:d})",
-                       pie::hac::ContentArchiveUtil::getSdkAddonVersionAsString(mHdr.getSdkAddonVersion()),
-                       mHdr.getSdkAddonVersion()));
+    r.text(fmt::format(
+        "  SdkAddon Ver.:   {:s} (v{:d})",
+        pie::hac::ContentArchiveUtil::getSdkAddonVersionAsString(mHdr.getSdkAddonVersion()),
+        mHdr.getSdkAddonVersion()));
 
-    r.set("data.ncaHeader.formatType",
-          nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getFormatHeaderVersionAsString(
-                                        (pie::hac::nca::HeaderFormatVersion)mHdr.getFormatVersion())},
-                         {"int", mHdr.getFormatVersion()}});
-    r.set("data.ncaHeader.distributionType",
-          nlohmann::json{
-              {"string", pie::hac::ContentArchiveUtil::getDistributionTypeAsString(mHdr.getDistributionType())},
-              {"int", mHdr.getDistributionType()}});
-    r.set("data.ncaHeader.contentType",
-          nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getContentTypeAsString(mHdr.getContentType())},
-                         {"int", mHdr.getContentType()}});
+    r.set(
+        "data.ncaHeader.formatType", nlohmann::json{
+                                         {"string", pie::hac::ContentArchiveUtil::getFormatHeaderVersionAsString(
+                                                        (pie::hac::nca::HeaderFormatVersion)mHdr.getFormatVersion())},
+                                         {"int", mHdr.getFormatVersion()}});
+    r.set(
+        "data.ncaHeader.distributionType",
+        nlohmann::json{
+            {"string", pie::hac::ContentArchiveUtil::getDistributionTypeAsString(mHdr.getDistributionType())},
+            {"int", mHdr.getDistributionType()}});
+    r.set(
+        "data.ncaHeader.contentType",
+        nlohmann::json{
+            {"string", pie::hac::ContentArchiveUtil::getContentTypeAsString(mHdr.getContentType())},
+            {"int", mHdr.getContentType()}});
     r.set("data.ncaHeader.keyGeneration", mHdr.getKeyGeneration());
     r.set("data.ncaHeader.signatureGeneration", mHdr.getSignatureKeyGeneration());
-    r.set("data.ncaHeader.kaekIndex",
-          nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getKeyAreaEncryptionKeyIndexAsString(
-                                        (pie::hac::nca::KeyAreaEncryptionKeyIndex)mHdr.getKeyAreaEncryptionKeyIndex())},
-                         {"int", mHdr.getKeyAreaEncryptionKeyIndex()}});
+    r.set(
+        "data.ncaHeader.kaekIndex",
+        nlohmann::json{
+            {"string", pie::hac::ContentArchiveUtil::getKeyAreaEncryptionKeyIndexAsString(
+                           (pie::hac::nca::KeyAreaEncryptionKeyIndex)mHdr.getKeyAreaEncryptionKeyIndex())},
+            {"int", mHdr.getKeyAreaEncryptionKeyIndex()}});
 
     if (mHdr.hasRightsId())
     {
         r.text(fmt::format(
             "  RightsId:        {:s}",
             tc::cli::FormatUtil::formatBytesAsString(mHdr.getRightsId().data(), mHdr.getRightsId().size(), true, "")));
-        r.set("data.ncaHeader.rightsId",
-              tc::cli::FormatUtil::formatBytesAsString(mHdr.getRightsId().data(), mHdr.getRightsId().size(), true, ""));
+        r.set(
+            "data.ncaHeader.rightsId",
+            tc::cli::FormatUtil::formatBytesAsString(mHdr.getRightsId().data(), mHdr.getRightsId().size(), true, ""));
     }
 
     if (mContentKey.kak_list.size() > 0 && mCliOutputMode.show_keydata)
     {
         r.text("  Key Area:", Report::TextType::Keydata);
-        r.text("    <--------------------------------------------------------------------------->",
-               Report::TextType::Keydata);
-        r.text("    | IDX | ENCRYPTED KEY                    | DECRYPTED KEY                    |",
-               Report::TextType::Keydata);
-        r.text("    |-----|----------------------------------|----------------------------------|",
-               Report::TextType::Keydata);
+        r.text(
+            "    <--------------------------------------------------------------------------->",
+            Report::TextType::Keydata);
+        r.text(
+            "    | IDX | ENCRYPTED KEY                    | DECRYPTED KEY                    |",
+            Report::TextType::Keydata);
+        r.text(
+            "    |-----|----------------------------------|----------------------------------|",
+            Report::TextType::Keydata);
 
         for (size_t i = 0; i < mContentKey.kak_list.size(); i++)
         {
             std::string enc_key = tc::cli::FormatUtil::formatBytesAsString(
                 mContentKey.kak_list[i].enc.data(), mContentKey.kak_list[i].enc.size(), true, "");
-            std::string dec_key =
-                mContentKey.kak_list[i].decrypted
-                    ? tc::cli::FormatUtil::formatBytesAsString(mContentKey.kak_list[i].dec.data(),
-                                                               mContentKey.kak_list[i].dec.size(), true, "")
-                    : "<unable to decrypt>";
+            std::string dec_key = mContentKey.kak_list[i].decrypted ? tc::cli::FormatUtil::formatBytesAsString(
+                                                                          mContentKey.kak_list[i].dec.data(),
+                                                                          mContentKey.kak_list[i].dec.size(), true, "")
+                                                                    : "<unable to decrypt>";
 
             fmt::print("    | {:3d} | {:32s} | {:32s} |\n", mContentKey.kak_list[i].index, enc_key, dec_key);
         }
 
-        r.text("    <--------------------------------------------------------------------------->",
-               Report::TextType::Keydata);
+        r.text(
+            "    <--------------------------------------------------------------------------->",
+            Report::TextType::Keydata);
     }
 
     r.text("  Partitions:", Report::TextType::Layout);
@@ -617,28 +667,33 @@ void nstool::NcaProcess::displayHeader()
         r.text(fmt::format("    {:d}:", index), Report::TextType::Layout);
         r.text(fmt::format("      Offset:      0x{:x}", info.offset), Report::TextType::Layout);
         r.text(fmt::format("      Size:        0x{:x}", info.size), Report::TextType::Layout);
-        r.text(fmt::format("      Format Type: {:s}",
-                           pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)),
-               Report::TextType::Layout);
+        r.text(
+            fmt::format(
+                "      Format Type: {:s}", pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)),
+            Report::TextType::Layout);
         r.text(
             fmt::format("      Hash Type:   {:s}", pie::hac::ContentArchiveUtil::getHashTypeAsString(info.hash_type)),
             Report::TextType::Layout);
-        r.text(fmt::format("      Enc. Type:   {:s}",
-                           pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)),
-               Report::TextType::Layout);
+        r.text(
+            fmt::format(
+                "      Enc. Type:   {:s}", pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)),
+            Report::TextType::Layout);
 
         nlohmann::json partition{
             {"index", index},
             {"offset", fmt::format("0x{:x}", info.offset)},
             {"size", fmt::format("0x{:x}", info.size)},
             {"formatType",
-             nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)},
-                            {"int", info.format_type}}},
-            {"hashType", nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getHashTypeAsString(info.hash_type)},
-                                        {"int", info.hash_type}}},
-            {"EncodingType",
-             nlohmann::json{{"string", pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)},
-                            {"int", info.enc_type}}}};
+             nlohmann::json{
+                 {"string", pie::hac::ContentArchiveUtil::getFormatTypeAsString(info.format_type)},
+                 {"int", info.format_type}}},
+            {"hashType",
+             nlohmann::json{
+                 {"string", pie::hac::ContentArchiveUtil::getHashTypeAsString(info.hash_type)},
+                 {"int", info.hash_type}}},
+            {"EncodingType", nlohmann::json{
+                                 {"string", pie::hac::ContentArchiveUtil::getEncryptionTypeAsString(info.enc_type)},
+                                 {"int", info.enc_type}}}};
 
         if (info.enc_type == pie::hac::nca::EncryptionType_AesCtr)
         {
@@ -647,8 +702,8 @@ void nstool::NcaProcess::displayHeader()
             tc::crypto::IncrementCounterAes128Ctr(aes_ctr.data(), info.offset >> 4);
 
             r.text("      AesCtr Counter:");
-            r.text(fmt::format("        {:s}",
-                               tc::cli::FormatUtil::formatBytesAsString(aes_ctr.data(), aes_ctr.size(), true, "")));
+            r.text(fmt::format(
+                "        {:s}", tc::cli::FormatUtil::formatBytesAsString(aes_ctr.data(), aes_ctr.size(), true, "")));
 
             partition["aesCtrCounter"] =
                 tc::cli::FormatUtil::formatBytesAsString(aes_ctr.data(), aes_ctr.size(), true, "");
@@ -681,12 +736,12 @@ void nstool::NcaProcess::displayHeader()
                 r.text(fmt::format("          Size:            0x{:x}", hash_hdr.getLayerInfo()[j].size));
                 r.text(fmt::format("          BlockSize:       0x{:x}", hash_hdr.getLayerInfo()[j].block_size));
 
-                partition["hierarchicalIntegrityHeader"].push_back(
-                    nlohmann::json{{"layerType", layerType},
-                                   {"index", j},
-                                   {"offset", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].offset)},
-                                   {"size", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].size)},
-                                   {"blockSize", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].block_size)}});
+                partition["hierarchicalIntegrityHeader"].push_back(nlohmann::json{
+                    {"layerType", layerType},
+                    {"index", j},
+                    {"offset", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].offset)},
+                    {"size", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].size)},
+                    {"blockSize", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].block_size)}});
             }
 
             partition["masterHash"] = nlohmann::json::array();
@@ -694,18 +749,19 @@ void nstool::NcaProcess::displayHeader()
             for (size_t j = 0; j < hash_hdr.getMasterHashList().size(); j++)
             {
                 r.text(fmt::format("        Master Hash {:d}:", j));
-                r.text(fmt::format("          {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                         hash_hdr.getMasterHashList()[j].data(), 0x10, true, "")));
-                r.text(
-                    fmt::format("          {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                      hash_hdr.getMasterHashList()[j].data() + 0x10, 0x10, true, "")));
+                r.text(fmt::format(
+                    "          {:s}",
+                    tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHashList()[j].data(), 0x10, true, "")));
+                r.text(fmt::format(
+                    "          {:s}", tc::cli::FormatUtil::formatBytesAsString(
+                                          hash_hdr.getMasterHashList()[j].data() + 0x10, 0x10, true, "")));
 
                 partition["masterHash"].push_back(nlohmann::json{
                     {"index", j},
                     {"hash1",
                      tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHashList()[j].data(), 0x10, true, "")},
-                    {"hash2", tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHashList()[j].data() + 0x10,
-                                                                       0x10, true, "")}});
+                    {"hash2", tc::cli::FormatUtil::formatBytesAsString(
+                                  hash_hdr.getMasterHashList()[j].data() + 0x10, 0x10, true, "")}});
             }
         }
         else if (info.hash_type == pie::hac::nca::HashType_HierarchicalSha256)
@@ -714,17 +770,21 @@ void nstool::NcaProcess::displayHeader()
 
             r.text("      HierarchicalSha256 Header:");
             r.text("        Master Hash:");
-            r.text(fmt::format("          {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                     hash_hdr.getMasterHash().data(), 0x10, true, "")));
-            r.text(fmt::format("          {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                     hash_hdr.getMasterHash().data() + 0x10, 0x10, true, "")));
+            r.text(fmt::format(
+                "          {:s}",
+                tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHash().data(), 0x10, true, "")));
+            r.text(fmt::format(
+                "          {:s}",
+                tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHash().data() + 0x10, 0x10, true, "")));
             r.text(fmt::format("        HashBlockSize:     0x{:x}", hash_hdr.getHashBlockSize()));
 
             partition["hierarchicalSha256Header"] = nlohmann::json{
-                {"masterHash", nlohmann::json{{"hash1", tc::cli::FormatUtil::formatBytesAsString(
-                                                            hash_hdr.getMasterHash().data(), 0x10, true, "")},
-                                              {"hash2", tc::cli::FormatUtil::formatBytesAsString(
-                                                            hash_hdr.getMasterHash().data() + 0x10, 0x10, true, "")}}},
+                {"masterHash",
+                 nlohmann::json{
+                     {"hash1",
+                      tc::cli::FormatUtil::formatBytesAsString(hash_hdr.getMasterHash().data(), 0x10, true, "")},
+                     {"hash2", tc::cli::FormatUtil::formatBytesAsString(
+                                   hash_hdr.getMasterHash().data() + 0x10, 0x10, true, "")}}},
                 {"hashBlockSize", fmt::format("0x{:x}", hash_hdr.getHashBlockSize())},
                 {"layers", nlohmann::json::array()}};
 
@@ -746,11 +806,11 @@ void nstool::NcaProcess::displayHeader()
                 r.text(fmt::format("          Offset:          0x{:x}", hash_hdr.getLayerInfo()[j].offset));
                 r.text(fmt::format("          Size:            0x{:x}", hash_hdr.getLayerInfo()[j].size));
 
-                partition["hierarchicalSha256Header"]["layers"].push_back(
-                    nlohmann::json{{"layerType", layerType},
-                                   {"index", j},
-                                   {"offset", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].offset)},
-                                   {"size", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].size)}});
+                partition["hierarchicalSha256Header"]["layers"].push_back(nlohmann::json{
+                    {"layerType", layerType},
+                    {"index", j},
+                    {"offset", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].offset)},
+                    {"size", fmt::format("0x{:x}", hash_hdr.getLayerInfo()[j].size)}});
             }
         }
 
@@ -774,8 +834,10 @@ void nstool::NcaProcess::processPartitions()
         {
             r.text(fmt::format("[WARNING] NCA Partition {:d} is not readable.", index));
 
-            r.push("events", nlohmann::json{{"severity", "warn"},
-                                            {"message", fmt::format("NCA Partition {:d} is not readable.", index)}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"}, {"message", fmt::format("NCA Partition {:d} is not readable.", index)}});
 
             if (partition.fail_reason.empty() == false)
             {

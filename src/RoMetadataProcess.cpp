@@ -18,7 +18,10 @@ void nstool::RoMetadataProcess::process()
     displayRoMetaData();
 }
 
-void nstool::RoMetadataProcess::setRoBinary(const tc::ByteData &bin) { mRoBlob = bin; }
+void nstool::RoMetadataProcess::setRoBinary(const tc::ByteData &bin)
+{
+    mRoBlob = bin;
+}
 
 void nstool::RoMetadataProcess::setApiInfo(size_t offset, size_t size)
 {
@@ -38,17 +41,35 @@ void nstool::RoMetadataProcess::setDynStr(size_t offset, size_t size)
     mDynStr.size = size;
 }
 
-void nstool::RoMetadataProcess::setIs64BitInstruction(bool flag) { mIs64BitInstruction = flag; }
+void nstool::RoMetadataProcess::setIs64BitInstruction(bool flag)
+{
+    mIs64BitInstruction = flag;
+}
 
-void nstool::RoMetadataProcess::setListApi(bool listApi) { mListApi = listApi; }
+void nstool::RoMetadataProcess::setListApi(bool listApi)
+{
+    mListApi = listApi;
+}
 
-void nstool::RoMetadataProcess::setListSymbols(bool listSymbols) { mListSymbols = listSymbols; }
+void nstool::RoMetadataProcess::setListSymbols(bool listSymbols)
+{
+    mListSymbols = listSymbols;
+}
 
-const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getSdkVerApiList() const { return mSdkVerApiList; }
+const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getSdkVerApiList() const
+{
+    return mSdkVerApiList;
+}
 
-const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getPublicApiList() const { return mPublicApiList; }
+const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getPublicApiList() const
+{
+    return mPublicApiList;
+}
 
-const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getDebugApiList() const { return mDebugApiList; }
+const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getDebugApiList() const
+{
+    return mDebugApiList;
+}
 
 const std::vector<nstool::SdkApiString> &nstool::RoMetadataProcess::getPrivateApiList() const
 {
@@ -106,8 +127,9 @@ void nstool::RoMetadataProcess::importApiList()
 
     if (mDynSym.size > 0)
     {
-        mSymbolList.parseData(mRoBlob.data() + mDynSym.offset, mDynSym.size, mRoBlob.data() + mDynStr.offset,
-                              mDynStr.size, mIs64BitInstruction);
+        mSymbolList.parseData(
+            mRoBlob.data() + mDynSym.offset, mDynSym.size, mRoBlob.data() + mDynStr.offset, mDynStr.size,
+            mIs64BitInstruction);
     }
 }
 
@@ -134,12 +156,16 @@ void nstool::RoMetadataProcess::displayRoMetaData()
 
             for (size_t i = 0; i < mPublicApiList.size(); i++)
             {
-                r.text(fmt::format("    {:s} (vendor: {:s})", mPublicApiList[i].getModuleName(),
-                                   mPublicApiList[i].getVenderName()),
-                       Report::TextType::Extended);
+                r.text(
+                    fmt::format(
+                        "    {:s} (vendor: {:s})", mPublicApiList[i].getModuleName(),
+                        mPublicApiList[i].getVenderName()),
+                    Report::TextType::Extended);
 
-                r.push("data.publicAPI", nlohmann::json{{"module", mPublicApiList[i].getModuleName()},
-                                                        {"vendor", mPublicApiList[i].getVenderName()}});
+                r.push(
+                    "data.publicAPI",
+                    nlohmann::json{
+                        {"module", mPublicApiList[i].getModuleName()}, {"vendor", mPublicApiList[i].getVenderName()}});
             }
         }
 
@@ -149,12 +175,15 @@ void nstool::RoMetadataProcess::displayRoMetaData()
 
             for (size_t i = 0; i < mDebugApiList.size(); i++)
             {
-                r.text(fmt::format("    {:s} (vendor: {:s})", mDebugApiList[i].getModuleName(),
-                                   mDebugApiList[i].getVenderName()),
-                       Report::TextType::Extended);
+                r.text(
+                    fmt::format(
+                        "    {:s} (vendor: {:s})", mDebugApiList[i].getModuleName(), mDebugApiList[i].getVenderName()),
+                    Report::TextType::Extended);
 
-                r.push("data.debugAPI", nlohmann::json{{"module", mDebugApiList[i].getModuleName()},
-                                                       {"vendor", mDebugApiList[i].getVenderName()}});
+                r.push(
+                    "data.debugAPI",
+                    nlohmann::json{
+                        {"module", mDebugApiList[i].getModuleName()}, {"vendor", mDebugApiList[i].getVenderName()}});
             }
         }
 
@@ -164,12 +193,16 @@ void nstool::RoMetadataProcess::displayRoMetaData()
 
             for (size_t i = 0; i < mPrivateApiList.size(); i++)
             {
-                r.text(fmt::format("    {:s} (vendor: {:s})", mPrivateApiList[i].getModuleName(),
-                                   mPrivateApiList[i].getVenderName()),
-                       Report::TextType::Extended);
+                r.text(
+                    fmt::format(
+                        "    {:s} (vendor: {:s})", mPrivateApiList[i].getModuleName(),
+                        mPrivateApiList[i].getVenderName()),
+                    Report::TextType::Extended);
 
-                r.push("data.privateAPI", nlohmann::json{{"module", mPrivateApiList[i].getModuleName()},
-                                                         {"vendor", mPrivateApiList[i].getVenderName()}});
+                r.push(
+                    "data.privateAPI", nlohmann::json{
+                                           {"module", mPrivateApiList[i].getModuleName()},
+                                           {"vendor", mPrivateApiList[i].getVenderName()}});
             }
         }
 
@@ -179,12 +212,16 @@ void nstool::RoMetadataProcess::displayRoMetaData()
 
             for (size_t i = 0; i < mGuidelineApiList.size(); i++)
             {
-                r.text(fmt::format("    {:s} (vendor: {:s})", mGuidelineApiList[i].getModuleName(),
-                                   mGuidelineApiList[i].getVenderName()),
-                       Report::TextType::Extended);
+                r.text(
+                    fmt::format(
+                        "    {:s} (vendor: {:s})", mGuidelineApiList[i].getModuleName(),
+                        mGuidelineApiList[i].getVenderName()),
+                    Report::TextType::Extended);
 
-                r.push("data.guidelineAPI", nlohmann::json{{"module", mGuidelineApiList[i].getModuleName()},
-                                                           {"vendor", mGuidelineApiList[i].getVenderName()}});
+                r.push(
+                    "data.guidelineAPI", nlohmann::json{
+                                             {"module", mGuidelineApiList[i].getModuleName()},
+                                             {"vendor", mGuidelineApiList[i].getVenderName()}});
             }
         }
     }
@@ -197,16 +234,20 @@ void nstool::RoMetadataProcess::displayRoMetaData()
         {
             const ElfSymbolParser::sElfSymbol &symbol = mSymbolList.getSymbolList()[i];
 
-            r.text(fmt::format("  {:s}  [SHN={:s} ({:04x})][STT={:s}][STB={:s}]", symbol.name,
-                               getSectionIndexStr(symbol.shn_index), symbol.shn_index,
-                               getSymbolTypeStr(symbol.symbol_type), getSymbolBindingStr(symbol.symbol_binding)),
-                   Report::TextType::Extended);
+            r.text(
+                fmt::format(
+                    "  {:s}  [SHN={:s} ({:04x})][STT={:s}][STB={:s}]", symbol.name,
+                    getSectionIndexStr(symbol.shn_index), symbol.shn_index, getSymbolTypeStr(symbol.symbol_type),
+                    getSymbolBindingStr(symbol.symbol_binding)),
+                Report::TextType::Extended);
 
-            r.push("data.symbols", nlohmann::json{{"name", symbol.name},
-                                                  {"shn", getSectionIndexStr(symbol.shn_index)},
-                                                  {"shnIndex", symbol.shn_index},
-                                                  {"stt", getSymbolTypeStr(symbol.symbol_type)},
-                                                  {"stb", getSymbolBindingStr(symbol.symbol_binding)}});
+            r.push(
+                "data.symbols", nlohmann::json{
+                                    {"name", symbol.name},
+                                    {"shn", getSectionIndexStr(symbol.shn_index)},
+                                    {"shnIndex", symbol.shn_index},
+                                    {"stt", getSymbolTypeStr(symbol.symbol_type)},
+                                    {"stb", getSymbolBindingStr(symbol.symbol_binding)}});
         }
     }
 }

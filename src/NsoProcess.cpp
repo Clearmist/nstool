@@ -16,17 +16,35 @@ void nstool::NsoProcess::process()
     processRoMeta();
 }
 
-void nstool::NsoProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::NsoProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::NsoProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::NsoProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::NsoProcess::setIs64BitInstruction(bool flag) { mRoMeta.setIs64BitInstruction(flag); }
+void nstool::NsoProcess::setIs64BitInstruction(bool flag)
+{
+    mRoMeta.setIs64BitInstruction(flag);
+}
 
-void nstool::NsoProcess::setListApi(bool listApi) { mRoMeta.setListApi(listApi); }
+void nstool::NsoProcess::setListApi(bool listApi)
+{
+    mRoMeta.setListApi(listApi);
+}
 
-void nstool::NsoProcess::setListSymbols(bool listSymbols) { mRoMeta.setListSymbols(listSymbols); }
+void nstool::NsoProcess::setListSymbols(bool listSymbols)
+{
+    mRoMeta.setListSymbols(listSymbols);
+}
 
-const nstool::RoMetadataProcess &nstool::NsoProcess::getRoMetadataProcess() const { return mRoMeta; }
+const nstool::RoMetadataProcess &nstool::NsoProcess::getRoMetadataProcess() const
+{
+    return mRoMeta;
+}
 
 void nstool::NsoProcess::importHeader()
 {
@@ -181,38 +199,51 @@ void nstool::NsoProcess::displayNsoHeader()
     r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getModuleNameInfo().offset), Report::TextType::Layout);
     r.text(fmt::format("      FileSize:       0x{:x}", mHdr.getModuleNameInfo().size), Report::TextType::Layout);
     r.text("    .text:", Report::TextType::Layout);
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getTextSegmentInfo().file_layout.size,
-                       (mHdr.getTextSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getTextSegmentInfo().file_layout.size,
+            (mHdr.getTextSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text("    .ro:", Report::TextType::Layout);
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getRoSegmentInfo().file_layout.size,
-                       (mHdr.getRoSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getRoSegmentInfo().file_layout.size,
+            (mHdr.getRoSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text("    .data:", Report::TextType::Layout);
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getDataSegmentInfo().file_layout.size,
-                       (mHdr.getDataSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getDataSegmentInfo().file_layout.size,
+            (mHdr.getDataSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text("  Program Sections:");
     r.text("     .text:");
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset));
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size));
-    r.text(fmt::format("      Hash:           {:s}",
-                       tc::cli::FormatUtil::formatBytesAsString(mHdr.getTextSegmentInfo().hash.data(),
-                                                                mHdr.getTextSegmentInfo().hash.size(), false, "")),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format(
+            "      Hash:           {:s}",
+            tc::cli::FormatUtil::formatBytesAsString(
+                mHdr.getTextSegmentInfo().hash.data(), mHdr.getTextSegmentInfo().hash.size(), false, "")),
+        Report::TextType::Extended);
     r.text("    .ro:");
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset));
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size));
-    r.text(fmt::format("      Hash:           {:s}",
-                       tc::cli::FormatUtil::formatBytesAsString(mHdr.getRoSegmentInfo().hash.data(),
-                                                                mHdr.getRoSegmentInfo().hash.size(), false, "")),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format(
+            "      Hash:           {:s}",
+            tc::cli::FormatUtil::formatBytesAsString(
+                mHdr.getRoSegmentInfo().hash.data(), mHdr.getRoSegmentInfo().hash.size(), false, "")),
+        Report::TextType::Extended);
     r.text("    .api_info:", Report::TextType::Extended);
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getRoEmbeddedInfo().offset), Report::TextType::Extended);
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getRoEmbeddedInfo().size), Report::TextType::Extended);
@@ -223,73 +254,92 @@ void nstool::NsoProcess::displayNsoHeader()
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getRoDynSymInfo().offset), Report::TextType::Extended);
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getRoDynSymInfo().size), Report::TextType::Extended);
     r.text("    .data:", Report::TextType::Extended);
-    r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset),
-           Report::TextType::Extended);
-    r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size),
-           Report::TextType::Extended);
-    r.text(fmt::format("      Hash:           {:s}",
-                       tc::cli::FormatUtil::formatBytesAsString(mHdr.getDataSegmentInfo().hash.data(),
-                                                                mHdr.getDataSegmentInfo().hash.size(), false, "")),
-           Report::TextType::Extended);
+    r.text(
+        fmt::format("      MemoryOffset:   0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset),
+        Report::TextType::Extended);
+    r.text(
+        fmt::format("      MemorySize:     0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size),
+        Report::TextType::Extended);
+    r.text(
+        fmt::format(
+            "      Hash:           {:s}",
+            tc::cli::FormatUtil::formatBytesAsString(
+                mHdr.getDataSegmentInfo().hash.data(), mHdr.getDataSegmentInfo().hash.size(), false, "")),
+        Report::TextType::Extended);
     r.text("    .bss:");
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getBssSize()));
 
-    r.set("data.nsoHeader.moduleId",
-          tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, ""));
-    r.push("data.nsoHeader.programSegments",
-           nlohmann::json{{"name", "module_name"},
-                          {"fileOffset", fmt::format("0x{:x}", mHdr.getModuleNameInfo().offset)},
-                          {"fileSize", fmt::format("0x{:x}", mHdr.getModuleNameInfo().size)}});
-    r.push("data.nsoHeader.programSegments",
-           nlohmann::json{{"name", "text"},
-                          {"fileOffset", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset)},
-                          {"fileSize", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.size)},
-                          {"isCompressed", mHdr.getTextSegmentInfo().is_compressed}});
-    r.push("data.nsoHeader.programSegments",
-           nlohmann::json{{"name", "ro"},
-                          {"fileOffset", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset)},
-                          {"fileSize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.size)},
-                          {"isCompressed", mHdr.getRoSegmentInfo().is_compressed}});
-    r.push("data.nsoHeader.programSegments",
-           nlohmann::json{{"name", "data"},
-                          {"fileOffset", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset)},
-                          {"fileSize", fmt::format("0x{:x}{:s}", mHdr.getDataSegmentInfo().file_layout.size)},
-                          {"isCompressed", mHdr.getDataSegmentInfo().is_compressed}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{
-               {"name", "text"},
-               {"memoryOffset", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset)},
-               {"memorySize", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size)},
-               {"hash", tc::cli::FormatUtil::formatBytesAsString(mHdr.getTextSegmentInfo().hash.data(),
-                                                                 mHdr.getTextSegmentInfo().hash.size(), false, "")}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{
-               {"name", "ro"},
-               {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset)},
-               {"memorySize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size)},
-               {"hash", tc::cli::FormatUtil::formatBytesAsString(mHdr.getRoSegmentInfo().hash.data(),
-                                                                 mHdr.getRoSegmentInfo().hash.size(), false, "")}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{{"name", "api_info"},
-                          {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().offset)},
-                          {"memorySize", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().size)}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{{"name", "dynstr"},
-                          {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().offset)},
-                          {"memorySize", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().size)}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{{"name", "dynsym"},
-                          {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().offset)},
-                          {"memorySize", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().size)}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{
-               {"name", "data"},
-               {"memoryOffset", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset)},
-               {"memorySize", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size)},
-               {"hash", tc::cli::FormatUtil::formatBytesAsString(mHdr.getDataSegmentInfo().hash.data(),
-                                                                 mHdr.getDataSegmentInfo().hash.size(), false, "")}});
-    r.push("data.nsoHeader.programSections",
-           nlohmann::json{{"name", "bss"}, {"memorySize", fmt::format("0x{:x}", mHdr.getBssSize())}});
+    r.set(
+        "data.nsoHeader.moduleId",
+        tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, ""));
+    r.push(
+        "data.nsoHeader.programSegments", nlohmann::json{
+                                              {"name", "module_name"},
+                                              {"fileOffset", fmt::format("0x{:x}", mHdr.getModuleNameInfo().offset)},
+                                              {"fileSize", fmt::format("0x{:x}", mHdr.getModuleNameInfo().size)}});
+    r.push(
+        "data.nsoHeader.programSegments",
+        nlohmann::json{
+            {"name", "text"},
+            {"fileOffset", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset)},
+            {"fileSize", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.size)},
+            {"isCompressed", mHdr.getTextSegmentInfo().is_compressed}});
+    r.push(
+        "data.nsoHeader.programSegments",
+        nlohmann::json{
+            {"name", "ro"},
+            {"fileOffset", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset)},
+            {"fileSize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.size)},
+            {"isCompressed", mHdr.getRoSegmentInfo().is_compressed}});
+    r.push(
+        "data.nsoHeader.programSegments",
+        nlohmann::json{
+            {"name", "data"},
+            {"fileOffset", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset)},
+            {"fileSize", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.size)},
+            {"isCompressed", mHdr.getDataSegmentInfo().is_compressed}});
+    r.push(
+        "data.nsoHeader.programSections",
+        nlohmann::json{
+            {"name", "text"},
+            {"memoryOffset", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset)},
+            {"memorySize", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size)},
+            {"hash", tc::cli::FormatUtil::formatBytesAsString(
+                         mHdr.getTextSegmentInfo().hash.data(), mHdr.getTextSegmentInfo().hash.size(), false, "")}});
+    r.push(
+        "data.nsoHeader.programSections",
+        nlohmann::json{
+            {"name", "ro"},
+            {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset)},
+            {"memorySize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size)},
+            {"hash", tc::cli::FormatUtil::formatBytesAsString(
+                         mHdr.getRoSegmentInfo().hash.data(), mHdr.getRoSegmentInfo().hash.size(), false, "")}});
+    r.push(
+        "data.nsoHeader.programSections", nlohmann::json{
+                                              {"name", "api_info"},
+                                              {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().offset)},
+                                              {"memorySize", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().size)}});
+    r.push(
+        "data.nsoHeader.programSections", nlohmann::json{
+                                              {"name", "dynstr"},
+                                              {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().offset)},
+                                              {"memorySize", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().size)}});
+    r.push(
+        "data.nsoHeader.programSections", nlohmann::json{
+                                              {"name", "dynsym"},
+                                              {"memoryOffset", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().offset)},
+                                              {"memorySize", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().size)}});
+    r.push(
+        "data.nsoHeader.programSections",
+        nlohmann::json{
+            {"name", "data"},
+            {"memoryOffset", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset)},
+            {"memorySize", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size)},
+            {"hash", tc::cli::FormatUtil::formatBytesAsString(
+                         mHdr.getDataSegmentInfo().hash.data(), mHdr.getDataSegmentInfo().hash.size(), false, "")}});
+    r.push(
+        "data.nsoHeader.programSections",
+        nlohmann::json{{"name", "bss"}, {"memorySize", fmt::format("0x{:x}", mHdr.getBssSize())}});
 }
 
 void nstool::NsoProcess::processRoMeta()

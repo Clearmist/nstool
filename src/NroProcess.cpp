@@ -18,28 +18,55 @@ void nstool::NroProcess::process()
     }
 }
 
-void nstool::NroProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::NroProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::NroProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::NroProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::NroProcess::setIs64BitInstruction(bool flag) { mRoMeta.setIs64BitInstruction(flag); }
+void nstool::NroProcess::setIs64BitInstruction(bool flag)
+{
+    mRoMeta.setIs64BitInstruction(flag);
+}
 
-void nstool::NroProcess::setListApi(bool listApi) { mRoMeta.setListApi(listApi); }
+void nstool::NroProcess::setListApi(bool listApi)
+{
+    mRoMeta.setListApi(listApi);
+}
 
-void nstool::NroProcess::setListSymbols(bool listSymbols) { mRoMeta.setListSymbols(listSymbols); }
+void nstool::NroProcess::setListSymbols(bool listSymbols)
+{
+    mRoMeta.setListSymbols(listSymbols);
+}
 
-void nstool::NroProcess::setAssetIconExtractPath(const tc::io::Path &path) { mAssetProc.setIconExtractPath(path); }
+void nstool::NroProcess::setAssetIconExtractPath(const tc::io::Path &path)
+{
+    mAssetProc.setIconExtractPath(path);
+}
 
-void nstool::NroProcess::setAssetNacpExtractPath(const tc::io::Path &path) { mAssetProc.setNacpExtractPath(path); }
+void nstool::NroProcess::setAssetNacpExtractPath(const tc::io::Path &path)
+{
+    mAssetProc.setNacpExtractPath(path);
+}
 
-void nstool::NroProcess::setAssetRomfsShowFsTree(bool show_fs_tree) { mAssetProc.setRomfsShowFsTree(show_fs_tree); }
+void nstool::NroProcess::setAssetRomfsShowFsTree(bool show_fs_tree)
+{
+    mAssetProc.setRomfsShowFsTree(show_fs_tree);
+}
 
 void nstool::NroProcess::setAssetRomfsExtractJobs(const std::vector<nstool::ExtractJob> &extract_jobs)
 {
     mAssetProc.setRomfsExtractJobs(extract_jobs);
 }
 
-const nstool::RoMetadataProcess &nstool::NroProcess::getRoMetadataProcess() const { return mRoMeta; }
+const nstool::RoMetadataProcess &nstool::NroProcess::getRoMetadataProcess() const
+{
+    return mRoMeta;
+}
 
 void nstool::NroProcess::importHeader()
 {
@@ -118,8 +145,9 @@ void nstool::NroProcess::displayHeader()
     r.text("  RoCrt:");
     r.text(fmt::format("    EntryPoint: 0x{:x}", mHdr.getRoCrtEntryPoint()));
     r.text(fmt::format("    ModOffset:  0x{:x}", mHdr.getRoCrtModOffset()));
-    r.text(fmt::format("  ModuleId:    {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                  mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, "")));
+    r.text(fmt::format(
+        "  ModuleId:    {:s}",
+        tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, "")));
     r.text(fmt::format("  NroSize:     0x{:x}", mHdr.getNroSize()));
     r.text("  Program Sections:");
     r.text("     .text:");
@@ -143,49 +171,54 @@ void nstool::NroProcess::displayHeader()
     r.text("    .bss:");
     r.text(fmt::format("      Size:       0x{:x}", mHdr.getBssSize()));
 
-    r.set("data.nroHeader.roCrt",
-          nlohmann::json{{"entryPoint", fmt::format("0x{:x}", mHdr.getRoCrtEntryPoint())},
-                         {"modOffset", fmt::format("0x{:x}", mHdr.getRoCrtModOffset())},
-                         {"moduleId", tc::cli::FormatUtil::formatBytesAsString(mHdr.getModuleId().data(),
-                                                                               mHdr.getModuleId().size(), false, "")},
-                         {"nroSize", fmt::format("0x{:x}", mHdr.getNroSize())}});
-    r.push("data.nroHeader.programSections", nlohmann::json{
-                                                 {"name", "text"},
-                                                 {"offset", fmt::format("0x{:x}", mHdr.getTextInfo().memory_offset)},
-                                                 {"size", fmt::format("0x{:x}", mHdr.getTextInfo().size)},
-                                             });
-    r.push("data.nroHeader.programSections", nlohmann::json{
-                                                 {"name", "ro"},
-                                                 {"offset", fmt::format("0x{:x}", mHdr.getRoInfo().memory_offset)},
-                                                 {"size", fmt::format("0x{:x}", mHdr.getRoInfo().size)},
-                                             });
-    r.push("data.nroHeader.programSections",
-           nlohmann::json{
-               {"name", "api_info"},
-               {"offset", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().memory_offset)},
-               {"size", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().size)},
-           });
-    r.push("data.nroHeader.programSections",
-           nlohmann::json{
-               {"name", "dynstr"},
-               {"offset", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().memory_offset)},
-               {"size", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().size)},
-           });
-    r.push("data.nroHeader.programSections",
-           nlohmann::json{
-               {"name", "dynsym"},
-               {"offset", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().memory_offset)},
-               {"size", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().size)},
-           });
-    r.push("data.nroHeader.programSections", nlohmann::json{
-                                                 {"name", "data"},
-                                                 {"offset", fmt::format("0x{:x}", mHdr.getDataInfo().memory_offset)},
-                                                 {"size", fmt::format("0x{:x}", mHdr.getDataInfo().size)},
-                                             });
-    r.push("data.nroHeader.programSections", nlohmann::json{
-                                                 {"name", "bss"},
-                                                 {"size", fmt::format("0x{:x}", mHdr.getBssSize())},
-                                             });
+    r.set(
+        "data.nroHeader.roCrt", nlohmann::json{
+                                    {"entryPoint", fmt::format("0x{:x}", mHdr.getRoCrtEntryPoint())},
+                                    {"modOffset", fmt::format("0x{:x}", mHdr.getRoCrtModOffset())},
+                                    {"moduleId", tc::cli::FormatUtil::formatBytesAsString(
+                                                     mHdr.getModuleId().data(), mHdr.getModuleId().size(), false, "")},
+                                    {"nroSize", fmt::format("0x{:x}", mHdr.getNroSize())}});
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "text"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getTextInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getTextInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "ro"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getRoInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getRoInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "api_info"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getRoEmbeddedInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "dynstr"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getRoDynStrInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "dynsym"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getRoDynSymInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "data"},
+                                              {"offset", fmt::format("0x{:x}", mHdr.getDataInfo().memory_offset)},
+                                              {"size", fmt::format("0x{:x}", mHdr.getDataInfo().size)},
+                                          });
+    r.push(
+        "data.nroHeader.programSections", nlohmann::json{
+                                              {"name", "bss"},
+                                              {"size", fmt::format("0x{:x}", mHdr.getBssSize())},
+                                          });
 }
 
 void nstool::NroProcess::processRoMeta()

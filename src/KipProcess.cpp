@@ -14,9 +14,15 @@ void nstool::KipProcess::process()
     displayKernelCap(mHdr.getKernelCapabilities());
 }
 
-void nstool::KipProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::KipProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::KipProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::KipProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
 void nstool::KipProcess::importHeader()
 {
@@ -144,27 +150,36 @@ void nstool::KipProcess::displayHeader()
     r.text(fmt::format("    UseSecureMemory:     {}", mHdr.getUseSecureMemoryFlag()));
     r.text("  Program Sections:");
     r.text("     .text:");
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getTextSegmentInfo().file_layout.size,
-                       (mHdr.getTextSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getTextSegmentInfo().file_layout.size,
+            (mHdr.getTextSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset));
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size));
     r.text("    .ro:");
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getRoSegmentInfo().file_layout.size,
-                       (mHdr.getRoSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getRoSegmentInfo().file_layout.size,
+            (mHdr.getRoSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset));
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size));
     r.text("    .data:");
-    r.text(fmt::format("      FileOffset:     0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset),
-           Report::TextType::Layout);
-    r.text(fmt::format("      FileSize:       0x{:x}{:s}", mHdr.getDataSegmentInfo().file_layout.size,
-                       (mHdr.getDataSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
-           Report::TextType::Layout);
+    r.text(
+        fmt::format("      FileOffset:     0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset),
+        Report::TextType::Layout);
+    r.text(
+        fmt::format(
+            "      FileSize:       0x{:x}{:s}", mHdr.getDataSegmentInfo().file_layout.size,
+            (mHdr.getDataSegmentInfo().is_compressed ? " (COMPRESSED)" : "")),
+        Report::TextType::Layout);
     r.text(fmt::format("      MemoryOffset:   0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset));
     r.text(fmt::format("      MemorySize:     0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size));
     r.text("    .bss:");
@@ -176,32 +191,39 @@ void nstool::KipProcess::displayHeader()
     r.set("data.kipHeader.meta.is64BitInstruction", mHdr.getIs64BitInstructionFlag());
     r.set("data.kipHeader.meta.is64BitAddressSpace", mHdr.getIs64BitAddressSpaceFlag());
     r.set("data.kipHeader.meta.useSecureMemory", mHdr.getUseSecureMemoryFlag());
-    r.set("data.kipHeader.meta.program.text.fileOffset",
-          fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset));
-    r.set("data.kipHeader.meta.program.text.fileSize",
-          fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.size));
+    r.set(
+        "data.kipHeader.meta.program.text.fileOffset",
+        fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.text.fileSize", fmt::format("0x{:x}", mHdr.getTextSegmentInfo().file_layout.size));
     r.set("data.kipHeader.meta.program.text.isCompressed", mHdr.getTextSegmentInfo().is_compressed);
-    r.set("data.kipHeader.meta.program.text.memoryOffset",
-          fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset));
-    r.set("data.kipHeader.meta.program.text.memorySize",
-          fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size));
-    r.set("data.kipHeader.meta.program.ro.fileOffset",
-          fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.text.memoryOffset",
+        fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.text.memorySize",
+        fmt::format("0x{:x}", mHdr.getTextSegmentInfo().memory_layout.size));
+    r.set(
+        "data.kipHeader.meta.program.ro.fileOffset", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.offset));
     r.set("data.kipHeader.meta.program.ro.fileSize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().file_layout.size));
     r.set("data.kipHeader.meta.program.ro.isCompressed", mHdr.getRoSegmentInfo().is_compressed);
-    r.set("data.kipHeader.meta.program.ro.memoryOffset",
-          fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset));
-    r.set("data.kipHeader.meta.program.ro.memorySize",
-          fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size));
-    r.set("data.kipHeader.meta.program.data.fileOffset",
-          fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset));
-    r.set("data.kipHeader.meta.program.data.fileSize",
-          fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.size));
+    r.set(
+        "data.kipHeader.meta.program.ro.memoryOffset",
+        fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.ro.memorySize", fmt::format("0x{:x}", mHdr.getRoSegmentInfo().memory_layout.size));
+    r.set(
+        "data.kipHeader.meta.program.data.fileOffset",
+        fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.data.fileSize", fmt::format("0x{:x}", mHdr.getDataSegmentInfo().file_layout.size));
     r.set("data.kipHeader.meta.program.data.isCompressed", mHdr.getDataSegmentInfo().is_compressed);
-    r.set("data.kipHeader.meta.program.data.memoryOffset",
-          fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset));
-    r.set("data.kipHeader.meta.program.data.memorySize",
-          fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size));
+    r.set(
+        "data.kipHeader.meta.program.data.memoryOffset",
+        fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.offset));
+    r.set(
+        "data.kipHeader.meta.program.data.memorySize",
+        fmt::format("0x{:x}", mHdr.getDataSegmentInfo().memory_layout.size));
     r.set("data.kipHeader.meta.program.bss.memorySize", fmt::format("0x{:x}", mHdr.getBssSize()));
 }
 
@@ -213,7 +235,7 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
 
     if (kern.getThreadInfo().isSet())
     {
-        pie::hac::ThreadInfoHandler threadInfo = kern.getThreadInfo();
+        const auto &threadInfo = kern.getThreadInfo();
 
         r.text("  Thread Priority:");
         r.text(fmt::format("    Min:     {:d}", threadInfo.getMinPriority()));
@@ -222,10 +244,11 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
         r.text(fmt::format("    Min:     {:d}", threadInfo.getMinCpuId()));
         r.text(fmt::format("    Max:     {:d}", threadInfo.getMaxCpuId()));
 
-        r.set("data.kernel.threadPriority",
-              nlohmann::json{{"min", threadInfo.getMinPriority()}, {"max", threadInfo.getMaxPriority()}});
-        r.set("data.kernel.cpuId",
-              nlohmann::json{{"min", threadInfo.getMinCpuId()}, {"max", threadInfo.getMaxCpuId()}});
+        r.set(
+            "data.kernel.threadPriority",
+            nlohmann::json{{"min", threadInfo.getMinPriority()}, {"max", threadInfo.getMaxPriority()}});
+        r.set(
+            "data.kernel.cpuId", nlohmann::json{{"min", threadInfo.getMinCpuId()}, {"max", threadInfo.getMaxCpuId()}});
     }
 
     if (kern.getSystemCalls().isSet())
@@ -292,23 +315,27 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
 
     if (kern.getMiscParams().isSet())
     {
-        r.text(
-            fmt::format("  ProgramType:        {:s} ({:d})",
-                        pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType()),
-                        (uint32_t)kern.getMiscParams().getProgramType()));
+        r.text(fmt::format(
+            "  ProgramType:        {:s} ({:d})",
+            pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType()),
+            (uint32_t)kern.getMiscParams().getProgramType()));
 
-        r.set("data.programType", nlohmann::json{{"string", pie::hac::KernelCapabilityUtil::getProgramTypeAsString(
-                                                                kern.getMiscParams().getProgramType())},
-                                                 {"int", (uint32_t)kern.getMiscParams().getProgramType()}});
+        r.set(
+            "data.programType", nlohmann::json{
+                                    {"string", pie::hac::KernelCapabilityUtil::getProgramTypeAsString(
+                                                   kern.getMiscParams().getProgramType())},
+                                    {"int", (uint32_t)kern.getMiscParams().getProgramType()}});
     }
 
     if (kern.getKernelVersion().isSet())
     {
-        r.text(fmt::format("  Kernel Version:     {:d}.{:d}", kern.getKernelVersion().getVerMajor(),
-                           kern.getKernelVersion().getVerMinor()));
+        r.text(fmt::format(
+            "  Kernel Version:     {:d}.{:d}", kern.getKernelVersion().getVerMajor(),
+            kern.getKernelVersion().getVerMinor()));
 
-        r.set("data.kernelVersion",
-              fmt::format("{:d}.{:d}", kern.getKernelVersion().getVerMajor(), kern.getKernelVersion().getVerMinor()));
+        r.set(
+            "data.kernelVersion",
+            fmt::format("{:d}.{:d}", kern.getKernelVersion().getVerMajor(), kern.getKernelVersion().getVerMinor()));
     }
 
     if (kern.getHandleTableSize().isSet())
@@ -333,8 +360,9 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
                 misc_flags_names.push_back(pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
                     pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
 
-                r.set("data.miscellaneousFlags", pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
-                                                     pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
+                r.set(
+                    "data.miscellaneousFlags", pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
+                                                   pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
             }
         }
 
@@ -344,8 +372,9 @@ void nstool::KipProcess::displayKernelCap(const pie::hac::KernelCapabilityContro
 
 std::string nstool::KipProcess::formatMappingAsString(const pie::hac::MemoryMappingHandler::sMemoryMapping &map) const
 {
-    return fmt::format("0x{:016x} - 0x{:016x} (perm={:s}) (type={:s})", ((uint64_t)map.addr << 12),
-                       (((uint64_t)(map.addr + map.size) << 12) - 1),
-                       pie::hac::KernelCapabilityUtil::getMemoryPermissionAsString(map.perm),
-                       pie::hac::KernelCapabilityUtil::getMappingTypeAsString(map.type));
+    return fmt::format(
+        "0x{:016x} - 0x{:016x} (perm={:s}) (type={:s})", ((uint64_t)map.addr << 12),
+        (((uint64_t)(map.addr + map.size) << 12) - 1),
+        pie::hac::KernelCapabilityUtil::getMemoryPermissionAsString(map.perm),
+        pie::hac::KernelCapabilityUtil::getMappingTypeAsString(map.type));
 }

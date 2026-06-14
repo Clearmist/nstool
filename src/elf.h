@@ -274,9 +274,18 @@ enum NoteType
 static const size_t kEIdentSize = 0x10;
 static const byte_t kElfMagic[sizeof(uint32_t)] = {0x7f, 'E', 'L', 'F'};
 
-inline byte_t get_elf_st_bind(byte_t st_info) { return st_info >> 4; }
-inline byte_t get_elf_st_type(byte_t st_info) { return st_info & 0xf; }
-inline byte_t get_elf_st_info(byte_t st_bind, byte_t st_type) { return (st_type & 0xf) | ((st_bind & 0xf) << 4); }
+inline byte_t get_elf_st_bind(byte_t st_info)
+{
+    return st_info >> 4;
+}
+inline byte_t get_elf_st_type(byte_t st_info)
+{
+    return st_info & 0xf;
+}
+inline byte_t get_elf_st_info(byte_t st_bind, byte_t st_type)
+{
+    return (st_type & 0xf) | ((st_bind & 0xf) << 4);
+}
 
 /* The following are used with relocations */
 #define ELF32_R_SYM(x) ((x) >> 8)

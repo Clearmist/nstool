@@ -62,20 +62,29 @@ class DeprecatedOptionHandler : public tc::cli::OptionParser::IOptionHandler
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
         Report &r = get_report();
 
-        r.text(fmt::format("[WARNING] Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "),
-                           mWarnMessage));
+        r.text(fmt::format(
+            "[WARNING] Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "), mWarnMessage));
 
-        r.push("events", nlohmann::json{{"severity", "warn"},
-                                        {"message", fmt::format("Option \"{}\" is deprecated.{}{}", option,
-                                                                (mWarnMessage.empty() ? "" : " "), mWarnMessage)}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "Option \"{}\" is deprecated.{}{}", option, (mWarnMessage.empty() ? "" : " "),
+                                          mWarnMessage)}});
     }
 
   private:
@@ -89,9 +98,15 @@ class FlagOptionHandler : public tc::cli::OptionParser::IOptionHandler
   public:
     FlagOptionHandler(bool &flag, const std::vector<std::string> &opts) : mFlag(flag), mOptStrings(opts), mOptRegex() {}
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -118,9 +133,15 @@ class SingleParamStringOptionHandler : public tc::cli::OptionParser::IOptionHand
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -146,9 +167,15 @@ class SingleParamPathOptionHandler : public tc::cli::OptionParser::IOptionHandle
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -174,9 +201,15 @@ class SingleParamSizetOptionHandler : public tc::cli::OptionParser::IOptionHandl
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -197,15 +230,21 @@ class SingleParamSizetOptionHandler : public tc::cli::OptionParser::IOptionHandl
 class SingleParamAesKeyOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
   public:
-    SingleParamAesKeyOptionHandler(tc::Optional<nstool::KeyBag::aes128_key_t> &param,
-                                   const std::vector<std::string> &opts)
+    SingleParamAesKeyOptionHandler(
+        tc::Optional<nstool::KeyBag::aes128_key_t> &param, const std::vector<std::string> &opts)
         : mParam(param), mOptStrings(opts), mOptRegex()
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -241,9 +280,15 @@ class SingleParamPathArrayOptionHandler : public tc::cli::OptionParser::IOptionH
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -269,9 +314,15 @@ class FileTypeOptionHandler : public tc::cli::OptionParser::IOptionHandler
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -289,8 +340,9 @@ class FileTypeOptionHandler : public tc::cli::OptionParser::IOptionHandler
         {
             mParam = nstool::Settings::FILE_TYPE_NSP;
         }
-        else if (params[0] == "partitionfs" || params[0] == "hashedpartitionfs" || params[0] == "pfs" ||
-                 params[0] == "pfs0" || params[0] == "hfs" || params[0] == "hfs0")
+        else if (
+            params[0] == "partitionfs" || params[0] == "hashedpartitionfs" || params[0] == "pfs" ||
+            params[0] == "pfs0" || params[0] == "hfs" || params[0] == "hfs0")
         {
             mParam = nstool::Settings::FILE_TYPE_PARTITIONFS;
         }
@@ -362,9 +414,15 @@ class SingleFileExtractionHandler : public tc::cli::OptionParser::IOptionHandler
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -392,9 +450,15 @@ class InstructionTypeOptionHandler : public tc::cli::OptionParser::IOptionHandle
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -432,9 +496,15 @@ class ExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandle
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -462,15 +532,21 @@ class ExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandle
 class CustomExtractDataPathOptionHandler : public tc::cli::OptionParser::IOptionHandler
 {
   public:
-    CustomExtractDataPathOptionHandler(std::vector<nstool::ExtractJob> &jobs, const std::vector<std::string> &opts,
-                                       const tc::io::Path &custom_path)
+    CustomExtractDataPathOptionHandler(
+        std::vector<nstool::ExtractJob> &jobs, const std::vector<std::string> &opts, const tc::io::Path &custom_path)
         : mJobs(jobs), mOptStrings(opts), mOptRegex(), mCustomPath(custom_path)
     {
     }
 
-    const std::vector<std::string> &getOptionStrings() const { return mOptStrings; }
+    const std::vector<std::string> &getOptionStrings() const
+    {
+        return mOptStrings;
+    }
 
-    const std::vector<std::string> &getOptionRegexPatterns() const { return mOptRegex; }
+    const std::vector<std::string> &getOptionRegexPatterns() const
+    {
+        return mOptRegex;
+    }
 
     void processOption(const std::string &option, const std::vector<std::string> &params)
     {
@@ -716,66 +792,75 @@ void nstool::SettingsInitializer::determine_filetype()
         infile.filetype = FILE_TYPE_GAMECARD;
     }
     // detect "SDK" XCI
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sSdkGcHeader)) &&
-             _TYPE_PTR(pie::hac::sSdkGcHeader)->signed_header.header.st_magic.unwrap() ==
-                 pie::hac::gc::kGcHeaderStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sSdkGcHeader)) &&
+        _TYPE_PTR(pie::hac::sSdkGcHeader)->signed_header.header.st_magic.unwrap() == pie::hac::gc::kGcHeaderStructMagic)
     {
         infile.filetype = FILE_TYPE_GAMECARD;
     }
     // detect PFS0
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sPfsHeader)) &&
-             _TYPE_PTR(pie::hac::sPfsHeader)->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sPfsHeader)) &&
+        _TYPE_PTR(pie::hac::sPfsHeader)->st_magic.unwrap() == pie::hac::pfs::kPfsStructMagic)
     {
         infile.filetype = FILE_TYPE_PARTITIONFS;
     }
     // detect HFS0
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sPfsHeader)) &&
-             _TYPE_PTR(pie::hac::sPfsHeader)->st_magic.unwrap() == pie::hac::pfs::kHashedPfsStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sPfsHeader)) &&
+        _TYPE_PTR(pie::hac::sPfsHeader)->st_magic.unwrap() == pie::hac::pfs::kHashedPfsStructMagic)
     {
         infile.filetype = FILE_TYPE_PARTITIONFS;
     }
     // detect ROMFS
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sRomfsHeader)) &&
-             _TYPE_PTR(pie::hac::sRomfsHeader)->header_size.unwrap() == sizeof(pie::hac::sRomfsHeader) &&
-             _TYPE_PTR(pie::hac::sRomfsHeader)->dir_entry.offset.unwrap() ==
-                 (_TYPE_PTR(pie::hac::sRomfsHeader)->dir_hash_bucket.offset.unwrap() +
-                  _TYPE_PTR(pie::hac::sRomfsHeader)->dir_hash_bucket.size.unwrap()))
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sRomfsHeader)) &&
+        _TYPE_PTR(pie::hac::sRomfsHeader)->header_size.unwrap() == sizeof(pie::hac::sRomfsHeader) &&
+        _TYPE_PTR(pie::hac::sRomfsHeader)->dir_entry.offset.unwrap() ==
+            (_TYPE_PTR(pie::hac::sRomfsHeader)->dir_hash_bucket.offset.unwrap() +
+             _TYPE_PTR(pie::hac::sRomfsHeader)->dir_hash_bucket.size.unwrap()))
     {
         infile.filetype = FILE_TYPE_ROMFS;
     }
     // detect NPDM
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sMetaHeader)) &&
-             _TYPE_PTR(pie::hac::sMetaHeader)->st_magic.unwrap() == pie::hac::meta::kMetaStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sMetaHeader)) &&
+        _TYPE_PTR(pie::hac::sMetaHeader)->st_magic.unwrap() == pie::hac::meta::kMetaStructMagic)
     {
         infile.filetype = FILE_TYPE_META;
     }
     // detect NSO
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sNsoHeader)) &&
-             _TYPE_PTR(pie::hac::sNsoHeader)->st_magic.unwrap() == pie::hac::nso::kNsoStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sNsoHeader)) &&
+        _TYPE_PTR(pie::hac::sNsoHeader)->st_magic.unwrap() == pie::hac::nso::kNsoStructMagic)
     {
         infile.filetype = FILE_TYPE_NSO;
     }
     // detect NRO
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sNroHeader)) &&
-             _TYPE_PTR(pie::hac::sNroHeader)->st_magic.unwrap() == pie::hac::nro::kNroStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sNroHeader)) &&
+        _TYPE_PTR(pie::hac::sNroHeader)->st_magic.unwrap() == pie::hac::nro::kNroStructMagic)
     {
         infile.filetype = FILE_TYPE_NRO;
     }
     // detect INI
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sIniHeader)) &&
-             _TYPE_PTR(pie::hac::sIniHeader)->st_magic.unwrap() == pie::hac::ini::kIniStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sIniHeader)) &&
+        _TYPE_PTR(pie::hac::sIniHeader)->st_magic.unwrap() == pie::hac::ini::kIniStructMagic)
     {
         infile.filetype = FILE_TYPE_INI;
     }
     // detect KIP
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sKipHeader)) &&
-             _TYPE_PTR(pie::hac::sKipHeader)->st_magic.unwrap() == pie::hac::kip::kKipStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sKipHeader)) &&
+        _TYPE_PTR(pie::hac::sKipHeader)->st_magic.unwrap() == pie::hac::kip::kKipStructMagic)
     {
         infile.filetype = FILE_TYPE_KIP;
     }
     // detect HB ASET
-    else if (_ASSERT_FILE_SIZE(sizeof(pie::hac::sAssetHeader)) &&
-             _TYPE_PTR(pie::hac::sAssetHeader)->st_magic.unwrap() == pie::hac::aset::kAssetStructMagic)
+    else if (
+        _ASSERT_FILE_SIZE(sizeof(pie::hac::sAssetHeader)) &&
+        _TYPE_PTR(pie::hac::sAssetHeader)->st_magic.unwrap() == pie::hac::aset::kAssetStructMagic)
     {
         infile.filetype = FILE_TYPE_KIP;
     }
@@ -846,9 +931,10 @@ void nstool::SettingsInitializer::usage_text() const
     fmt::print(
         "      --secure        Extract \"secure\" partition to directory. (Alias for \"-x /secure <out path>\")\n");
     fmt::print("\n  NCA (Nintendo Content Archive)\n");
-    fmt::print("    {:s} [--fstree] [-x <out path> --file <virtual file name>] [--bodykey <key> --titlekey <key> -tik "
-               "<tik path> --basenca <.nca file>] <.nca file>\n",
-               BIN_NAME);
+    fmt::print(
+        "    {:s} [--fstree] [-x <out path> --file <virtual file name>] [--bodykey <key> --titlekey <key> -tik "
+        "<tik path> --basenca <.nca file>] <.nca file>\n",
+        BIN_NAME);
     fmt::print("      --fstree        Print filesystem tree.\n");
     fmt::print("      -x, --extract   Extract a file or directory to local filesystem.\n");
     fmt::print("      --titlekey      Specify (encrypted) title key extracted from ticket.\n");
@@ -896,14 +982,18 @@ void nstool::SettingsInitializer::dump_keys() const
     if (opt.keybag.nca_header_key.isSet())
     {
         r.text("    Header-EncryptionKey:", Report::TextType::Keydata);
-        r.text(fmt::format("      Key0: {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                   opt.keybag.nca_header_key.get()[0].data(),
-                                                   opt.keybag.nca_header_key.get()[0].size(), true, "")),
-               Report::TextType::Keydata);
-        r.text(fmt::format("      Key1: {:s}", tc::cli::FormatUtil::formatBytesAsString(
-                                                   opt.keybag.nca_header_key.get()[1].data(),
-                                                   opt.keybag.nca_header_key.get()[1].size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "      Key0: {:s}",
+                tc::cli::FormatUtil::formatBytesAsString(
+                    opt.keybag.nca_header_key.get()[0].data(), opt.keybag.nca_header_key.get()[0].size(), true, "")),
+            Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "      Key1: {:s}",
+                tc::cli::FormatUtil::formatBytesAsString(
+                    opt.keybag.nca_header_key.get()[1].data(), opt.keybag.nca_header_key.get()[1].size(), true, "")),
+            Report::TextType::Keydata);
     }
 
     std::vector<std::string> kaek_label = {"Application", "Ocean", "System"};
@@ -914,8 +1004,9 @@ void nstool::SettingsInitializer::dump_keys() const
              itr != opt.keybag.nca_key_area_encryption_key[kaek_index].end(); itr++)
         {
             r.text(
-                fmt::format("    KeyAreaEncryptionKey-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first,
-                            tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+                fmt::format(
+                    "    KeyAreaEncryptionKey-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first,
+                    tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
                 Report::TextType::Keydata);
         }
     }
@@ -926,8 +1017,9 @@ void nstool::SettingsInitializer::dump_keys() const
              itr != opt.keybag.nca_key_area_encryption_key_hw[kaek_index].end(); itr++)
         {
             r.text(
-                fmt::format("    KeyAreaEncryptionKeyHw-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first,
-                            tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+                fmt::format(
+                    "    KeyAreaEncryptionKeyHw-{:s}-{:02x}:\n      {:s}", kaek_label[kaek_index], itr->first,
+                    tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
                 Report::TextType::Keydata);
         }
     }
@@ -937,23 +1029,25 @@ void nstool::SettingsInitializer::dump_keys() const
     for (auto itr = opt.keybag.nrr_certificate_sign_key.begin(); itr != opt.keybag.nrr_certificate_sign_key.end();
          itr++)
     {
-        dump_rsa_key(itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4,
-                     r.getShowExtendedInfo());
+        dump_rsa_key(
+            itr->second, fmt::format("Certificate-SignatureKey-{:02x}", itr->first), 4, r.getShowExtendedInfo());
     }
 
     r.text("  XCI Keys:", Report::TextType::Keydata);
 
     if (opt.keybag.xci_header_sign_key.isSet())
     {
-        dump_rsa_key(opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4,
-                     r.getShowExtendedInfo());
+        dump_rsa_key(
+            opt.keybag.xci_header_sign_key.get(), fmt::format("Header-SignatureKey"), 4, r.getShowExtendedInfo());
     }
 
     for (auto itr = opt.keybag.xci_header_key.begin(); itr != opt.keybag.xci_header_key.end(); itr++)
     {
-        r.text(fmt::format("    ExtendedHeader-EncryptionKey-{:02x}:\n      {:s}", itr->first,
-                           tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "    ExtendedHeader-EncryptionKey-{:02x}:\n      {:s}", itr->first,
+                tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+            Report::TextType::Keydata);
     }
 
     if (opt.keybag.xci_cert_sign_key.isSet())
@@ -965,9 +1059,11 @@ void nstool::SettingsInitializer::dump_keys() const
 
     for (auto itr = opt.keybag.pkg1_key.begin(); itr != opt.keybag.pkg1_key.end(); itr++)
     {
-        r.text(fmt::format("    EncryptionKey-{:02x}:\n      {:s}", itr->first,
-                           tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "    EncryptionKey-{:02x}:\n      {:s}", itr->first,
+                tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+            Report::TextType::Keydata);
     }
 
     r.text("  Package2 Keys:", Report::TextType::Keydata);
@@ -979,18 +1075,22 @@ void nstool::SettingsInitializer::dump_keys() const
 
     for (auto itr = opt.keybag.pkg2_key.begin(); itr != opt.keybag.pkg2_key.end(); itr++)
     {
-        r.text(fmt::format("    EncryptionKey-{:02x}:\n      {:s}", itr->first,
-                           tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "    EncryptionKey-{:02x}:\n      {:s}", itr->first,
+                tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+            Report::TextType::Keydata);
     }
 
     r.text("  ETicket Keys:", Report::TextType::Keydata);
 
     for (auto itr = opt.keybag.etik_common_key.begin(); itr != opt.keybag.etik_common_key.end(); itr++)
     {
-        r.text(fmt::format("    CommonKey-{:02x}:\n      {:s}", itr->first,
-                           tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
-               Report::TextType::Keydata);
+        r.text(
+            fmt::format(
+                "    CommonKey-{:02x}:\n      {:s}", itr->first,
+                tc::cli::FormatUtil::formatBytesAsString(itr->second.data(), itr->second.size(), true, "")),
+            Report::TextType::Keydata);
     }
 
     r.text("  BroadOn Signer Profiles:", Report::TextType::Keydata);
@@ -1028,8 +1128,8 @@ void nstool::SettingsInitializer::dump_keys() const
     }
 }
 
-void nstool::SettingsInitializer::dump_rsa_key(const KeyBag::rsa_key_t &key, const std::string &label, size_t indent,
-                                               bool expanded_key_data) const
+void nstool::SettingsInitializer::dump_rsa_key(
+    const KeyBag::rsa_key_t &key, const std::string &label, size_t indent, bool expanded_key_data) const
 {
     std::string indent_str;
 
@@ -1049,15 +1149,18 @@ void nstool::SettingsInitializer::dump_rsa_key(const KeyBag::rsa_key_t &key, con
         if (expanded_key_data)
         {
             r.text(fmt::format("{:s}  Modulus:", indent_str), Report::TextType::Keydata);
-            r.text(fmt::format("{:s}    {:s}", indent_str,
-                               tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.n.data(), key.n.size(), true,
-                                                                                     "", 0x10, indent + 4, false)),
-                   Report::TextType::Keydata);
+            r.text(
+                fmt::format(
+                    "{:s}    {:s}", indent_str,
+                    tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                        key.n.data(), key.n.size(), true, "", 0x10, indent + 4, false)),
+                Report::TextType::Keydata);
         }
         else
         {
-            r.text(fmt::format("{:s}  Modulus: {:s}", indent_str, getTruncatedBytesString(key.n.data(), key.n.size())),
-                   Report::TextType::Keydata);
+            r.text(
+                fmt::format("{:s}  Modulus: {:s}", indent_str, getTruncatedBytesString(key.n.data(), key.n.size())),
+                Report::TextType::Keydata);
         }
     }
 
@@ -1066,22 +1169,25 @@ void nstool::SettingsInitializer::dump_rsa_key(const KeyBag::rsa_key_t &key, con
         if (expanded_key_data)
         {
             r.text(fmt::format("{:s}  Private Exponent:", indent_str), Report::TextType::Keydata);
-            r.text(fmt::format("{:s}    {:s}", indent_str,
-                               tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(key.d.data(), key.d.size(), true,
-                                                                                     "", 0x10, indent + 4, false)),
-                   Report::TextType::Keydata);
+            r.text(
+                fmt::format(
+                    "{:s}    {:s}", indent_str,
+                    tc::cli::FormatUtil::formatBytesAsStringWithLineLimit(
+                        key.d.data(), key.d.size(), true, "", 0x10, indent + 4, false)),
+                Report::TextType::Keydata);
         }
         else
         {
-            r.text(fmt::format("{:s}  Private Exponent: {:s}", indent_str,
-                               getTruncatedBytesString(key.d.data(), key.d.size())),
-                   Report::TextType::Keydata);
+            r.text(
+                fmt::format(
+                    "{:s}  Private Exponent: {:s}", indent_str, getTruncatedBytesString(key.d.data(), key.d.size())),
+                Report::TextType::Keydata);
         }
     }
 }
 
-void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path> &keyfile_path, const std::string &keyfile_name,
-                                              const std::string &cli_hint)
+void nstool::SettingsInitializer::loadKeyFile(
+    tc::Optional<tc::io::Path> &keyfile_path, const std::string &keyfile_name, const std::string &cli_hint)
 {
     std::string home_path_str;
 
@@ -1101,18 +1207,20 @@ void nstool::SettingsInitializer::loadKeyFile(tc::Optional<tc::io::Path> &keyfil
         }
         catch (tc::io::FileNotFoundException &)
         {
-            r.push("events", nlohmann::json{{"severity", "warn"},
-                                            {"message", fmt::format("Failed to load \"{}\" keyfile.{}\n", keyfile_name,
-                                                                    cli_hint)}});
+            r.push(
+                "events", nlohmann::json{
+                              {"severity", "warn"},
+                              {"message", fmt::format("Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}});
 
             r.text(fmt::format("[WARNING] Failed to load \"{}\" keyfile.{}\n", keyfile_name, cli_hint));
         }
     }
     else
     {
-        r.push("events", nlohmann::json{
-                             {"severity", "warn"},
-                             {"message", fmt::format("Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format("Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint)}});
 
         r.text(fmt::format("[WARNING] Failed to locate \"{}\" keyfile.{}\n", keyfile_name, cli_hint));
     }
@@ -1144,8 +1252,8 @@ bool nstool::SettingsInitializer::determineValidNcaFromSample(const tc::ByteData
 
     // decrypt main header
     byte_t raw_hdr[pie::hac::nca::kSectorSize];
-    enc.decrypt(raw_hdr, sample.data() + pie::hac::ContentArchiveUtil::sectorToOffset(1), pie::hac::nca::kSectorSize,
-                1);
+    enc.decrypt(
+        raw_hdr, sample.data() + pie::hac::ContentArchiveUtil::sectorToOffset(1), pie::hac::nca::kSectorSize, 1);
     pie::hac::sContentArchiveHeader *hdr = (pie::hac::sContentArchiveHeader *)(raw_hdr);
 
     if (hdr->st_magic.unwrap() != pie::hac::nca::kNca2StructMagic &&
@@ -1182,8 +1290,8 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
         if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_Application)
         {
             const pie::hac::sApplicationMetaExtendedHeader *meta =
-                (const pie::hac::sApplicationMetaExtendedHeader *)(sample.data() +
-                                                                   sizeof(pie::hac::sContentMetaHeader));
+                (const pie::hac::sApplicationMetaExtendedHeader
+                     *)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
 
             if ((meta->patch_id.unwrap() & data->id.unwrap()) != data->id.unwrap())
             {
@@ -1205,8 +1313,8 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
         else if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_AddOnContent)
         {
             const pie::hac::sAddOnContentMetaExtendedHeader *meta =
-                (const pie::hac::sAddOnContentMetaExtendedHeader *)(sample.data() +
-                                                                    sizeof(pie::hac::sContentMetaHeader));
+                (const pie::hac::sAddOnContentMetaExtendedHeader
+                     *)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
 
             if ((meta->application_id.unwrap() & data->id.unwrap()) != meta->application_id.unwrap())
             {
@@ -1228,8 +1336,8 @@ bool nstool::SettingsInitializer::determineValidCnmtFromSample(const tc::ByteDat
         else if (data->type == (byte_t)pie::hac::cnmt::ContentMetaType_SystemUpdate)
         {
             const pie::hac::sSystemUpdateMetaExtendedHeader *meta =
-                (const pie::hac::sSystemUpdateMetaExtendedHeader *)(sample.data() +
-                                                                    sizeof(pie::hac::sContentMetaHeader));
+                (const pie::hac::sSystemUpdateMetaExtendedHeader
+                     *)(sample.data() + sizeof(pie::hac::sContentMetaHeader));
 
             minimum_size += meta->extended_data_size.unwrap();
         }

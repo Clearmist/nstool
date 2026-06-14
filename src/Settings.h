@@ -136,8 +136,8 @@ class SettingsInitializer : public Settings
     void determine_filetype();
     void usage_text() const;
     void dump_keys() const;
-    void dump_rsa_key(const KeyBag::rsa_key_t &key, const std::string &label, size_t indent,
-                      bool expanded_key_data) const;
+    void
+    dump_rsa_key(const KeyBag::rsa_key_t &key, const std::string &label, size_t indent, bool expanded_key_data) const;
 
     std::string mModuleLabel;
 
@@ -153,8 +153,8 @@ class SettingsInitializer : public Settings
     std::vector<tc::io::Path> mTikPathList;
     tc::Optional<tc::io::Path> mCertPath;
 
-    void loadKeyFile(tc::Optional<tc::io::Path> &keyfile_path, const std::string &keyfile_name,
-                     const std::string &cli_hint);
+    void
+    loadKeyFile(tc::Optional<tc::io::Path> &keyfile_path, const std::string &keyfile_name, const std::string &cli_hint);
 
     bool determineValidNcaFromSample(const tc::ByteData &raw_data) const;
     bool determineValidEsCertFromSample(const tc::ByteData &raw_data) const;

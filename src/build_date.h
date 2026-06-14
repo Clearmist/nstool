@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include <cstring>
+#include <string>
 
 // Parse __DATE__ macro to ISO 8601 format (YYYY-MM-DD) at runtime
 // __DATE__ format is "Mmm dd yyyy" (e.g., "Dec  9 2025")
@@ -10,10 +10,7 @@ inline std::string getISOBuildDate()
     const char *date = __DATE__;
 
     // Parse month
-    const char *months[] = {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     int month = 0;
 

@@ -33,13 +33,25 @@ void nstool::MetaProcess::process()
     displayKernelCap(mMeta.getAccessControlInfoDesc().getKernelCapabilities());
 }
 
-void nstool::MetaProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::MetaProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::MetaProcess::setKeyCfg(const KeyBag &keycfg) { mKeyCfg = keycfg; }
+void nstool::MetaProcess::setKeyCfg(const KeyBag &keycfg)
+{
+    mKeyCfg = keycfg;
+}
 
-void nstool::MetaProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::MetaProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-const pie::hac::Meta &nstool::MetaProcess::getMeta() const { return mMeta; }
+const pie::hac::Meta &nstool::MetaProcess::getMeta() const
+{
+    return mMeta;
+}
 
 void nstool::MetaProcess::importMeta()
 {
@@ -86,13 +98,14 @@ void nstool::MetaProcess::validateAcidSignature(const pie::hac::AccessControlInf
 
         r.text(fmt::format("[WARNING] ACID Signature: FAIL ({:s})", e.error()));
 
-        r.push("events", nlohmann::json{{"severity", "warn"},
-                                        {"message", fmt::format("ACID Signature: FAIL ({:s})", e.error())}});
+        r.push(
+            "events",
+            nlohmann::json{{"severity", "warn"}, {"message", fmt::format("ACID Signature: FAIL ({:s})", e.error())}});
     }
 }
 
-void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo &aci,
-                                              const pie::hac::AccessControlInfoDesc &acid)
+void nstool::MetaProcess::validateAciFromAcid(
+    const pie::hac::AccessControlInfo &aci, const pie::hac::AccessControlInfoDesc &acid)
 {
     Report &r = get_report();
 
@@ -101,15 +114,17 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
     {
         r.text(fmt::format("[WARNING] ACI ProgramId: FAIL (Outside Legal Range)"));
 
-        r.push("events", nlohmann::json{{"severity", "warn"},
-                                        {"message", fmt::format("ACI ProgramId: FAIL (Outside Legal Range)")}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"}, {"message", fmt::format("ACI ProgramId: FAIL (Outside Legal Range)")}});
     }
     else if (acid.getProgramIdRestrict().max > 0 && aci.getProgramId() > acid.getProgramIdRestrict().max)
     {
         r.text(fmt::format("[WARNING] ACI ProgramId: FAIL (Outside Legal Range)"));
 
-        r.push("events", nlohmann::json{{"severity", "warn"},
-                                        {"message", fmt::format("ACI ProgramId: FAIL (Outside Legal Range)")}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"}, {"message", fmt::format("ACI ProgramId: FAIL (Outside Legal Range)")}});
     }
 
     auto fs_access = aci.getFileSystemAccessControl().getFsAccess();
@@ -127,13 +142,15 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            r.text(fmt::format("[WARNING] ACI/FAC FsaRights: FAIL ({:s} not permitted)",
-                               pie::hac::FileSystemAccessUtil::getFsAccessFlagAsString(fs_access[i])));
+            r.text(fmt::format(
+                "[WARNING] ACI/FAC FsaRights: FAIL ({:s} not permitted)",
+                pie::hac::FileSystemAccessUtil::getFsAccessFlagAsString(fs_access[i])));
 
-            r.push("events", nlohmann::json{
-                                 {"severity", "warn"},
-                                 {"message",
-                                  fmt::format("ACI/FAC FsaRights: FAIL ({:s} not permitted)",
+            r.push(
+                "events", nlohmann::json{
+                              {"severity", "warn"},
+                              {"message", fmt::format(
+                                              "ACI/FAC FsaRights: FAIL ({:s} not permitted)",
                                               pie::hac::FileSystemAccessUtil::getFsAccessFlagAsString(fs_access[i]))}});
         }
     }
@@ -152,14 +169,16 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            r.text(fmt::format("[WARNING] ACI/FAC ContentOwnerId: FAIL (0x{:016x} not permitted)",
-                               aci.getFileSystemAccessControl().getContentOwnerIdList()[i]));
+            r.text(fmt::format(
+                "[WARNING] ACI/FAC ContentOwnerId: FAIL (0x{:016x} not permitted)",
+                aci.getFileSystemAccessControl().getContentOwnerIdList()[i]));
 
             r.push(
-                "events",
-                nlohmann::json{{"severity", "warn"},
-                               {"message", fmt::format("ACI/FAC ContentOwnerId: FAIL (0x{:016x} not permitted)",
-                                                       aci.getFileSystemAccessControl().getContentOwnerIdList()[i])}});
+                "events", nlohmann::json{
+                              {"severity", "warn"},
+                              {"message", fmt::format(
+                                              "ACI/FAC ContentOwnerId: FAIL (0x{:016x} not permitted)",
+                                              aci.getFileSystemAccessControl().getContentOwnerIdList()[i])}});
         }
     }
 
@@ -204,17 +223,20 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            r.text(fmt::format("[WARNING] ACI/SAC ServiceList: FAIL ({:s}{:s} not permitted)",
-                               aci.getServiceAccessControl().getServiceList()[i].getName(),
-                               (aci.getServiceAccessControl().getServiceList()[i].isServer() ? " (Server)" : "")));
+            r.text(fmt::format(
+                "[WARNING] ACI/SAC ServiceList: FAIL ({:s}{:s} not permitted)",
+                aci.getServiceAccessControl().getServiceList()[i].getName(),
+                (aci.getServiceAccessControl().getServiceList()[i].isServer() ? " (Server)" : "")));
 
-            r.push("events",
-                   nlohmann::json{{"severity", "warn"},
-                                  {"message", fmt::format("ACI/SAC ServiceList: FAIL ({:s}{:s} not permitted)",
-                                                          aci.getServiceAccessControl().getServiceList()[i].getName(),
-                                                          (aci.getServiceAccessControl().getServiceList()[i].isServer()
-                                                               ? " (Server)"
-                                                               : ""))}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"},
+                    {"message",
+                     fmt::format(
+                         "ACI/SAC ServiceList: FAIL ({:s}{:s} not permitted)",
+                         aci.getServiceAccessControl().getServiceList()[i].getName(),
+                         (aci.getServiceAccessControl().getServiceList()[i].isServer() ? " (Server)" : ""))}});
         }
     }
 
@@ -223,49 +245,61 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
     if (aci.getKernelCapabilities().getThreadInfo().getMaxCpuId() !=
         acid.getKernelCapabilities().getThreadInfo().getMaxCpuId())
     {
-        r.text(fmt::format("[WARNING] ACI/KC ThreadInfo/MaxCpuId: FAIL ({:d} not permitted)",
-                           aci.getKernelCapabilities().getThreadInfo().getMaxCpuId()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC ThreadInfo/MaxCpuId: FAIL ({:d} not permitted)",
+            aci.getKernelCapabilities().getThreadInfo().getMaxCpuId()));
 
-        r.push("events",
-               nlohmann::json{{"severity", "warn"},
-                              {"message", fmt::format("ACI/KC ThreadInfo/MaxCpuId: FAIL ({:d} not permitted)",
-                                                      aci.getKernelCapabilities().getThreadInfo().getMaxCpuId())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC ThreadInfo/MaxCpuId: FAIL ({:d} not permitted)",
+                                          aci.getKernelCapabilities().getThreadInfo().getMaxCpuId())}});
     }
 
     if (aci.getKernelCapabilities().getThreadInfo().getMinCpuId() !=
         acid.getKernelCapabilities().getThreadInfo().getMinCpuId())
     {
-        r.text(fmt::format("[WARNING] ACI/KC ThreadInfo/MinCpuId: FAIL ({:d} not permitted)",
-                           aci.getKernelCapabilities().getThreadInfo().getMinCpuId()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC ThreadInfo/MinCpuId: FAIL ({:d} not permitted)",
+            aci.getKernelCapabilities().getThreadInfo().getMinCpuId()));
 
-        r.push("events",
-               nlohmann::json{{"severity", "warn"},
-                              {"message", fmt::format("ACI/KC ThreadInfo/MinCpuId: FAIL ({:d} not permitted)",
-                                                      aci.getKernelCapabilities().getThreadInfo().getMinCpuId())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC ThreadInfo/MinCpuId: FAIL ({:d} not permitted)",
+                                          aci.getKernelCapabilities().getThreadInfo().getMinCpuId())}});
     }
 
     if (aci.getKernelCapabilities().getThreadInfo().getMaxPriority() !=
         acid.getKernelCapabilities().getThreadInfo().getMaxPriority())
     {
-        r.text(fmt::format("[WARNING] ACI/KC ThreadInfo/MaxPriority: FAIL ({:d} not permitted)",
-                           aci.getKernelCapabilities().getThreadInfo().getMaxPriority()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC ThreadInfo/MaxPriority: FAIL ({:d} not permitted)",
+            aci.getKernelCapabilities().getThreadInfo().getMaxPriority()));
 
-        r.push("events",
-               nlohmann::json{{"severity", "warn"},
-                              {"message", fmt::format("ACI/KC ThreadInfo/MaxPriority: FAIL ({:d} not permitted)",
-                                                      aci.getKernelCapabilities().getThreadInfo().getMaxPriority())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC ThreadInfo/MaxPriority: FAIL ({:d} not permitted)",
+                                          aci.getKernelCapabilities().getThreadInfo().getMaxPriority())}});
     }
 
     if (aci.getKernelCapabilities().getThreadInfo().getMinPriority() !=
         acid.getKernelCapabilities().getThreadInfo().getMinPriority())
     {
-        r.text(fmt::format("[WARNING] ACI/KC ThreadInfo/MinPriority: FAIL ({:d} not permitted)",
-                           aci.getKernelCapabilities().getThreadInfo().getMinPriority()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC ThreadInfo/MinPriority: FAIL ({:d} not permitted)",
+            aci.getKernelCapabilities().getThreadInfo().getMinPriority()));
 
-        r.push("events",
-               nlohmann::json{{"severity", "warn"},
-                              {"message", fmt::format("ACI/KC ThreadInfo/MinPriority: FAIL ({:d} not permitted)",
-                                                      aci.getKernelCapabilities().getThreadInfo().getMinPriority())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC ThreadInfo/MinPriority: FAIL ({:d} not permitted)",
+                                          aci.getKernelCapabilities().getThreadInfo().getMinPriority())}});
     }
 
     // check system calls
@@ -276,14 +310,18 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
     {
         if (syscall_ids.test(i) && desc_syscall_ids.test(i) == false)
         {
-            r.text(fmt::format("[WARNING] ACI/KC SystemCallList: FAIL ({:s} not permitted)",
-                               pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(i))));
+            r.text(fmt::format(
+                "[WARNING] ACI/KC SystemCallList: FAIL ({:s} not permitted)",
+                pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(i))));
 
-            r.push("events",
-                   nlohmann::json{{"severity", "warn"},
-                                  {"message", fmt::format("ACI/KC SystemCallList: FAIL ({:s} not permitted)",
-                                                          pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(
-                                                              pie::hac::kc::SystemCallId(i)))}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"},
+                    {"message",
+                     fmt::format(
+                         "ACI/KC SystemCallList: FAIL ({:s} not permitted)",
+                         pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(i)))}});
         }
     }
 
@@ -304,13 +342,16 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            auto map = aci.getKernelCapabilities().getMemoryMaps().getMemoryMaps()[i];
+            const auto &map = aci.getKernelCapabilities().getMemoryMaps().getMemoryMaps()[i];
 
             r.text(fmt::format("[WARNING] ACI/KC MemoryMap: FAIL ({:s} not permitted)", formatMappingAsString(map)));
 
-            r.push("events", nlohmann::json{{"severity", "warn"},
-                                            {"message", fmt::format("ACI/KC MemoryMap: FAIL ({:s} not permitted)",
-                                                                    formatMappingAsString(map))}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"},
+                    {"message",
+                     fmt::format("ACI/KC MemoryMap: FAIL ({:s} not permitted)", formatMappingAsString(map))}});
         }
     }
 
@@ -330,13 +371,16 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            auto map = aci.getKernelCapabilities().getMemoryMaps().getIoMemoryMaps()[i];
+            const auto &map = aci.getKernelCapabilities().getMemoryMaps().getIoMemoryMaps()[i];
 
             r.text(fmt::format("[WARNING] ACI/KC IoMemoryMap: FAIL ({:s} not permitted)", formatMappingAsString(map)));
 
-            r.push("events", nlohmann::json{{"severity", "warn"},
-                                            {"message", fmt::format("ACI/KC IoMemoryMap: FAIL ({:s} not permitted)",
-                                                                    formatMappingAsString(map))}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"},
+                    {"message",
+                     fmt::format("ACI/KC IoMemoryMap: FAIL ({:s} not permitted)", formatMappingAsString(map))}});
         }
     }
 
@@ -357,14 +401,16 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
         if (rightFound == false)
         {
-            r.text(fmt::format("[WARNING] ACI/KC InteruptsList: FAIL (0x{:x} not permitted)",
-                               aci.getKernelCapabilities().getInterupts().getInteruptList()[i]));
+            r.text(fmt::format(
+                "[WARNING] ACI/KC InteruptsList: FAIL (0x{:x} not permitted)",
+                aci.getKernelCapabilities().getInterupts().getInteruptList()[i]));
 
-            r.push("events",
-                   nlohmann::json{
-                       {"severity", "warn"},
-                       {"message", fmt::format("ACI/KC InteruptsList: FAIL (0x{:x} not permitted)",
-                                               aci.getKernelCapabilities().getInterupts().getInteruptList()[i])}});
+            r.push(
+                "events", nlohmann::json{
+                              {"severity", "warn"},
+                              {"message", fmt::format(
+                                              "ACI/KC InteruptsList: FAIL (0x{:x} not permitted)",
+                                              aci.getKernelCapabilities().getInterupts().getInteruptList()[i])}});
         }
     }
 
@@ -372,14 +418,16 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
     if (aci.getKernelCapabilities().getMiscParams().getProgramType() !=
         acid.getKernelCapabilities().getMiscParams().getProgramType())
     {
-        r.text(fmt::format("[WARNING] ACI/KC ProgramType: FAIL ({:d} not permitted)",
-                           (uint32_t)aci.getKernelCapabilities().getMiscParams().getProgramType()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC ProgramType: FAIL ({:d} not permitted)",
+            (uint32_t)aci.getKernelCapabilities().getMiscParams().getProgramType()));
 
-        r.push("events",
-               nlohmann::json{
-                   {"severity", "warn"},
-                   {"message", fmt::format("ACI/KC ProgramType: FAIL ({:d} not permitted)",
-                                           (uint32_t)aci.getKernelCapabilities().getMiscParams().getProgramType())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC ProgramType: FAIL ({:d} not permitted)",
+                                          (uint32_t)aci.getKernelCapabilities().getMiscParams().getProgramType())}});
     }
 
     // check kernel version
@@ -390,29 +438,34 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
 
     if (aciKernelVersion < acidKernelVersion)
     {
-        r.text(fmt::format("[WARNING] ACI/KC RequiredKernelVersion: FAIL ({:d}.{:d} not permitted)",
-                           aci.getKernelCapabilities().getKernelVersion().getVerMajor(),
-                           aci.getKernelCapabilities().getKernelVersion().getVerMinor()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC RequiredKernelVersion: FAIL ({:d}.{:d} not permitted)",
+            aci.getKernelCapabilities().getKernelVersion().getVerMajor(),
+            aci.getKernelCapabilities().getKernelVersion().getVerMinor()));
 
-        r.push("events",
-               nlohmann::json{{"severity", "warn"},
-                              {"message", fmt::format("ACI/KC RequiredKernelVersion: FAIL ({:d}.{:d} not permitted)",
-                                                      aci.getKernelCapabilities().getKernelVersion().getVerMajor(),
-                                                      aci.getKernelCapabilities().getKernelVersion().getVerMinor())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC RequiredKernelVersion: FAIL ({:d}.{:d} not permitted)",
+                                          aci.getKernelCapabilities().getKernelVersion().getVerMajor(),
+                                          aci.getKernelCapabilities().getKernelVersion().getVerMinor())}});
     }
 
     // check handle table size
     if (aci.getKernelCapabilities().getHandleTableSize().getHandleTableSize() >
         acid.getKernelCapabilities().getHandleTableSize().getHandleTableSize())
     {
-        r.text(fmt::format("[WARNING] ACI/KC HandleTableSize: FAIL (0x{:x} too large)",
-                           aci.getKernelCapabilities().getHandleTableSize().getHandleTableSize()));
+        r.text(fmt::format(
+            "[WARNING] ACI/KC HandleTableSize: FAIL (0x{:x} too large)",
+            aci.getKernelCapabilities().getHandleTableSize().getHandleTableSize()));
 
-        r.push("events",
-               nlohmann::json{
-                   {"severity", "warn"},
-                   {"message", fmt::format("ACI/KC HandleTableSize: FAIL (0x{:x} too large)",
-                                           aci.getKernelCapabilities().getHandleTableSize().getHandleTableSize())}});
+        r.push(
+            "events", nlohmann::json{
+                          {"severity", "warn"},
+                          {"message", fmt::format(
+                                          "ACI/KC HandleTableSize: FAIL (0x{:x} too large)",
+                                          aci.getKernelCapabilities().getHandleTableSize().getHandleTableSize())}});
     }
 
     // check misc flags
@@ -423,14 +476,18 @@ void nstool::MetaProcess::validateAciFromAcid(const pie::hac::AccessControlInfo 
     {
         if (misc_flags.test(i) && desc_misc_flags.test(i) == false)
         {
-            r.text(fmt::format("[WARNING] ACI/KC MiscFlag: FAIL ({:s} not permitted)",
-                               pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(pie::hac::kc::MiscFlagsBit(i))));
+            r.text(fmt::format(
+                "[WARNING] ACI/KC MiscFlag: FAIL ({:s} not permitted)",
+                pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(pie::hac::kc::MiscFlagsBit(i))));
 
-            r.push("events",
-                   nlohmann::json{{"severity", "warn"},
-                                  {"message", fmt::format("ACI/KC MiscFlag: FAIL ({:s} not permitted)",
-                                                          pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
-                                                              pie::hac::kc::MiscFlagsBit(i)))}});
+            r.push(
+                "events",
+                nlohmann::json{
+                    {"severity", "warn"},
+                    {"message",
+                     fmt::format(
+                         "ACI/KC MiscFlag: FAIL ({:s} not permitted)",
+                         pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(pie::hac::kc::MiscFlagsBit(i)))}});
         }
     }
 }
@@ -443,8 +500,9 @@ void nstool::MetaProcess::displayMetaHeader(const pie::hac::Meta &hdr)
     r.text(fmt::format("  ACID KeyGeneration: {:d}", hdr.getAccessControlInfoDescKeyGeneration()));
     r.text("  Flags:");
     r.text(fmt::format("    Is64BitInstruction:       {}", hdr.getIs64BitInstructionFlag()));
-    r.text(fmt::format("    ProcessAddressSpace:      {:s}",
-                       pie::hac::MetaUtil::getProcessAddressSpaceAsString(hdr.getProcessAddressSpace())));
+    r.text(fmt::format(
+        "    ProcessAddressSpace:      {:s}",
+        pie::hac::MetaUtil::getProcessAddressSpaceAsString(hdr.getProcessAddressSpace())));
     r.text(fmt::format("    OptimizeMemoryAllocation: {}", hdr.getOptimizeMemoryAllocationFlag()));
     r.text(fmt::format("  SystemResourceSize: 0x{:x}", hdr.getSystemResourceSize()));
     r.text("  Main Thread Params:");
@@ -457,8 +515,9 @@ void nstool::MetaProcess::displayMetaHeader(const pie::hac::Meta &hdr)
 
     r.set("data.metaHeader.acidKeyGeneration", hdr.getAccessControlInfoDescKeyGeneration());
     r.set("data.metaHeader.flags.is64BitInstruction", hdr.getIs64BitInstructionFlag());
-    r.set("data.metaHeader.flags.processAddressSpace",
-          pie::hac::MetaUtil::getProcessAddressSpaceAsString(hdr.getProcessAddressSpace()));
+    r.set(
+        "data.metaHeader.flags.processAddressSpace",
+        pie::hac::MetaUtil::getProcessAddressSpaceAsString(hdr.getProcessAddressSpace()));
     r.set("data.metaHeader.flags.optimizeMemoryAllocation", hdr.getOptimizeMemoryAllocationFlag());
     r.set("data.metaHeader.systemResourceSize", fmt::format("0x{:x}", hdr.getSystemResourceSize()));
     r.set("data.metaHeader.mainThreadParameters.priority", hdr.getMainThreadPriority());
@@ -493,21 +552,26 @@ void nstool::MetaProcess::displayAciDescHdr(const pie::hac::AccessControlInfoDes
     r.text("  Flags:");
     r.text(fmt::format("    Production:            {}", acid.getProductionFlag()));
     r.text(fmt::format("    Unqualified Approval:  {}", acid.getUnqualifiedApprovalFlag()));
-    r.text(fmt::format("    Memory Region:         {:s} ({:d})",
-                       pie::hac::AccessControlInfoUtil::getMemoryRegionAsString(acid.getMemoryRegion()),
-                       (uint32_t)acid.getMemoryRegion()));
+    r.text(fmt::format(
+        "    Memory Region:         {:s} ({:d})",
+        pie::hac::AccessControlInfoUtil::getMemoryRegionAsString(acid.getMemoryRegion()),
+        (uint32_t)acid.getMemoryRegion()));
     r.text("  ProgramID Restriction");
     r.text(fmt::format("    Min:           0x{:016x}", acid.getProgramIdRestrict().min));
     r.text(fmt::format("    Max:           0x{:016x}", acid.getProgramIdRestrict().max));
 
     r.set("data.accessControl.flags.production", acid.getProductionFlag());
     r.set("data.accessControl.flags.unqualifiedApproval", acid.getUnqualifiedApprovalFlag());
-    r.set("data.accessControl.flags.memoryRegion",
-          nlohmann::json{{"string", pie::hac::AccessControlInfoUtil::getMemoryRegionAsString(acid.getMemoryRegion())},
-                         {"int", (uint32_t)acid.getMemoryRegion()}});
-    r.set("data.accessControl.programIdRestriction",
-          nlohmann::json{{"min", fmt::format("0x{:016x}", acid.getProgramIdRestrict().min)},
-                         {"max", fmt::format("0x{:016x}", acid.getProgramIdRestrict().max)}});
+    r.set(
+        "data.accessControl.flags.memoryRegion",
+        nlohmann::json{
+            {"string", pie::hac::AccessControlInfoUtil::getMemoryRegionAsString(acid.getMemoryRegion())},
+            {"int", (uint32_t)acid.getMemoryRegion()}});
+    r.set(
+        "data.accessControl.programIdRestriction",
+        nlohmann::json{
+            {"min", fmt::format("0x{:016x}", acid.getProgramIdRestrict().min)},
+            {"max", fmt::format("0x{:016x}", acid.getProgramIdRestrict().max)}});
 }
 
 void nstool::MetaProcess::displayFac(const pie::hac::FileSystemAccessControl &fac)
@@ -555,14 +619,17 @@ void nstool::MetaProcess::displayFac(const pie::hac::FileSystemAccessControl &fa
 
         for (size_t i = 0; i < fac.getSaveDataOwnerIdList().size(); i++)
         {
-            r.text(fmt::format("    0x{:016x} ({:s})", fac.getSaveDataOwnerIdList()[i].id,
-                               pie::hac::FileSystemAccessUtil::getSaveDataOwnerAccessModeAsString(
-                                   fac.getSaveDataOwnerIdList()[i].access_type)));
+            r.text(fmt::format(
+                "    0x{:016x} ({:s})", fac.getSaveDataOwnerIdList()[i].id,
+                pie::hac::FileSystemAccessUtil::getSaveDataOwnerAccessModeAsString(
+                    fac.getSaveDataOwnerIdList()[i].access_type)));
 
-            r.push("data.fsAccessControl.saveDataOwnerIds",
-                   nlohmann::json{{"string", pie::hac::FileSystemAccessUtil::getSaveDataOwnerAccessModeAsString(
-                                                 fac.getSaveDataOwnerIdList()[i].access_type)},
-                                  {"hex", fac.getSaveDataOwnerIdList()[i].id}});
+            r.push(
+                "data.fsAccessControl.saveDataOwnerIds",
+                nlohmann::json{
+                    {"string", pie::hac::FileSystemAccessUtil::getSaveDataOwnerAccessModeAsString(
+                                   fac.getSaveDataOwnerIdList()[i].access_type)},
+                    {"hex", fac.getSaveDataOwnerIdList()[i].id}});
         }
     }
 }
@@ -578,11 +645,13 @@ void nstool::MetaProcess::displaySac(const pie::hac::ServiceAccessControl &sac)
 
     for (size_t i = 0; i < sac.getServiceList().size(); i++)
     {
-        service_name_list.push_back(sac.getServiceList()[i].getName() +
-                                    (sac.getServiceList()[i].isServer() ? "(isSrv)" : ""));
+        service_name_list.push_back(
+            sac.getServiceList()[i].getName() + (sac.getServiceList()[i].isServer() ? "(isSrv)" : ""));
 
-        r.push("data.serviceAccessControl.services", nlohmann::json{{"name", sac.getServiceList()[i].getName()},
-                                                                    {"isServer", sac.getServiceList()[i].isServer()}});
+        r.push(
+            "data.serviceAccessControl.services",
+            nlohmann::json{
+                {"name", sac.getServiceList()[i].getName()}, {"isServer", sac.getServiceList()[i].isServer()}});
     }
 
     r.text(fmt::format("{:s}", tc::cli::FormatUtil::formatListWithLineLimit(service_name_list, 60, 4)));
@@ -596,7 +665,7 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
 
     if (kern.getThreadInfo().isSet())
     {
-        pie::hac::ThreadInfoHandler threadInfo = kern.getThreadInfo();
+        const auto &threadInfo = kern.getThreadInfo();
 
         r.text("  Thread Priority:");
         r.text(fmt::format("    Min:     {:d}", threadInfo.getMinPriority()));
@@ -605,10 +674,12 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
         r.text(fmt::format("    Min:     {:d}", threadInfo.getMinCpuId()));
         r.text(fmt::format("    Max:     {:d}", threadInfo.getMaxCpuId()));
 
-        r.set("data.kernelCapabilities.threadPriority",
-              nlohmann::json{{"min", threadInfo.getMinPriority()}, {"max", threadInfo.getMaxPriority()}});
-        r.set("data.kernelCapabilities.cpuId",
-              nlohmann::json{{"min", threadInfo.getMinCpuId()}, {"max", threadInfo.getMaxCpuId()}});
+        r.set(
+            "data.kernelCapabilities.threadPriority",
+            nlohmann::json{{"min", threadInfo.getMinPriority()}, {"max", threadInfo.getMaxPriority()}});
+        r.set(
+            "data.kernelCapabilities.cpuId",
+            nlohmann::json{{"min", threadInfo.getMinCpuId()}, {"max", threadInfo.getMaxCpuId()}});
     }
 
     if (kern.getSystemCalls().isSet())
@@ -626,8 +697,9 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
                 syscall_names.push_back(
                     pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(syscall_id)));
 
-                r.push("data.kernelCapabilities.systemCalls",
-                       pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(syscall_id)));
+                r.push(
+                    "data.kernelCapabilities.systemCalls",
+                    pie::hac::KernelCapabilityUtil::getSystemCallIdAsString(pie::hac::kc::SystemCallId(syscall_id)));
             }
         }
 
@@ -674,32 +746,37 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
 
     if (kern.getMiscParams().isSet())
     {
-        r.text(
-            fmt::format("  ProgramType:        {:s} ({:d})",
-                        pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType()),
-                        (uint32_t)kern.getMiscParams().getProgramType()));
+        r.text(fmt::format(
+            "  ProgramType:        {:s} ({:d})",
+            pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType()),
+            (uint32_t)kern.getMiscParams().getProgramType()));
 
-        r.push("data.kernelCapabilities.programType",
-               nlohmann::json{{"string", pie::hac::KernelCapabilityUtil::getProgramTypeAsString(
-                                             kern.getMiscParams().getProgramType())},
-                              {"int", (uint32_t)kern.getMiscParams().getProgramType()}});
+        r.push(
+            "data.kernelCapabilities.programType",
+            nlohmann::json{
+                {"string",
+                 pie::hac::KernelCapabilityUtil::getProgramTypeAsString(kern.getMiscParams().getProgramType())},
+                {"int", (uint32_t)kern.getMiscParams().getProgramType()}});
     }
 
     if (kern.getKernelVersion().isSet())
     {
-        r.text(fmt::format("  Kernel Version:     {:d}.{:d}", kern.getKernelVersion().getVerMajor(),
-                           kern.getKernelVersion().getVerMinor()));
+        r.text(fmt::format(
+            "  Kernel Version:     {:d}.{:d}", kern.getKernelVersion().getVerMajor(),
+            kern.getKernelVersion().getVerMinor()));
 
-        r.push("data.kernelCapabilities.version",
-               fmt::format("{:d}.{:d}", kern.getKernelVersion().getVerMajor(), kern.getKernelVersion().getVerMinor()));
+        r.push(
+            "data.kernelCapabilities.version",
+            fmt::format("{:d}.{:d}", kern.getKernelVersion().getVerMajor(), kern.getKernelVersion().getVerMinor()));
     }
 
     if (kern.getHandleTableSize().isSet())
     {
         r.text(fmt::format("  Handle Table Size:  0x{:x}", kern.getHandleTableSize().getHandleTableSize()));
 
-        r.set("data.kernelCapabilities.handleTableSize",
-              fmt::format("0x{:x}", kern.getHandleTableSize().getHandleTableSize()));
+        r.set(
+            "data.kernelCapabilities.handleTableSize",
+            fmt::format("0x{:x}", kern.getHandleTableSize().getHandleTableSize()));
     }
 
     if (kern.getMiscFlags().isSet())
@@ -717,9 +794,10 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
                 misc_flags_names.push_back(pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
                     pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
 
-                r.push("data.kernelCapabilities.miscellaneousFlags",
-                       pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
-                           pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
+                r.push(
+                    "data.kernelCapabilities.miscellaneousFlags",
+                    pie::hac::KernelCapabilityUtil::getMiscFlagsBitAsString(
+                        pie::hac::kc::MiscFlagsBit(misc_flags_bit)));
             }
         }
 
@@ -729,8 +807,9 @@ void nstool::MetaProcess::displayKernelCap(const pie::hac::KernelCapabilityContr
 
 std::string nstool::MetaProcess::formatMappingAsString(const pie::hac::MemoryMappingHandler::sMemoryMapping &map) const
 {
-    return fmt::format("0x{:016x} - 0x{:016x} (perm={:s}) (type={:s})", ((uint64_t)map.addr << 12),
-                       (((uint64_t)(map.addr + map.size) << 12) - 1),
-                       pie::hac::KernelCapabilityUtil::getMemoryPermissionAsString(map.perm),
-                       pie::hac::KernelCapabilityUtil::getMappingTypeAsString(map.type));
+    return fmt::format(
+        "0x{:016x} - 0x{:016x} (perm={:s}) (type={:s})", ((uint64_t)map.addr << 12),
+        (((uint64_t)(map.addr + map.size) << 12) - 1),
+        pie::hac::KernelCapabilityUtil::getMemoryPermissionAsString(map.perm),
+        pie::hac::KernelCapabilityUtil::getMappingTypeAsString(map.type));
 }

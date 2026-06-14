@@ -76,9 +76,12 @@ struct KeyBag
 class KeyBagInitializer : public KeyBag
 {
   public:
-    KeyBagInitializer(bool isDev, const tc::Optional<tc::io::Path> &keyfile_path,
-                      const tc::Optional<tc::io::Path> &titlekeyfile_path,
-                      const std::vector<tc::io::Path> &tik_path_list, const tc::Optional<tc::io::Path> &cert_path);
+    KeyBagInitializer(
+        bool isDev,
+        const tc::Optional<tc::io::Path> &keyfile_path,
+        const tc::Optional<tc::io::Path> &titlekeyfile_path,
+        const std::vector<tc::io::Path> &tik_path_list,
+        const tc::Optional<tc::io::Path> &cert_path);
 
   private:
     KeyBagInitializer();

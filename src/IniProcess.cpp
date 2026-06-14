@@ -19,11 +19,20 @@ void nstool::IniProcess::process()
     }
 }
 
-void nstool::IniProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file) { mFile = file; }
+void nstool::IniProcess::setInputFile(const std::shared_ptr<tc::io::IStream> &file)
+{
+    mFile = file;
+}
 
-void nstool::IniProcess::setVerifyMode(bool verify) { mVerify = verify; }
+void nstool::IniProcess::setVerifyMode(bool verify)
+{
+    mVerify = verify;
+}
 
-void nstool::IniProcess::setKipExtractPath(const tc::io::Path &path) { mKipExtractPath = path; }
+void nstool::IniProcess::setKipExtractPath(const tc::io::Path &path)
+{
+    mKipExtractPath = path;
+}
 
 void nstool::IniProcess::importHeader()
 {
@@ -119,8 +128,9 @@ void nstool::IniProcess::extractKipList()
 
         r.text(fmt::format("Saving {:s}...", out_path.to_string()));
 
-        r.push("events", nlohmann::json{{"severity", "info"},
-                                        {"message", fmt::format("Extracting to {:s}", out_path.to_string())}});
+        r.push(
+            "events",
+            nlohmann::json{{"severity", "info"}, {"message", fmt::format("Extracting to {:s}", out_path.to_string())}});
 
         writeStreamToFile(itr->stream, out_path, cache);
     }
@@ -130,6 +140,7 @@ int64_t nstool::IniProcess::getKipSizeFromHeader(const pie::hac::KernelInitialPr
 {
     // the order of elements in a KIP are sequential, there are no file offsets
     return int64_t(sizeof(pie::hac::sKipHeader)) +
-           int64_t(hdr.getTextSegmentInfo().file_layout.size + hdr.getRoSegmentInfo().file_layout.size +
-                   hdr.getDataSegmentInfo().file_layout.size);
+           int64_t(
+               hdr.getTextSegmentInfo().file_layout.size + hdr.getRoSegmentInfo().file_layout.size +
+               hdr.getDataSegmentInfo().file_layout.size);
 }

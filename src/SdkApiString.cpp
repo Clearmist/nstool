@@ -18,17 +18,35 @@ void nstool::SdkApiString::operator=(const SdkApiString &other)
     mModuleName = other.mModuleName;
 }
 
-nstool::SdkApiString::ApiType nstool::SdkApiString::getApiType() const { return mApiType; }
+nstool::SdkApiString::ApiType nstool::SdkApiString::getApiType() const
+{
+    return mApiType;
+}
 
-void nstool::SdkApiString::setApiType(ApiType type) { mApiType = type; }
+void nstool::SdkApiString::setApiType(ApiType type)
+{
+    mApiType = type;
+}
 
-const std::string &nstool::SdkApiString::getVenderName() const { return mVenderName; }
+const std::string &nstool::SdkApiString::getVenderName() const
+{
+    return mVenderName;
+}
 
-void nstool::SdkApiString::setVenderName(const std::string &name) { mVenderName = name; }
+void nstool::SdkApiString::setVenderName(const std::string &name)
+{
+    mVenderName = name;
+}
 
-const std::string &nstool::SdkApiString::getModuleName() const { return mModuleName; }
+const std::string &nstool::SdkApiString::getModuleName() const
+{
+    return mModuleName;
+}
 
-void nstool::SdkApiString::setModuleName(const std::string &name) { mModuleName = name; }
+void nstool::SdkApiString::setModuleName(const std::string &name)
+{
+    mModuleName = name;
+}
 
 void nstool::SdkApiString::resolveApiString(const std::string &full_str)
 {

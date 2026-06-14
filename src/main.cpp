@@ -1,221 +1,229 @@
-#include <tc.h>
-#include <tc/os/UnicodeMain.h>
 #include "Report.hpp"
 #include "Settings.h"
+#include <tc.h>
+#include <tc/os/UnicodeMain.h>
 
-#include "GameCardProcess.h"
-#include "PfsProcess.h"
-#include "RomfsProcess.h"
-#include "NcaProcess.h"
-#include "MetaProcess.h"
+#include "AssetProcess.h"
 #include "CnmtProcess.h"
-#include "NsoProcess.h"
-#include "NroProcess.h"
-#include "NacpProcess.h"
-#include "IniProcess.h"
-#include "KipProcess.h"
 #include "EsCertProcess.h"
 #include "EsTikProcess.h"
-#include "AssetProcess.h"
+#include "GameCardProcess.h"
+#include "IniProcess.h"
+#include "KipProcess.h"
+#include "MetaProcess.h"
+#include "NacpProcess.h"
+#include "NcaProcess.h"
+#include "NroProcess.h"
+#include "NsoProcess.h"
+#include "PfsProcess.h"
+#include "RomfsProcess.h"
 
-int umain(const std::vector<std::string>& args, const std::vector<std::string>& env)
+int umain(const std::vector<std::string> &args, const std::vector<std::string> &env)
 {
-	try
-	{
-		nstool::Settings set = nstool::SettingsInitializer(args);
+    try
+    {
+        nstool::Settings set = nstool::SettingsInitializer(args);
 
-		std::shared_ptr<tc::io::IStream> infile_stream = std::make_shared<tc::io::FileStream>(tc::io::FileStream(set.infile.path.get(), tc::io::FileMode::Open, tc::io::FileAccess::Read));
+        std::shared_ptr<tc::io::IStream> infile_stream = std::make_shared<tc::io::FileStream>(
+            tc::io::FileStream(set.infile.path.get(), tc::io::FileMode::Open, tc::io::FileAccess::Read));
 
-		if (set.infile.filetype == nstool::Settings::FILE_TYPE_GAMECARD)
-		{
-			nstool::GameCardProcess obj;
+        if (set.infile.filetype == nstool::Settings::FILE_TYPE_GAMECARD)
+        {
+            nstool::GameCardProcess obj;
 
-			obj.setInputFile(infile_stream);
+            obj.setInputFile(infile_stream);
             obj.setOutputFile(set.outfile.filename);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
-			obj.setKeyCfg(set.opt.keybag);
-			obj.setVerifyMode(set.opt.verify);
-			obj.setShowFsTree(set.fs.show_fs_tree);
-			obj.setExtractJobs(set.fs.extract_jobs);
+            obj.setCliOutputMode(set.opt.cli_output_mode);
+            obj.setKeyCfg(set.opt.keybag);
+            obj.setVerifyMode(set.opt.verify);
+            obj.setShowFsTree(set.fs.show_fs_tree);
+            obj.setExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_PARTITIONFS || set.infile.filetype == nstool::Settings::FILE_TYPE_NSP)
-		{
-			nstool::PfsProcess obj;
+            obj.process();
+        }
+        else if (
+            set.infile.filetype == nstool::Settings::FILE_TYPE_PARTITIONFS ||
+            set.infile.filetype == nstool::Settings::FILE_TYPE_NSP)
+        {
+            nstool::PfsProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setOutputFile(set.outfile.filename);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
-			obj.setVerifyMode(set.opt.verify);
-			obj.setShowFsTree(set.fs.show_fs_tree);
-			obj.setExtractJobs(set.fs.extract_jobs);
+            obj.setInputFile(infile_stream);
+            obj.setOutputFile(set.outfile.filename);
+            obj.setCliOutputMode(set.opt.cli_output_mode);
+            obj.setVerifyMode(set.opt.verify);
+            obj.setShowFsTree(set.fs.show_fs_tree);
+            obj.setExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ROMFS)
-		{
-			nstool::RomfsProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ROMFS)
+        {
+            nstool::RomfsProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setOutputFile(set.outfile.filename);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
-			obj.setVerifyMode(set.opt.verify);
-			obj.setShowFsTree(set.fs.show_fs_tree);
-			obj.setExtractJobs(set.fs.extract_jobs);
+            obj.setInputFile(infile_stream);
+            obj.setOutputFile(set.outfile.filename);
+            obj.setCliOutputMode(set.opt.cli_output_mode);
+            obj.setVerifyMode(set.opt.verify);
+            obj.setShowFsTree(set.fs.show_fs_tree);
+            obj.setExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NCA)
-		{
-			nstool::NcaProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NCA)
+        {
+            nstool::NcaProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setOutputFile(set.outfile.filename);
-			obj.setCliOutputMode(set.opt.cli_output_mode);
-			obj.setBaseNcaPath(set.nca.base_nca_path);
-			obj.setKeyCfg(set.opt.keybag);
-			obj.setVerifyMode(set.opt.verify);
-			obj.setShowFsTree(set.fs.show_fs_tree);
-			obj.setExtractJobs(set.fs.extract_jobs);
+            obj.setInputFile(infile_stream);
+            obj.setOutputFile(set.outfile.filename);
+            obj.setCliOutputMode(set.opt.cli_output_mode);
+            obj.setBaseNcaPath(set.nca.base_nca_path);
+            obj.setKeyCfg(set.opt.keybag);
+            obj.setVerifyMode(set.opt.verify);
+            obj.setShowFsTree(set.fs.show_fs_tree);
+            obj.setExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_META)
-		{
-			nstool::MetaProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_META)
+        {
+            nstool::MetaProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setKeyCfg(set.opt.keybag);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setKeyCfg(set.opt.keybag);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_CNMT)
-		{
-			nstool::CnmtProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_CNMT)
+        {
+            nstool::CnmtProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NSO)
-		{
-			nstool::NsoProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NSO)
+        {
+            nstool::NsoProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
-			obj.setListApi(set.code.list_api);
-			obj.setListSymbols(set.code.list_symbols);
+            obj.setIs64BitInstruction(set.code.is_64bit_instruction);
+            obj.setListApi(set.code.list_api);
+            obj.setListSymbols(set.code.list_symbols);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NRO)
-		{
-			nstool::NroProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NRO)
+        {
+            nstool::NroProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.setIs64BitInstruction(set.code.is_64bit_instruction);
-			obj.setListApi(set.code.list_api);
-			obj.setListSymbols(set.code.list_symbols);
+            obj.setIs64BitInstruction(set.code.is_64bit_instruction);
+            obj.setListApi(set.code.list_api);
+            obj.setListSymbols(set.code.list_symbols);
 
-			if (set.aset.icon_extract_path.isSet()) {
-				obj.setAssetIconExtractPath(set.aset.icon_extract_path.get());
-			}
+            if (set.aset.icon_extract_path.isSet())
+            {
+                obj.setAssetIconExtractPath(set.aset.icon_extract_path.get());
+            }
 
-			if (set.aset.nacp_extract_path.isSet()) {
-				obj.setAssetNacpExtractPath(set.aset.nacp_extract_path.get());
-			}
+            if (set.aset.nacp_extract_path.isSet())
+            {
+                obj.setAssetNacpExtractPath(set.aset.nacp_extract_path.get());
+            }
 
-			obj.setAssetRomfsShowFsTree(set.fs.show_fs_tree);
-			obj.setAssetRomfsExtractJobs(set.fs.extract_jobs);
+            obj.setAssetRomfsShowFsTree(set.fs.show_fs_tree);
+            obj.setAssetRomfsExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NACP)
-		{
-			nstool::NacpProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_NACP)
+        {
+            nstool::NacpProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_INI)
-		{
-			nstool::IniProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_INI)
+        {
+            nstool::IniProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			if (set.kip.extract_path.isSet()) {
-				obj.setKipExtractPath(set.kip.extract_path.get());
-			}
+            if (set.kip.extract_path.isSet())
+            {
+                obj.setKipExtractPath(set.kip.extract_path.get());
+            }
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_KIP)
-		{
-			nstool::KipProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_KIP)
+        {
+            nstool::KipProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ES_CERT)
-		{
-			nstool::EsCertProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ES_CERT)
+        {
+            nstool::EsCertProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setKeyCfg(set.opt.keybag);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setKeyCfg(set.opt.keybag);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ES_TIK)
-		{
-			nstool::EsTikProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_ES_TIK)
+        {
+            nstool::EsTikProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setKeyCfg(set.opt.keybag);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setKeyCfg(set.opt.keybag);
+            obj.setVerifyMode(set.opt.verify);
 
-			obj.process();
-		}
-		else if (set.infile.filetype == nstool::Settings::FILE_TYPE_HB_ASSET)
-		{
-			nstool::AssetProcess obj;
+            obj.process();
+        }
+        else if (set.infile.filetype == nstool::Settings::FILE_TYPE_HB_ASSET)
+        {
+            nstool::AssetProcess obj;
 
-			obj.setInputFile(infile_stream);
-			obj.setVerifyMode(set.opt.verify);
+            obj.setInputFile(infile_stream);
+            obj.setVerifyMode(set.opt.verify);
 
-			if (set.aset.icon_extract_path.isSet()) {
-				obj.setIconExtractPath(set.aset.icon_extract_path.get());
-			}
+            if (set.aset.icon_extract_path.isSet())
+            {
+                obj.setIconExtractPath(set.aset.icon_extract_path.get());
+            }
 
-			if (set.aset.nacp_extract_path.isSet()) {
-				obj.setNacpExtractPath(set.aset.nacp_extract_path.get());
-			}
+            if (set.aset.nacp_extract_path.isSet())
+            {
+                obj.setNacpExtractPath(set.aset.nacp_extract_path.get());
+            }
 
-			obj.setRomfsShowFsTree(set.fs.show_fs_tree);
-			obj.setRomfsExtractJobs(set.fs.extract_jobs);
+            obj.setRomfsShowFsTree(set.fs.show_fs_tree);
+            obj.setRomfsExtractJobs(set.fs.extract_jobs);
 
-			obj.process();
-		}
-	}
-	catch (tc::Exception& e)
-	{
-		fmt::print("[{0}{1}ERROR] {2}\n", e.module(), (strlen(e.module()) != 0 ? " ": ""), e.error());
-		return 1;
-	}
+            obj.process();
+        }
+    }
+    catch (tc::Exception &e)
+    {
+        fmt::print("[{0}{1}ERROR] {2}\n", e.module(), (strlen(e.module()) != 0 ? " " : ""), e.error());
+        return 1;
+    }
 
-	get_report().write(std::cout);
+    get_report().write(std::cout);
 
-	return 0;
+    return 0;
 }
