@@ -5,5 +5,7 @@ ColumnLimit: 120
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AlignAfterOpenBracket: AlwaysBreak
+AlignOperands: DontAlign
 BinPackParameters: false
 BreakBeforeBraces: Allman
+ContinuationIndentWidth: 4
